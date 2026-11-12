@@ -1,7 +1,7 @@
 ---
 description: Dedicated licence checks. Scans the project and every imported component for licence declarations, verifies them against the upstream source repository at the ref actually used, runs the team's machine licence gate, and writes the planning doc's License Audit section.
 mode: subagent
-model: "evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS#low"
+model: "evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS#low"
 temperature: 0.2
 permission:
   external_directory:

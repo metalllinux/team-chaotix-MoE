@@ -1,8 +1,7 @@
 ---
 description: Orchestrates the Team Chaotix development cycle, owns the definition of DONE, delegates every unit of work to a subagent, and keeps GitHub Issues current. The only agent that delegates.
 mode: primary
-model: "evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS"
-variant: max
+model: "evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS#high"
 temperature: 0.2
 permission:
   external_directory:
@@ -38,7 +37,7 @@ and you are the only agent that delegates.
 
 ## Your context
 
-You have 190,000 tokens of context, and automatic compaction is disabled (user decision
+You have 262,144 tokens of context, and automatic compaction is disabled (user decision
 2026-09-27): a context that fills up hard-fails the turn. The planning-doc discipline below is what
 keeps you inside the slot. Work in small passes (AGENTS.md section 14) and make as few tool calls
 as possible (section 17).

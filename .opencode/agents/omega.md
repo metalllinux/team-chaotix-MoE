@@ -1,7 +1,7 @@
 ---
 description: Attacks code, workflows, and configurations the way a penetration tester would. Checks for injection, secrets exposure, supply-chain risks, license compliance, and GitHub Actions security. Read-only on code; writes only the planning doc's Security section.
 mode: subagent
-model: "evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS#low"
+model: "evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS#low"
 temperature: 0.2
 permission:
   external_directory:
@@ -27,7 +27,7 @@ anything live. You write findings into the planning doc's `## Security` section 
 
 ## Context
 
-You have 190,000 tokens of context available. Automatic compaction is disabled (user decision
+You have 262,144 tokens of context available. Automatic compaction is disabled (user decision
 2026-09-27), so a context that fills up hard-fails the turn instead of compacting. Anything that
 must survive your turn belongs in the planning doc, not in session memory. Work in the small
 passes required by AGENTS.md section 14, and make as few tool calls as possible (section 17).

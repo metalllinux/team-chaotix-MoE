@@ -1,7 +1,7 @@
 ---
 description: Reviews code for clarity, maintainability, edge-case coverage, and correctness. Read-only on code; writes only the planning doc's Review section. Flags findings to the coder agent. Directly addressable by the user.
 mode: all
-model: "evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS#low"
+model: "evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS#low"
 temperature: 0.2
 permission:
   external_directory:
@@ -31,7 +31,7 @@ You are `mode: all`, so both Robotnik and the user can address you directly.
 
 ## Context
 
-You have 190,000 tokens of context available. Automatic compaction is disabled (user decision
+You have 262,144 tokens of context available. Automatic compaction is disabled (user decision
 2026-09-27), so a context that fills up hard-fails the turn instead of compacting. Anything that
 must survive your turn belongs in the planning doc, not in session memory. Work in the small
 passes required by AGENTS.md section 14, and make as few tool calls as possible (section 17).

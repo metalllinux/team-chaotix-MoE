@@ -12,8 +12,8 @@
 # ~/.config/team-chaotix/ and ~/.local/state/team-chaotix/, never committed.
 #
 # Environment overrides (apply/selftest):
-#   UPSTREAM_BASE_URL  (default http://192.168.1.106:8094/v1)
-#   TEAM_MODEL         (default evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS)
+#   UPSTREAM_BASE_URL  (default http://192.168.1.106:8086/v1)
+#   TEAM_MODEL         (default evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS)
 #   LLM_PORT=4000  A2A_PORT=4100  ADAPTER_PORT=4210
 set -euo pipefail
 
@@ -27,8 +27,8 @@ PIDFILE="${STATE_DIR}/agentgateway.pid"
 LOGFILE="${STATE_DIR}/agentgateway.log"
 BIN="${AGENTGATEWAY_BIN:-/usr/local/bin/agentgateway}"
 
-UPSTREAM_BASE_URL="${UPSTREAM_BASE_URL:-http://192.168.1.106:8094/v1}"
-TEAM_MODEL="${TEAM_MODEL:-evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS}"
+UPSTREAM_BASE_URL="${UPSTREAM_BASE_URL:-http://192.168.1.106:8086/v1}"
+TEAM_MODEL="${TEAM_MODEL:-evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS}"
 LLM_PORT="${LLM_PORT:-4000}"
 A2A_PORT="${A2A_PORT:-4100}"
 ADAPTER_PORT="${ADAPTER_PORT:-4210}"

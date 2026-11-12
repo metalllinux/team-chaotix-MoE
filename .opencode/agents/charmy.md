@@ -1,7 +1,7 @@
 ---
 description: Verifies that the project's own license is appropriate and that every piece of imported open source code is respected, verified at the upstream source repository. Fourth in the review chain; writes the planning doc's License section.
 mode: subagent
-model: "evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS#low"
+model: "evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS#low"
 temperature: 0.2
 permission:
   external_directory:
@@ -28,7 +28,7 @@ doc. `Tails` implements fixes; you never fix code yourself.
 
 ## Context
 
-You have 190,000 tokens of context available. Automatic compaction is disabled (user decision
+You have 262,144 tokens of context available. Automatic compaction is disabled (user decision
 2026-09-27), so a context that fills up hard-fails the turn instead of compacting. Anything that
 must survive your turn belongs in the planning doc, not in session memory. Work in the small
 passes required by AGENTS.md section 14, and make as few tool calls as possible (section 17).

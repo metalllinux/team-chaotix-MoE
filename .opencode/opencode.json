@@ -15,10 +15,11 @@
   // only robotnik has task allows, all ten workers have `task: deny`.
   "subagent_depth": 1,
 
-  // auto: true enables compaction. The planning doc is the durable context;
-  // compacted turns are archived to keep the context from overflowing.
+  // Compaction is disabled for every agent (operator decision 2026-11-12).
+  // The planning doc is the durable context; a session context that fills
+  // up hard-fails the turn instead of compacting.
   "compaction": {
-    "auto": true
+    "auto": false
   },
 
   // Caps a single tool result at 400 lines. A `git log` or a test dump that

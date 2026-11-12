@@ -51,7 +51,7 @@ PORT = int(os.environ.get("A2A_PORT", "4210"))
 PUBLIC_URL = os.environ.get("A2A_PUBLIC_URL", "http://127.0.0.1:4100/")
 # opencode run ignores the agent frontmatter model and falls back to the
 # first provider in the global config, so pin the team model explicitly.
-TEAM_MODEL = os.environ.get("A2A_MODEL", "evo-x2-qwen3.8-iq3xxs/Qwen3.8-27B-UD-IQ3_XXS")
+TEAM_MODEL = os.environ.get("A2A_MODEL", "evo-x2-qwen3.8-flash-next-iq3xxs/Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS")
 TASK_TIMEOUT = int(os.environ.get("A2A_TASK_TIMEOUT", "7200"))
 MAX_TASKS = 64
 
