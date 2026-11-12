@@ -1,5 +1,6 @@
 # Team Chaotix
 
+Mixture of Experts variant of the team-chaotix team (repository `metalllinux/team-chaotix-MoE`).
 A general-purpose, autonomous software development team built on opencode. Team Chaotix handles any
 software development task thrown at it, from initial planning through deployment.
 
