@@ -17,9 +17,11 @@ installed and running (`libvirtd` active, `howard` in the `libvirt` group). Cock
 serves the VM administration UI. Node.js 24 (`nodejs24`) provides `node`/`npm` via
 `/usr/local/bin` symlinks.
 
-**Model:** All agents use `Qwen3.8-27B-UD-IQ3_XXS` (provider `evo-x2-qwen3.8-iq3xxs`); thinking
-stays on for the project-manager agent (`robotnik`), every other agent runs the `low` variant
-(`#low` in its model reference). The model is multimodal (vision projector `mmproj-F16.gguf`), so
+**Model:** All agents use `Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS` (provider
+`evo-x2-qwen3.8-flash-next-iq3xxs`, operator decision 2026-11-12); thinking stays on at full depth
+for the project-manager agent (`robotnik`, `#high` variant), every other agent runs the `low`
+variant (`#low` in its model reference). The model is multimodal (the endpoint advertises
+`completion` and `multimodal` capabilities, `/v1/models` probe 2026-11-12), so
 every agent can read screenshots and other images with `read` and analyze them visually. When the
 work needs screenshots, the operator gives the team a directory of them and the agent reads the
 images from that directory (section 7). Gateway routing is unchanged: all model traffic routes
@@ -38,7 +40,7 @@ without asking the user for per-action confirmation. The two step-stops above ar
 
 | Repo | Role |
 |---|---|
-| `metalllinux/team-chaotix` (GitHub) | **Source of truth for the team.** `.opencode/`, every workflow, every custom action, `planning/`, `scripts/`, README. All CI runs here. |
+| `metalllinux/team-chaotix-MoE` (GitHub) | **Source of truth for the team.** `.opencode/`, every workflow, every custom action, `planning/`, `scripts/`, README. All CI runs here. |
 | Project directory (e.g. `~/linux/projects/cinnamon_4_rocky10/`) | **The target project.** Work happens here, artifacts land here. Reached through `external_directory`. |
 
 **Where opencode is launched matters.** opencode resolves project config from its **cwd**, and this
@@ -381,8 +383,10 @@ limit. Destroy what you are done with.
 The EVO-X2 endpoint caps every turn at **32,000 output tokens**. Verified 2026-09-02 in
 TASK-0019, three consecutive subagent turns truncated at exactly 32,000 tokens with
 `finish_reason: "length"` and zero visible output. The llama.cpp server default is unlimited
-(`max_tokens: -1`) and the opencode provider config declares a 190,000 context limit with a
-60,000 output limit, so the clamp applies in the EVO-X2 gateway layer. Consequence. A turn that
+(`max_tokens: -1`) and the opencode provider config declares a 262,144 context limit with a
+131,072 output limit, so the clamp applies in the EVO-X2 gateway layer. The 32,000 clamp was
+verified against the previous 27B endpoint; re-probe it against the current endpoint before
+treating the figure as current. Consequence. A turn that
 spends its whole budget on hidden
 reasoning produces no tool call and no text, the session ends with an **empty result that still
 reports "completed"**, and the dispatcher sees silence. This killed three consecutive `Espio`
@@ -413,8 +417,8 @@ All model traffic and all agent-to-agent traffic for the team routes through age
 
 - **LLM (port 4000).** OpenAI-compatible endpoint. The opencode provider `baseURL` for both
   EVO-X2 providers points at `http://127.0.0.1:4000/v1`. The gateway forwards to the EVO-X2
-  endpoint (`http://192.168.1.106:8094`) with the model name unchanged, so both
-  `Qwen3.8-27B-UD-IQ3_XXS` and `Qwen3.8-27B-UD-IQ4_XS` work. The gateway is the only place the
+  endpoint (`http://192.168.1.106:8086`) with the model name unchanged
+  (`Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS`). The gateway is the only place the
   upstream address is configured, and it logs every request.
 - **A2A (port 4100).** Fronts the team's A2A adapter (`scripts/a2a-server.py` entry point,
   implementation in `team/a2a/server.py`, local port 4210, running as the `team-chaotix-a2a`

@@ -57,7 +57,7 @@ Key permission patterns:
 ### Prerequisites
 
 1. **opencode** installed and configured
-2. **Git** with access to `metalllinux/team-chaotix` on GitHub
+2. **Git** with access to `metalllinux/team-chaotix-MoE` on GitHub
 3. **GitHub token** with the `repo` scope (see below)
 4. **Self-hosted GitHub Actions runner** on Rocky Linux (see Runner setup below)
 
@@ -75,8 +75,8 @@ Token files named `githubtoken*.md` stay in `.gitignore` as a trap for accidents
 
 ```bash
 # Clone the team configuration
-git clone https://github.com/metalllinux/team-chaotix.git
-cd team-chaotix/team-chaotix
+git clone https://github.com/metalllinux/team-chaotix-MoE.git
+cd team-chaotix-MoE
 
 # Launch opencode (this loads all agents from .opencode/agents/)
 opencode
@@ -85,7 +85,7 @@ opencode
 # "Port the Cinnamon Desktop to Rocky Linux 10"
 ```
 
-**Important:** Always launch opencode from the `team-chaotix/team-chaotix/` directory. Launching
+**Important:** Always launch opencode from the `team-chaotix-MoE/` directory. Launching
 from a project directory loads zero custom agents and no `AGENTS.md`, and fails silently. The
 project directory is reached through `external_directory`.
 
@@ -181,7 +181,7 @@ curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/late
 tar xzf actions-runner.tar.gz
 
 # Configure runner with your GitHub token
-./config.sh --url https://github.com/metalllinux/team-chaotix --token <YOUR_TOKEN> \
+./config.sh --url https://github.com/metalllinux/team-chaotix-MoE --token <YOUR_TOKEN> \
   --name "local-runner" --unattended --replace
 
 # Install as service
@@ -390,7 +390,7 @@ Each agent writes to its own section in the planning doc. Robotnik reads only `#
 ## Repository structure
 
 ```
-team-chaotix/
+team-chaotix-MoE/
   .github/
     workflows/          # CI/CD workflow definitions
     actions/            # Custom composite actions
@@ -413,9 +413,10 @@ team's A2A adapter (fronted by agentgateway on port 4100).
 
 ## Model
 
-All agents use `Qwen3.8-27B-UD-IQ3_XXS` (EVO-X2 endpoint `evo-x2-qwen3.8-iq3xxs`, port 8094,
-`--parallel 1`). The model is multimodal (vision projector `mmproj-F16.gguf`, see Model files),
-so every agent can read screenshots and other images with `read` and analyze them visually. When
+All agents use `Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS` (EVO-X2 endpoint `evo-x2-qwen3.8-flash-next-iq3xxs`,
+port 8086, `--parallel 1`, operator decision 2026-11-12). The model is multimodal (the endpoint
+advertises `completion` and `multimodal` capabilities, `/v1/models` probe 2026-11-12), so every
+agent can read screenshots and other images with `read` and analyze them visually. When
 the work needs screenshots, the operator gives the team a directory of them (AGENTS.md section 7).
 All model traffic routes through the team's agentgateway (LLM gateway on port
 4000, see AGENTS.md section 15), which forwards to the EVO-X2 endpoint unchanged. The endpoint
@@ -424,6 +425,15 @@ sequential. The machine that serves this endpoint, a GMKtec EVO-X2, is documente
 model host setup section below.
 
 ## EVO-X2 model host setup
+
+> **Superseded as the active endpoint (2026-11-12).** This section documents the deployment of the
+> previous team model, `Qwen3.8-27B-UD-IQ3_XXS` on port 8094. The team model is now
+> `Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS` on port 8086 (verified live from the workstation:
+> `curl http://192.168.1.106:8086/v1/models` lists the model with `completion` and `multimodal`
+> capabilities, 2026-11-12). The hardware, llama.cpp, firewall, and GPU-wedge record below remain
+> valid for the host. The unit file, model directory, and file hashes for the new endpoint are not
+> yet documented here; the workstation has no ssh to the model host, and facts are not invented
+> (AGENTS.md section 5).
 
 The agents run on `Qwen3.8-27B-UD-IQ3_XXS`, which a dedicated GMKtec EVO-X2 at 192.168.1.106
 serves through llama.cpp. This section documents the reference setup. Every value below is
@@ -570,22 +580,23 @@ in the `public` zone.
 
 ### The opencode client
 
-The provider entry in `~/.config/opencode/opencode.json`, verified on the reference workstation.
+The provider entry in `~/.config/opencode/opencode.json` for the current team model, read from the
+workstation 2026-11-12.
 
 ```json
-"evo-x2-qwen3.8-iq3xxs": {
+"evo-x2-qwen3.8-flash-next-iq3xxs": {
   "npm": "@ai-sdk/openai-compatible",
-  "name": "EVO-X2 Qwen3.8-27B-UD-IQ3_XXS (llama.cpp)",
+  "name": "EVO-X2 Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS (llama.cpp)",
   "options": {
-    "baseURL": "http://192.168.1.106:8094/v1",
+    "baseURL": "http://192.168.1.106:8086/v1",
     "timeout": 3600000
   },
   "models": {
-    "Qwen3.8-27B-UD-IQ3_XXS": {
-      "name": "Qwen3.8-27B-UD-IQ3_XXS (EVO-X2)",
+    "Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS": {
+      "name": "Qwen3.8-Flash-Next-GSQ-RCO-IQ3_XXS (EVO-X2)",
       "limit": {
-        "context": 190000,
-        "output": 60000
+        "context": 262144,
+        "output": 131072
       }
     }
   }
@@ -664,10 +675,10 @@ window.
 ## Updating the team
 
 Changes to the agentic team are committed to this repository and pushed to
-`https://github.com/metalllinux/team-chaotix`. To pull updates:
+`https://github.com/metalllinux/team-chaotix-MoE`. To pull updates:
 
 ```bash
-cd ~/AI/projects/team-chaotix
+cd ~/AI/projects/team-chaotix-moe
 git pull origin main
 ```
 
@@ -677,7 +688,7 @@ After updating the main repo, worktrees need to pull the configuration changes:
 
 ```bash
 # Update main repo
-cd ~/AI/projects/team-chaotix
+cd ~/AI/projects/team-chaotix-moe
 git pull origin main
 
 # Update each worktree's configuration
