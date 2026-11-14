@@ -98,6 +98,33 @@ scripts/licence-check > /dev/null || fail "licence-check on this repo"
 PASS
 note "licence-check OK"
 
+# --- dispatch gate (dispatcher context ceiling) ---------------------------
+# A subagent inherits the dispatcher's own session context. TASK-0042 lost two
+# dispatches to "request (262191 tokens) exceeds the available context size
+# (262144 tokens)" while every brief was short, so the ceiling is checked here
+# rather than rediscovered by a failed dispatch.
+[ -x scripts/dispatch-gate ] || fail "scripts/dispatch-gate missing or not executable"
+PASS
+scripts/dispatch-gate --help > /dev/null || fail "dispatch-gate --help"
+PASS
+scripts/dispatch-gate --dry-run > /dev/null || fail "dispatch-gate --dry-run"
+PASS
+note "dispatch-gate interface OK"
+
+# The real read is optional, the session store may not exist in CI. Verdict exits
+# 0 PASS, 3 WARN, 4 BLOCK are all a working gate; only a 2 is a broken one.
+if [ -f "${HOME}/.local/share/opencode/opencode.db" ]; then
+  set +e
+  scripts/dispatch-gate --latest-agent robotnik --json > /dev/null 2>&1
+  DG_RC=$?
+  set -e
+  [ "${DG_RC}" -le 4 ] || fail "dispatch-gate real read returned ${DG_RC}"
+  PASS
+  note "dispatch-gate real read OK (exit ${DG_RC})"
+else
+  note "no session store, dispatch-gate real read skipped"
+fi
+
 # --- gateway selftest (boot the real binary on ephemeral ports) ------------
 # The template must not merely parse: the gateway has to boot with it.
 # Skipped when the binary is absent (same rule as shellcheck above).

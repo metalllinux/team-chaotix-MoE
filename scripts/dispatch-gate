@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+# dispatch-gate -- the dispatcher's context ceiling, made mechanical.
+#
+# Why this exists. A subagent inherits the dispatcher's own session context.
+# In TASK-0042 two dispatches in a row failed with
+#   request (262191 tokens) exceeds the available context size (262144 tokens)
+# the identical figure both times, while every individual brief was short. The
+# brief was never the problem, the dispatcher's accumulated context was. AGENTS.md
+# learned rule r001 describes the symptom; this script is the pre-dispatch check
+# that stops it from being discovered by a failed dispatch instead of predicted.
+#
+# How the number is obtained. OpenCode stores one row per assistant message in
+# session_message, with data.tokens describing that call. For a chat call the
+# prompt size is input + cache.read + cache.write, which is what the endpoint
+# charges against the context window on the next request. The most recent
+# assistant message is therefore the best available estimate of what the next
+# dispatch will inherit.
+#
+# Read-only by design. It opens the database in read-only mode and writes nothing.
+# Exit codes: 0 PASS, 3 WARN, 4 BLOCK, 2 usage or database unavailable.
+import argparse
+import json
+import os
+import sqlite3
+import sys
+
+LIMIT_DEFAULT = 262144  # the model context limit every agent runs under
+WARN_FRACTION = 0.85
+
+
+def db_path() -> str:
+    # Same location AGENTS.md section 14 points at for empty-result forensics.
+    return os.path.expanduser("~/.local/share/opencode/opencode.db")
+
+
+def pick_session(con: sqlite3.Connection, agent: str) -> str | None:
+    # Newest session by activity, optionally filtered to one agent.
+    sql = "SELECT id FROM session_v2"
+    args: tuple = ()
+    if agent:
+        sql += " WHERE agent=?"
+        args = (agent,)
+    sql += " ORDER BY time_updated DESC LIMIT 1"
+    row = con.execute(sql, args).fetchone()
+    return row[0] if row else None
+
+
+def prompt_estimate(con: sqlite3.Connection, session_id: str, window: int = 20) -> dict | None:
+    # The prompt actually assembled for a call is what the next dispatch inherits.
+    # The newest assistant row is often a partial row with zero tokens recorded, so
+    # measure the window of recent calls and report the peak, which is what the
+    # ceiling is really up against.
+    rows = con.execute(
+        "SELECT id, seq, data FROM session_message WHERE session_id=? AND type='assistant' ORDER BY seq DESC LIMIT ?",
+        (session_id, window),
+    ).fetchall()
+    if not rows:
+        return None
+    # The recorded prompt of a call is what that call was assembled from. Growth
+    # between consecutive calls is where the context actually goes, mostly tool
+    # results, and in TASK-0042 the unrecorded growth was the difference between a
+    # comfortable 160824 measured here and a dispatch that failed at 262191. So the
+    # estimate projects the peak forward by the observed per-call growth.
+    prompts = []
+    for mid, seq, raw in reversed(rows):
+        data = json.loads(raw or "{}")
+        tok = data.get("tokens") or {}
+        cache = tok.get("cache") or {}
+        prompts.append((seq, mid, int(tok.get("input") or 0) + int(cache.get("read") or 0) + int(cache.get("write") or 0)))
+    peak_seq, peak_mid, peak = max(prompts, key=lambda x: x[2])
+    growth = 0
+    if len(prompts) >= 2:
+        deltas = [prompts[i + 1][2] - prompts[i][2] for i in range(len(prompts) - 1)]
+        growth = max(deltas + [0])  # the worst single jump, not the average, because one large tool result is what breaks a dispatch
+    best = {
+        "session_id": session_id,
+        "message_id": peak_mid,
+        "seq": peak_seq,
+        "samples": len(prompts),
+        "peak_prompt": peak,
+        "per_call_growth": growth,
+        "projected_prompt": peak + growth,
+        "window": window,
+    }
+    return best
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(
+        prog="dispatch-gate",
+        description="Estimate the dispatcher session context a subagent would inherit, and say whether a dispatch is safe.",
+    )
+    p.add_argument("--session", help="session id to measure. Omit to use --latest-agent.")
+    p.add_argument("--latest-agent", default="robotnik", help="agent for the newest session to measure, '' for any. Default robotnik.")
+    p.add_argument("--limit", type=int, default=int(os.environ.get("CHAOTIX_CONTEXT_LIMIT", LIMIT_DEFAULT)), help="context limit to measure against. Default 262144.")
+    p.add_argument("--warn-fraction", type=float, default=WARN_FRACTION, help="fraction of the limit at which the answer becomes WARN. Default 0.85.")
+    p.add_argument("--inherit-ratio", type=float, default=1.6, help="multiplier applied to the dispatcher's own prompt when estimating what a child inherits. Default 1.6 comes from TASK-0042, where a dispatcher measured 160824 here and the child request failed at 262191.")
+    p.add_argument("--block-fraction", type=float, default=0.95, help="fraction of the limit at which the answer becomes BLOCK. Default 0.95, because measurement undercounts and a failed dispatch costs a whole turn.")
+    p.add_argument("--window", type=int, default=20, help="how many recent assistant calls to measure, reporting the peak. Default 20.")
+    p.add_argument("--json", action="store_true", help="machine-readable output.")
+    p.add_argument("--dry-run", action="store_true", help="no database access, proves the interface only.")
+    a = p.parse_args()
+
+    if a.dry_run:
+        # Interface proof with no machine state touched, so CI never needs the database.
+        est = {"session_id": "dry-run", "message_id": "dry-run", "seq": 0, "samples": 0,
+               "peak_prompt": 0, "per_call_growth": 0, "projected_prompt": 0, "window": a.window}
+        out = {"verdict": "PASS", "reason": "dry run, no database read", **est, "limit": a.limit}
+        print(json.dumps(out) if a.json else "dispatch-gate: PASS (dry run, nothing read)")
+        return 0
+
+    path = db_path()
+    if not os.path.exists(path):
+        msg = f"dispatch-gate: database unavailable at {path}"
+        print(json.dumps({"verdict": "UNKNOWN", "reason": msg}) if a.json else msg, file=sys.stderr)
+        return 2
+
+    try:
+        con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    except sqlite3.Error as exc:
+        print(f"dispatch-gate: cannot open {path}: {exc}", file=sys.stderr)
+        return 2
+
+    sid = a.session or pick_session(con, a.latest_agent)
+    if not sid:
+        print("dispatch-gate: no session found", file=sys.stderr)
+        return 2
+    est = prompt_estimate(con, sid, max(1, a.window))
+    if est is None:
+        print(f"dispatch-gate: no assistant message for {sid}", file=sys.stderr)
+        return 2
+
+    est["limit"] = a.limit
+    est["inherit_ratio"] = a.inherit_ratio
+    est["child_projection"] = int(est["projected_prompt"] * a.inherit_ratio)
+    used = est["child_projection"]
+    if used >= int(a.limit * a.block_fraction):
+        est["verdict"] = "BLOCK"
+        est["reason"] = "a subagent inherits this context and the request would exceed the limit"
+        code = 4
+    elif used >= int(a.limit * a.warn_fraction):
+        est["verdict"] = "WARN"
+        est["reason"] = "close enough to the limit that the next dispatch may fail"
+        code = 3
+    else:
+        est["verdict"] = "PASS"
+        est["reason"] = "room for a dispatch"
+        code = 0
+
+    if a.json:
+        print(json.dumps(est))
+    else:
+        print(
+            "dispatch-gate: {v} session {s} peak {m} over {w} calls, worst jump {g}, dispatcher projection {d}, child projection {n} of {l} ({p:.1f}%). {r}".format(
+                v=est["verdict"], s=est["session_id"], m=est["peak_prompt"], w=est["samples"],
+                g=est["per_call_growth"], d=est["projected_prompt"], n=used, l=a.limit,
+                p=100.0 * used / a.limit if a.limit else 0.0, r=est["reason"],
+            )
+        )
+        if code == 4:
+            print("dispatch-gate: do not dispatch. Write the handoff into the planning doc's ## Status and continue in a fresh Robotnik session (AGENTS.md r001).")
+        elif code == 3:
+            print("dispatch-gate: dispatch at most one more item, then hand off.")
+    return code
+
+
+if __name__ == "__main__":
+    sys.exit(main())
