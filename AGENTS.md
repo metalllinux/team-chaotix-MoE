@@ -402,7 +402,8 @@ Rules for every agent:
    (`offset`/`limit`), make one section-sized edit per turn, and verify the edit landed before
    planning the next one.
 3. **Dispatchers split large doc work.** One subagent brief carries at most three file edits.
-4. **Detection.** An empty subagent result is not "nothing to report". Check
+4. **The dispatcher has a context ceiling, and it is measured before delegating rather than discovered by a failed dispatch.** A subagent inherits the dispatcher's own session context, so a long-running `Robotnik` session eventually fails every dispatch with a request-size error no matter how short the brief is. `scripts/dispatch-gate` estimates that ceiling from the session store, and `Robotnik` runs it before every dispatch. `BLOCK` means write the handoff into `## Status`, write the remaining dispatch queue verbatim into `## Next Actions`, mark the row in `planning/TASKS.md` as handoff needed, and continue in a fresh `Robotnik` session. Verified 2026-11-15 in TASK-0042, two dispatches lost at 262191 tokens against a 262144 limit while every brief was two or three sentences.
+5. **Detection.** An empty subagent result is not "nothing to report". Check
    `~/.local/share/opencode/opencode.db` for the session's last assistant message. `finish:
    "length"` with `tokens.output = 32000` and only reasoning parts means the turn truncated in
    reasoning. Re-dispatch with a smaller brief.

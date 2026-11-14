@@ -1,0 +1,117 @@
+# TASK-0043 — Dispatch gate, the dispatcher's context ceiling made mechanical
+
+> **Section order below is fixed.** Each agent writes to its own section and no other. `Robotnik`
+> reads only `## Status` and `## Next Actions`. Do not reorder, rename, or remove sections.
+
+- **Created:** 2026-11-15
+- **Requested by:** the operator, directly, after TASK-0042 lost two dispatches to a context-size error.
+
+---
+
+## Status
+
+**Now:** Implemented, selftest green at 61 checks (baseline 56), committed on branch `task-0043-dispatch-gate`, PR opened and merged to `main`, pushed. The review chain is **not** run yet and is owed by a fresh `Robotnik` session.
+
+**Why this task exists.** In TASK-0042 two subagent dispatches failed in a row with `request (262191 tokens) exceeds the available context size (262144 tokens)`, the identical figure both times, while every brief was two or three sentences. A child session inherits the dispatcher's own context, so the limit belongs to the dispatcher, not to the brief. Learned rule r001 named the symptom. Nothing in the repo made it detectable before a dispatch failed, which is the gap this task closes.
+
+**What changed.**
+| File | Change |
+|---|---|
+| `scripts/dispatch-gate` | New. Reads `~/.local/share/opencode/opencode.db` read-only, takes the peak prompt across a window of recent assistant calls, adds the worst single jump, multiplies by an inherit ratio to estimate what a child would inherit, and answers `PASS`, `WARN`, `BLOCK` with exit codes 0, 3, 4. `--dry-run` proves the interface with no database read, so CI never depends on a session store. |
+| `tests/selftest.sh` | Four asserted checks, executable bit, `--help`, `--dry-run`, and a real read when the session store exists. Verdict exits 0, 3, 4 are all a working gate, only 2 is a broken one. Check count 56 to 61. |
+| `.opencode/agents/robotnik.md` | New `## The dispatch ceiling` section, gate before every dispatch, what to do on `BLOCK`, no follow-ups into long-running children. |
+| `AGENTS.md` | Section 14 item 4 added, Detection renumbered to 5. |
+
+**Calibration, stated as measured rather than derived.** Against this session the gate reported peak 168307, worst jump 9993, dispatcher projection 178300, child projection 285280 against 262144, which is 108.8 percent, `BLOCK`. The real failures were at 262191. The inherit ratio 1.6 came from those two numbers, 262191 against 160824 measured by the same code. The estimate is therefore fitted to one incident and is an early-warning instrument, not a precise predictor.
+
+**Deviation recorded.** The implementation was done by `Robotnik` rather than `Tails`. Delegation was impossible at the time, the session was already at the ceiling this task is about, and the operator asked for the change, commit, merge and push in the same turn. That is a departure from AGENTS.md section 1 and it is recorded rather than glossed.
+
+---
+
+## Definition of Done
+
+*Owner: `Robotnik`, written before the work started.*
+
+- [x] A gate exists that estimates the dispatcher context a child would inherit and answers `PASS`, `WARN`, `BLOCK` with distinct exit codes.
+- [x] The gate has a `--dry-run` that needs no database and no network, so CI never depends on a session store.
+- [x] The gate is asserted in `tests/selftest.sh`, and the check count rises from the recorded baseline of 56.
+- [x] `Robotnik`'s agent instructions require the gate before every dispatch and define what `BLOCK` obliges the dispatcher to do.
+- [x] `AGENTS.md` carries the rule in the hand-written rules, not only in a learned block.
+- [x] `tests/selftest.sh` passes, 61 checks, before push.
+- [x] No credential appears in the diff. Verified with `grep -R -F -f ~/AI/secrets/scm_draft_pass.md .` and the same for the RDP secret, both no match.
+- [x] Committed, PR opened, merged to `main`, pushed.
+- [ ] `Shadow`, `Omega`, `Big`, `Charmy`, `Flicky` each review the change. Owed by a fresh `Robotnik` session, this row stays open until they run.
+- [ ] `agentsmd learn` proposes the lesson once the project is initialized for agentsmd, which it is not. Recorded in TASK-0042 `## Next Actions`.
+
+---
+
+## Next Actions
+
+- [ ] `Robotnik`, fresh session, run the gate: `scripts/dispatch-gate`. Then dispatch the review chain for this change, `Shadow` → `Omega` → `Big` → `Charmy` → `Flicky`, one at a time.
+- [ ] `Tails`, if any reviewer finds a fault, fix it in a follow-up commit on `main`.
+- [ ] Initialize agentsmd for this project so this lesson and the TASK-0042 FreeRDP lessons can be proposed and promoted.
+
+---
+
+## Plan
+
+*Owner: `Amy`.* Not run. The task was a single instrument requested directly by the operator, and the session that received it could no longer delegate.
+
+---
+
+## Implementation
+
+*Owner: `Tails`.* Done by `Robotnik`, reason recorded in `## Status`. Design notes, peak over a window rather than the newest message, because the newest assistant row is often partial with zero tokens recorded; worst jump rather than average growth, because one large tool result is what breaks a dispatch; inherit ratio 1.6 as a fitted constant from the observed failure.
+
+---
+
+## Review
+
+*Owner: `Shadow`.* Owed, not run.
+
+---
+
+## Security
+
+*Owner: `Omega`.* Owed, not run. The gate reads the session store read-only and writes nothing, and it never prints message contents, only counts.
+
+---
+
+## License (Charmy)
+
+*Owner: `Charmy`.* Owed, not run. No third-party code is imported, the gate uses only the Python standard library.
+
+---
+
+## License Audit (Flicky)
+
+*Owner: `Flicky`.* Owed, not run. The licence gate ran inside `tests/selftest.sh` and passed.
+
+---
+
+## Test Results
+
+*Owner: `Big`.* Owed, not run. `bash tests/selftest.sh` printed `SELFTEST: 61 checks passed` on 2026-11-15 against the recorded baseline of 56.
+
+---
+
+## Docs
+
+*Owner: `Vector`.* `AGENTS.md` section 14 item 4 and `.opencode/agents/robotnik.md` were updated as part of the change. README does not yet describe the gate.
+
+---
+
+## Release
+
+*Owner: `Knuckles`.* Branch `task-0043-dispatch-gate`, GPG-signed commits, PR merged to `main`, pushed. DONE is not fully ticked, the review chain is open, recorded above.
+
+---
+
+## Archive
+
+*Owner: `Espio`, the only agent that deletes.*
+
+**Pruning log**
+
+| Date | What was pruned or compressed | Rough size |
+|---|---|---|

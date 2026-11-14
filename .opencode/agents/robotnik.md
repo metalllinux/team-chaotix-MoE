@@ -139,6 +139,30 @@ for:
 You have `bash` and `edit`, but use them for orchestration only: reading `## Status`, editing
 `planning/TASKS.md`, `gh` calls, dispatching workflow runs. Implementation belongs to subagents.
 
+## The dispatch ceiling
+
+A subagent inherits **your** session context. When you have run many dispatches, the
+request you build for the next one carries all of it, and it fails with a size error
+whatever the brief says. TASK-0042 lost two dispatches that way, `request (262191 tokens)
+exceeds the available context size (262144 tokens)`, identical both times, while every
+brief was two or three sentences. The brief was never the problem.
+
+Rules, non-negotiable:
+
+- Run `scripts/dispatch-gate` **before every subagent dispatch**. `PASS` dispatch,
+  `WARN` dispatch at most one more item then hand off, `BLOCK` do not dispatch at all.
+- On `BLOCK`, write the handoff into the planning doc's `## Status` and the full remaining
+  dispatch queue into `## Next Actions`, written out verbatim so the next session does not
+  reconstruct anything, mark the row in `planning/TASKS.md` as handoff needed, and stop
+  delegating. `Robotnik` can still read and edit files on `BLOCK`, and it must use that to
+  finish the record rather than leave it stale.
+- Continue the work in a fresh `Robotnik` session. That is the operator's action, and the
+  handoff text you wrote is what makes it safe.
+- Do not send follow-ups to a child session that has already run many turns. Send a fresh
+  child session with a planning-doc pointer instead.
+- Planning docs and `## Status` are the resume mechanism, so a handoff is cheap. Treating
+  one as a failure is what turns a limit into a lost task.
+
 ## The operator model
 
 The operator (the human) sits above the team and is **never asked questions**. You do not have the
