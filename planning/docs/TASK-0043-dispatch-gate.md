@@ -10,7 +10,7 @@
 
 ## Status
 
-**Now:** Implemented, selftest green at 61 checks (baseline 56), committed on branch `task-0043-dispatch-gate`, PR opened and merged to `main`, pushed. The review chain is **not** run yet and is owed by a fresh `Robotnik` session.
+**Now:** Implemented, selftest green at 61 checks (baseline 56), committed on branch `task-0043-dispatch-gate`, merged to `main` as pull request #1, merge commit `44a017e`, pushed. Verified on `origin/main`, `scripts/dispatch-gate`, the selftest block, the AGENTS.md rule and the robotnik.md section are all present. The review chain is **not** run yet and is owed by a fresh `Robotnik` session.
 
 **Why this task exists.** In TASK-0042 two subagent dispatches failed in a row with `request (262191 tokens) exceeds the available context size (262144 tokens)`, the identical figure both times, while every brief was two or three sentences. A child session inherits the dispatcher's own context, so the limit belongs to the dispatcher, not to the brief. Learned rule r001 named the symptom. Nothing in the repo made it detectable before a dispatch failed, which is the gap this task closes.
 
@@ -103,7 +103,7 @@
 
 ## Release
 
-*Owner: `Knuckles`.* Branch `task-0043-dispatch-gate`, GPG-signed commits, PR merged to `main`, pushed. DONE is not fully ticked, the review chain is open, recorded above.
+*Owner: `Knuckles`.* Branch `task-0043-dispatch-gate`, commits `418e8b2` and the earlier record commit, GPG-verified with `git log --show-signature` as Team Chaotix. PR #1 opened and merged with `merge_method=merge`, merge commit `44a017e`. Pushed through the pre-push hook, which ran `tests/selftest.sh` and reported 61 checks. GitHub writes used the token at `~/AI/secrets/token.md` read at run time, no token in any remote URL, commit message, log, or committed file. DONE is not fully ticked, the review chain is open, recorded above.
 
 ---
 
