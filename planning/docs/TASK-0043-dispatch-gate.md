@@ -24,6 +24,8 @@
 
 **Calibration, stated as measured rather than derived.** Against this session the gate reported peak 168307, worst jump 9993, dispatcher projection 178300, child projection 285280 against 262144, which is 108.8 percent, `BLOCK`. The real failures were at 262191. The inherit ratio 1.6 came from those two numbers, 262191 against 160824 measured by the same code. The estimate is therefore fitted to one incident and is an early-warning instrument, not a precise predictor.
 
+**agentsmd initialized (2026-11-19, `Robotnik`).** `agentsmd init` needs a template and the hand-written AGENTS.md is not a template, so the store was created with `agentsmd commit`, which produced `.agentsmd/{config.yaml,pending,runs,versions}` and left `AGENTS.md` byte-identical (`git diff --stat AGENTS.md` empty). `.agentsmd/` is gitignored, so nothing was committed. Four rules are now pending operator promotion, proposed with `--task`: TASK-0041 gnome-remote-desktop TLS certificate location and stdin-only credentials, TASK-0041 injected clicks never working on Delphi dialog buttons, TASK-0042 the independent-reader legibility gate as a false-completion guard, TASK-0043 run the gate before every dispatch and give each implementation item a fresh child session. Ids `p1795094347076479955`, `p1795094347080274089`, `p1795094347082757430`, `p1795094347085128711`. Promotion is the operator's action per AGENTS.md section 16 and is not done by the team.
+
 **Deviation recorded.** The implementation was done by `Robotnik` rather than `Tails`. Delegation was impossible at the time, the session was already at the ceiling this task is about, and the operator asked for the change, commit, merge and push in the same turn. That is a departure from AGENTS.md section 1 and it is recorded rather than glossed.
 
 ---
@@ -49,7 +51,7 @@
 
 - [ ] `Robotnik`, fresh session, run the gate: `scripts/dispatch-gate`. Then dispatch the review chain for this change, `Shadow` → `Omega` → `Big` → `Charmy` → `Flicky`, one at a time.
 - [ ] `Tails`, if any reviewer finds a fault, fix it in a follow-up commit on `main`.
-- [ ] Initialize agentsmd for this project so this lesson and the TASK-0042 FreeRDP lessons can be proposed and promoted.
+- [x] Initialize agentsmd for this project, done 2026-11-19 by `Robotnik`, four rules proposed and pending. `agentsmd promote` is the operator's action.
 
 ---
 
