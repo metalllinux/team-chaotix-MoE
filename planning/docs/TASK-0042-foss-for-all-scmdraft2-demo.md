@@ -112,7 +112,8 @@
 - [x] `Tails`, dispatch 1, terrain value harvest. **Verdict, acceptance met on the precise-statement branch.** The plaintext CHK came from River Crossing through StormLib (MIT, `github.com/ladislav-zezula/StormLib` at `d60b7e6d3501474f4d92c7b9c752a37e78385f67`), built controller-side, 257441 bytes, verified head `56455220020000003b00495645520200`. The writer's invalid fields are named with the diff in `## Implementation` (Terrain value harvest): `ISOM` at `build_map.py:103` is half the required size, the real size is `4*(W+2)*(H+1)`, and it is filled with zero where both harvested maps use non-zero brush indices; the `MTXM` and `TILE` values at `build_map.py:149` span groups 0 to 255 including groups 0 and 1 that no tile of either real map uses, and harvested Jungle flat ground is groups 8 and 9 at subtile 0, values 128 and 144. Attempt 1 is closed as impossible with binary-string evidence, the `-IGNORE_PROTECTION` switch is compiled in. Four isolation maps `harvA`, `harvB`, `harvC`, `harvD` are built and left on the target, unread, because the target now refuses the screenshot call every earlier map reading used.
 - [x] `Tails`, screenshot path RESTORED 2026-11-20, no target change, verdict in `## Implementation` (Screenshot path restored) and DEMO-LOG 2026-11-20 01:40-02:10. lever (a) verdict: gnome-remote-desktop serving is NOT the cause of the `org.gnome.Shell.Screenshot` AccessDenied. `grdctl rdp disable` (unit `inactive`) leaves the raw `gdbus` call still `AccessDenied`, so the prior "denial appears only while grd serves" claim is disproven; RDP re-enabled with `grdctl rdp enable`, target unchanged. The actual gate is caller identity in gnome-shell 49: a non-screenshot D-Bus caller is denied, the recognised screenshot client is allowed. The working path is `/usr/bin/gnome-screenshot-tool -f <file>`, shipped by gnome-shell 49.4 (the 2026-11-19 "no screenshot tool installed" conclusion was wrong, it searched for the `gnome-screenshot` package). Control capture confirmed a real non-uniform desktop (9262 colours) and the real River Crossing renders full Jungle World, so the screenshot and input loop are both working. lever (b) (FreeRDP `WITH_CLIENT_INTERFACE=ON`) not needed, not started.
 - [x] `Tails`, harvA, harvB, harvC, harvD read 2026-11-20, verdict: **none render terrain**. Each launched with the seat0 export, profile dismissed with `rdp-input rdp-args key 0x1C`, captured with `gnome-screenshot-tool`. harvA, harvB, harvC, harvD each show a title bar with no map path, a collapsed Terrain palette, and a uniform grey canvas (PIL 4 colours), versus the River Crossing control (1057 colours, renders). A harvB pre/post-Enter test proves the profile was dismissed yet the map still did not load, ruling out input timing. The blocker has moved from terrain values to the **MPQ file-data encoding**: all four are wrapped by `build_map.build_mpq` storing the blob unencrypted and uncompressed (`flags = MPQ_EXISTS|MPQ_SINGLE`), while the real map that SCMDraft opens stores it encrypted and compressed (`0x80010200`). harvA/harvD carry the harvested CHK verbatim and still do not open, so the terrain values are not the open-gate. This contradicts the earlier "the container format is not the blocker" claim (doc:1069, doc:1072); both are recorded. harvA-D unchanged on the target, wineserver 62669 and the "Unused Unprotector 2" session untouched.
-- [ ] `Tails`, dispatch 2, next blocker is the container, not the screenshot and not the terrain values. Make one writer map that actually opens in SCMDraft. Recommended: write the map MPQ with StormLib on the controller (`SFileCreateArchive`/`SFileAddFile`, MIT, pinned commit `d60b7e6d3501474f4d92c7b9c752a37e78385f67`, already built under `/tmp/opencode/t0042/StormLib`) instead of `build_map.build_mpq`; alternatives are a compressed blob (`0x02`+zlib) with block flags matching `0x80010200`, or adding `(attributes)`. Acceptance is a writer map whose title bar shows its path and whose canvas shows rendered tiles, captured with `gnome-screenshot-tool`. Only then re-run the A/B/C/D isolation on maps that open, rewrite the writer with the harvested ISOM size `4*(W+2)*(H+1)`, a non-zero ISOM brush value, and Jungle ground values 128 and 144 alternating, and build map 1 at 256 by 256.
+- [x] `Tails`, dispatch 2, container blocker, **acceptance met 2026-11-20**. `slE.scm` (terrain written by code, MPQ written by StormLib `mkmpq`) opens in SCMDraft 2 with the title bar showing its path and the canvas rendering flat alternating Jungle ground, canvas 143 colours, captured with `gnome-screenshot-tool`. Two gates were real: the `build_map.build_mpq` container is rejected (harvA vs slA, same CHK bytes), and the writer's own CHK content was rejected even inside the accepted container until fixed (`STR` real layout without the added count, `MASK` `0xFF`, no `IVE2`, harvested family sections). `slD` proves SCMDraft draws terrain from written `TILE`/`MTXM`, not from ISOM. Verdict and writer baseline in `## Implementation` (StormLib container and CHK content fix) and DEMO-LOG 2026-11-20 02:40-03:10. Not run: single-fix bisect, slE re-open persistence, booth-sim (slE is a flat field, not a design).
+- [ ] `Tails`, dispatch 3. Build map 1 `foss-for-all` at the maximum 256 by 256 extent with the proven writer pipeline: `build_slE`-structure CHK (harvested family sections, ISOM `4*(W+2)*(H+1)` of `0x10`, design mask written into `MTXM`/`TILE` one u16 per tile, 128/144 flat ground background) wrapped by `mkmpq plain`, then the legibility gate artifacts, editor screenshot, 4x booth simulation, coverage numbers, and an independent reader. Calibrate a contrasting terrain pair from `rc.chk`'s group inventory before any glyph work.
 - [x] `Tails`, the harvA-to-harvD read that this bullet describes, SUPERSEDED by the completed item two lines above. harvA-D were launched and captured 2026-11-20 and none render terrain, because none open. The "rewrite the writer with the harvested values" step is now gated on a writer map that opens at all (the container item above), not on the screenshot. Any protected map on the target remains readable with `chkdump`, so the terrain reference for every tileset is still available.
 - [x] `Tails`, dispatch 1, terrain value harvest, the same item marked complete above. The brief is kept verbatim below for the record. Objective, obtain one plaintext CHK from a map that SCMDraft 2 actually renders, because those terrain values are the only trustworthy source of valid TILE group and ISOM pairs. Order of attempts. 1, find a SCMDraft 2 save or options setting that writes without Blizzard map protection, using the upstream options documentation at stormcoast-fortress rather than guessing at the UI, driven by keyboard commands because dialog buttons do not respond to injected clicks. 2, a published open-source CHK or MPQ tool, with its upstream repository and licence recorded before anything is installed. 3, the bitmap-to-terrain generator already recommended at doc:984, same licence-first rule. Then diff the real map's terrain encoding against the writer at `/tmp/opencode/t0042/build_map.py` and name the invalid field. Acceptance, either a code-written map that renders terrain in SCMDraft, or a precise statement of which field of the writer is wrong and why. Reuse the proven launch method recorded in the previous pass, the seat0 Wayland environment export, and do not kill processes the dispatch did not start.
 - [ ] `Tails`, dispatch 2, only after dispatch 1 lands. Build map 1 `foss-for-all` at full 256 by 256 extent with the corrected encoding, then the four remaining maps, each with the legibility gate artifacts, editor screenshot, minimap screenshot, 4x booth simulation, coverage numbers, and an independent reader.
@@ -1349,6 +1350,81 @@ Target: no package, no repo change, no file, no process started. `harvA-D` uncha
 **Checks run.** grd disable then gdbus (denied persists); grd enable (restored); `rpm -qa --last` (graphical stack unchanged since 2026-11-13); `gnome-screenshot-tool -f` (rc 0, real 1920x1080 PNG); River Crossing control (renders Jungle World); harvA-D canvas PIL (4 colours each); harvB pre/post-Enter (splash then editor, map not loaded); final target state (no scmdraft, wineserver present, grd active/enabled, harv maps unchanged).
 
 **Checks NOT run (named honestly).** No booth-simulation artifact, no colour-coverage measurement, and no independent reader, because no harv map rendered terrain. The A/B/C/D isolation is inconclusive (none opened). Whether a StormLib-written or compressed-blob map opens in SCMDraft was not tested this dispatch. lever (b) (FreeRDP `WITH_CLIENT_INTERFACE=ON` rebuild) was not started, because a working screenshot path exists.
+
+---
+
+### StormLib container and CHK content fix (2026-11-20, `Tails`, dispatch 2, acceptance met)
+
+Objective: make one writer-produced map open in SCMDraft 2 by replacing `build_map.build_mpq`
+with an MPQ written through the already-built StormLib. **`slE.scm` meets acceptance**: title bar
+`ScmDraft 2.0 (Beta 0.9.10) - [/home/howard/scmdraft-maps/probe/slE.scm ]`, canvas shows rendered
+flat alternating Jungle ground tiles, canvas 143 distinct colours (full frame 934), captured with
+`/usr/bin/gnome-screenshot-tool`. Continuous log: DEMO-LOG 2026-11-20 02:40-03:10.
+
+**Two gates existed, and both are now characterised.** The 2026-11-19/20 blocker was never one
+thing. Gate 1, container: `harvA` (harvested CHK in `build_map.build_mpq`) does not open; `slA`
+(the same 257441 CHK bytes in a StormLib archive) opens and its canvas is pixel-identical to the
+River Crossing control (66 changed sample points of 129600; diff bbox `(286,43)-(630,56)` is the
+title text only). Gate 2, CHK content: the writer's own CHK fails even inside the accepted
+container (`slB` plain, `slC` zlib, both no-title-path grey). This resolves the contradiction held
+open at doc:1074 versus doc:1343: the hand-rolled container is rejected, StormLib's is accepted,
+and the 2026-11-14 "container accepted / opened with clean title bar" claim is now contradicted by
+its own images, the `calib3` title strip (`/tmp/opencode/t0042/strip-calib3.png`) shows `9.10)` with
+no map path, the same signature as the harv failures. The 2026-11-14 `t0042-calib-open.png` lives
+only on the target and was not re-read this pass, named as not run.
+
+**Alternatives considered.** Option A, StormLib `SFileCreateArchive`/`SFileAddFileEx`
+(MIT, pinned `d60b7e6d3501474f4d92c7b9c752a37e78385f67`, already built under
+`/tmp/opencode/t0042/StormLib`), chosen per the dispatch brief and it worked. Option B, hand-rolled
+compressed blob (`0x02`+zlib, block flags near `0x80010200`) and Option C, adding `(attributes)`:
+not needed. StormLib's own zlib path was tested anyway (`slC`, blob 1759 stored of 40949, flags
+`0x80000200`) and shows compression per se is neither required nor sufficient; content gates it.
+StormLib cannot reproduce the real maps' `0x80010200` exactly because the `ENCRYPTED` bit would
+carry StormLib's standard name-derived key, not the SC key; that turned out not to matter, SCMDraft
+opens unprotected StormLib archives.
+
+**Writer baseline is now `mk_slDE.py::build_slE` (`/tmp/opencode/t0042/mk_slDE.py`) plus
+`mkmpq` (`/tmp/opencode/t0042/mkmpq.c`).** The CHK defects found by section diff against the
+harvest, all fixed in slE at once: `STR` must be 1024 `u16` offsets then NUL-terminated strings, no
+leading count dword-word the writer added; `MASK` all `0xFF` as in every harvested map, not zero;
+no `IVE2` section, real maps do not carry it; include `IOWN`, `PUNI`, `UPGR`, `PTEC`, `UPRP`,
+`UPUS`, `MRGN`, `WAV `, `UNIS`, `UPGS`, `TECS` (copied from the harvest; `TRIG`/`MBRF` empty).
+Terrain recipe proven: `MTXM`==`TILE` checkerboard of harvested values 128/144, `ISOM` =
+`4*(W+2)*(H+1)` bytes all `0x10`, `VER` 59, harvested `VCOD`. **`slD` proves `TILE`/`MTXM` drive
+the render**: slD carries the harvested map's original ISOM (dominant 64) yet renders the writer's
+flat 128/144 field, so SCMDraft does not regenerate terrain from ISOM when TILE is written.
+Which single slE fix is the open-gate is not isolated (named not run).
+
+**Changes table.** Controller: `mkmpq.c`/`mkmpq` new (StormLib writer), `build_map2.py` new
+(corrected-terrain CHK, superseded by `build_slE` for the open-gate fixes), `mk_slDE.py` new (slD,
+slE), `analyze_sl.py`, `sl.sha256`, captures `sl{rc,A,B,C,D,E}-shot.png`, crops `strip-*.png`,
+`canvas-*.png`, all under `/tmp/opencode/t0042`, none in git. Target: five maps
+`~/scmdraft-maps/probe/sl{A,B,C,D,E}.scm` left in place (`rm -f` inverse in DEMO-LOG),
+`/tmp/run_sl.sh` created then removed, captures and `/tmp/sl.log` removed, `/tmp/stage` auto-created
+by scp then removed, five new `Scm*.tmp` SCMDraft backups left with `rm -f` inverse recorded.
+No package, no repo, no registry change, no credential on a command line, nothing committed.
+
+**Checks run.** `cmp` round-trip through StormLib read for all five archives; block-table decode
+(blob flags `0x80000000` plain / `0x80000200` zlib, `(listfile)` `0x80030200`, standard table keys);
+six captures with PIL counts (rc 275, slA 275, slB 81, slC 81, slD 273, slE 143 canvas colours);
+title strip reads (path present for slA/slD/slE, absent for slB/slC/calib3); slA-vs-control pixel
+diff; final target state clean (no ScmDraft, pre-existing `wineserver` 62669 untouched, grd active,
+harvA-D unchanged).
+
+**Checks NOT run (named honestly).** Single-fix bisect of slE; re-open persistence of slE; map
+validation dialog; booth-sim and colour-coverage on slE (flat field, not a design); zlib storage of
+the fixed CHK; re-read of the 2026-11-14 target-side calib screenshot.
+
+**Recommendation for the next dispatch.** The writer pipeline is proven end to end, code terrain
+to opening, rendering map. Build map 1 `foss-for-all` at 256 by 256 with `build_slE`-structure CHK
+(same harvested family sections, 256-scale ISOM `4*(W+2)*(H+1)`, design mask written into MTXM/TILE
+one u16 per tile, 128/144 ground as background) wrapped by `mkmpq plain`, then run the legibility
+gate: editor screenshot, 4x booth simulation, coverage numbers, independent reader (`Shadow`).
+Raise contrast against the flat ground only after a rendering variant with a second terrain type is
+calibrated from the harvest (`rc.chk` group inventory gives more than 128/144; Bottleneck gives the
+Badlands pair 4 and 5). A cheap side experiment can isolate the slE gate family (try slE minus the
+added sections, or slB with only the STR fix) if any future hand-rolled writer is ever considered;
+it is otherwise not load-bearing, `mkmpq` is the writer now.
 
 ---
 
