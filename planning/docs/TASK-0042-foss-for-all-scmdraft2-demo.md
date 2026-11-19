@@ -15,7 +15,17 @@
 
 **PM handoff required, this session can no longer dispatch (2026-11-15).** Two dispatch attempts failed with request 262191 tokens against the 262144 context limit, the same number both times, and what the child inherits is this session's own context. That is learned rule r001, and the remedy is a fresh `Robotnik` session in this directory rather than a smaller brief. `Robotnik` can still edit files, so the record is completed here instead of left stale. Everything a fresh session needs is in this doc, in `planning/docs/TASK-0041-remote-visual-control.md`, and in `DEMO-LOG.md`, and `## Next Actions` now carries the next dispatch written out verbatim so it does not have to be reconstructed from memory.
 
-**Now (2026-11-20):** Map 1 `foss-for-all` is rebuilt on Ice World at 256 by 256, WCAG 7.423 on the map's own render and 6.709 on the booth simulation, against the 3.0 gate. Tileset contrast was measured across seven tilesets from 157 harvested plaintext CHKs, and Jungle, Ash, Twilight and Badlands all fail the gate, which retires Jungle for booth use outright. Maps 2 to 5 use Ice World or Space Platform.
+**Now (2026-11-20):** `Shadow`'s read of maps 2 and 3 cleared the technique question and found two real defects. The technique carries silhouettes, the heart reads at 64 px and at 32 px, the shield chamfer survives 4x, so the GR-graphics contingency stays closed. But map 2 is not the Rocky logo, and the booth artifact the DoD asks for does not actually exist as a real render. Maps 2 and 3 are being rebuilt before maps 4 and 5 are attempted.
+
+**Robotnik decision on the Rocky mark (2026-11-20, recorded rather than asked).** The correct Rocky mark is a disc with a 45-degree chevron notch through its lower right in `#10B981`, not a shield with an internal R. Evidence is the distro's own shipped assets on this host, `/usr/share/icons/hicolor/scalable/apps/start-here.svg` and `/usr/share/pixmaps/fedora-logo.png` from `rocky-logos-100.5-3.el10`. The error originated in the plan at doc:202 and doc:766 and was inherited by `rocky.py:10-13`, so the fix is a mask fix built from the shipped SVG, and `## Plan` is wrong on this point. `Shadow` rasterized the correct mark at 58.10 percent coverage and its booth renders read as Rocky at 128 px and 64 px.
+
+**Robotnik decision on the booth artifact (2026-11-20).** The DoD's 4x booth-simulation artifact must be a downscale of a real SCMDraft render of the whole map. A 4x downscale of a viewport parked inside the design is not a booth simulation, and a code-generated flat-tone mask render is a design preview, not evidence, because it contains no SCMDraft pixel. From now on the whole-map real render is the captured editor overview thumbnail, and the booth artifact is derived from that capture. Files generated from the mask are renamed to say so, and any future report that labels a synthetic render as a booth simulation is a false completion.
+
+**Robotnik decision on map 3 (2026-11-20).** A map named `rocky-with-heart` must contain Rocky and a heart, which the current build does not. It is rebuilt as the corrected Rocky disc carrying a heart.
+
+**Robotnik decision on brand green (2026-11-20).** StarCraft terrain cannot carry `#10B981`, so the Rocky maps use the measured Ice tones at 192 on 64 and the brand-colour claim is recorded as out of scope with the tileset measurement as the reason. Any documentation of these maps states the palette honestly rather than describing them as Rocky green.
+
+**Earlier state (2026-11-20, superseded by the paragraphs above):** Map 1 was rebuilt on Ice World at WCAG 7.423 on its own render and 6.709 on the booth simulation. Tileset contrast was measured across seven tilesets from 157 harvested plaintext CHKs, and Jungle, Ash, Twilight and Badlands all fail the 3.0 gate, which retires Jungle for booth use outright. Maps 2 to 5 use Ice World or Space Platform.
 
 **Robotnik ratification (2026-11-20).** `Tails` renamed the superseded Jungle build `superseded-foss-for-all-jungle.scm` and flagged the naming as its own extension rather than a decision it owns. Ratified. The three-name scheme is now `foss-for-all.scm` for the current build, `superseded-` for a build that worked but was replaced, and `rejected-` for a build that failed its gate. Booth selection cannot reach either prefixed file.
 
@@ -1733,6 +1743,95 @@ I agree with all three builder figures as stated, and I measured the design cove
 **Technique fitness for maps 2 to 5: fit to proceed, with the contrast fix applied first.** Letterforms with internal counters are the hardest case this technique has, and they read at 4x. Filled silhouettes (Rocky's shield body, the heart, the Korean peninsula outline, Tux's body) have larger features and no counters to lose, so they should read more easily. Two conditions. (1) The contrast finding above should be resolved before maps 2 to 5 are built, because Rocky's shield carries the internal counter of the R and Tux carries a belly-to-body contrast, and those are exactly the features that a 1.2 contrast ratio washes out under hall lighting. (2) The booth-artifact definition and the presentation plan should be settled first, so the four maps are gated against the right artifact rather than the viewport-slice shape. The GR-graphics contingency at doc:1445 stays closed on the evidence in front of me; it reopens if the brighter-pair calibration cannot reach ratio 2 in any tileset.
 
 **Not in my remit and still open, restated so the gate row is not over-read:** SCMDraft 2 map-format validation has been run on no saved map (doc:1465). The literal in-game minimap has been captured for no map. Playability fallback (c) at doc:79 therefore has no evidence yet.
+
+---
+
+### Maps 2 and 3 independent legibility read, 2026-11-20
+
+Read of `rlogo-100.png`, `rlogo-jump.png`, `rlogo-25.png`, `rlogo-z25.png`, `rlogo-reopen.png`, `rlogo-reopen-thumb.png`, `rocky-logo-mm.png`, `rocky-logo-mm-2x.png`, `rocky-logo-booth4x.png`, `rocky-logo-maskrender-booth4x.png`, `rheart-100.png`, `rheart-jump.png`, `rheart-reopen.png`, `rheart-reopen-thumb.png`, `rocky-with-heart-mm.png`, `rocky-with-heart-mm-2x.png`, `rocky-with-heart-booth4x.png`, `rocky-with-heart-maskrender-booth4x.png`, and `maps23_report.json`. My own measurements and booth simulations are at `/tmp/opencode/shadow-t0042/` (`measure.py`, `geom.py`, `boothsim.py`, `boothsim_inv.py`), reproducible with `python3` against `/tmp/opencode/t0042`. The reference Rocky artwork I measured against is the distro's own, `/usr/share/pixmaps/fedora-logo.png` and `/usr/share/icons/hicolor/scalable/apps/start-here.svg` from `rocky-logos-100.5-3.el10`, which is the `rocky-logos` package installed on this host (`rpm -qa | grep -i logos`).
+
+### Map 2 is not the Rocky logo, and the plan is where the error starts
+**Severity:** blocker
+**Where:** `/tmp/opencode/t0042/rocky.py:10-13`, `maps23_report.json`, doc:202, doc:766, doc:1567
+**Problem:** the Rocky Linux mark is a disc with a 45-degree chevron notch cut through its lower right, in Rocky green `#10B981`. There is no shield and there is no internal R. The mask that was built is a chamfered badge tapering to a single point at the bottom, which is a generic shield, home plate, or name-badge shape.
+**Failure scenario:** on 2026-11-28 a visitor at the booth who knows Rocky looks at `~/scmdraft-maps/rocky-logo/rocky-logo.scm`. I read the whole-map real render at native size, at 127 px map body, and downscaled to 64 px (`rocky-logo-thumb127.png`, `rocky-logo-thumb-booth64.png`). At every size it reads as a chamfered badge with a pointed bottom. I could not read it as Rocky at any size. The map named `rocky-logo` does not depict the Rocky logo, so the DoD design-intent row and the Rocky-branded half of the demo's story both fail on shape, not on rendering.
+**Suggested direction:** rebuild the map 2 mask from the shipped geometry. I rasterized it from `start-here.svg` (disc r=128 at (128,128), notch band of two 45-degree arms through (36.77,217.79), (166.61,87.94), (248.88,170.21), band thickness 45 tiles), `boothsim.py`, coverage 58.10 percent of 65536 tiles. Its 128 px and 64 px booth renders read as the Rocky mark in both polarities (`rocky-mark-reference-booth128.png`, `rocky-mark-reference-booth64.png`, `rocky-mark-inverted-booth64.png`). The notch is a 45-tile band open to the rim at both ends, so it is an outline feature and not an internal counter, and this technique resolves it. Correct the plan rows too, doc:202 and doc:766, since `rocky.py` inherited the wrong description from them.
+
+### The booth-simulation artifact the DoD names does not exist for maps 2 and 3
+**Severity:** blocker
+**Where:** `/tmp/opencode/t0042/rocky-logo-booth4x.png`, `rocky-with-heart-booth4x.png`, `measure_silhouette.py:111`, doc:94
+**Problem:** the DoD defines the booth artifact as the editor screenshot downscaled about 4x. The two files named `-booth4x.png` are 4x downscales of a main-canvas viewport parked inside the design, not of the design. My independent count on the same crop the builder used (155,105,1878,832) is 97.61 percent dark terrain for map 2 and 39.91 percent dark for map 3, and the builder's own report records 97.73 percent for map 2. Map 2's frame is the interior of the glyph with a small wedge of ground in one corner. Map 3's frame is one diagonal boundary staircase. Neither contains the silhouette.
+**Failure scenario:** a reader ticking the legibility gate opens `rocky-logo-booth4x.png`, sees a dark field with a light staircase in the lower-left corner, and can verify nothing about the shape. That is exactly the situation the gate was added to prevent on 2026-11-14, reproduced with better numbers.
+**Suggested direction:** promote the whole-map real render, `<name>-mm.png` and `<name>-mm-2x.png`, to the gate artifact for these maps and generate a 4x downscale of that crop (I made `rocky-logo-thumb-booth64.png` and `rocky-with-heart-thumb-booth64.png` from the 127x127 map body as an example of what the box should be asking for). Re-capture a main-canvas frame at a zoom and viewport that frames the whole silhouette, or record in the run script that the whole-design view at this target is the overview thumbnail only.
+
+### `-maskrender-booth4x.png` is a synthetic calibration render, and the report labels it a booth sim
+**Severity:** should-fix
+**Where:** `measure_silhouette.py:115-121`, `maps23_report.json` `booth_sim_wcag`, `rocky-logo-maskrender-booth4x.png`, `rocky-with-heart-maskrender-booth4x.png`
+**Problem:** those two images are generated in code from the boolean mask plus the two dominant tones lifted from the main-canvas crop. No SCMDraft pixel is in them. They contain no tile texture, no tile-grid structure, and no editor chrome, so they carry no information about how the terrain engine draws the shape. They are useful as a clean-shape reference. They are not a simulation of the booth.
+**Failure scenario:** `maps23_report.json` lists `booth_sim_wcag` 6.745 next to a real-render WCAG of 6.745 for both maps, and the two numbers are not the same kind of measurement. A reader compares the synthetic figure against map 1's real 6.709 booth figure (doc:146) and concludes the maps were measured the same way. They were not.
+**Suggested direction:** rename the field and the files to say calibration render, and let the booth figure be the whole-map real thumbnail render, which for these maps is the honest measurement I could make.
+
+### `rocky-with-heart` contains no Rocky, only a heart
+**Severity:** should-fix
+**Where:** `rocky.py:58-74`, doc:203, doc:767
+**Problem:** the plan describes map 3 as the Rocky logo with a heart. The mask renders a heart alone. The builder recorded this choice honestly at doc:1567 (Option C rejected because a heart counter inside a shield is an internal counter), so it is a decision, not an oversight, but the decision leaves the map's own name half-empty.
+**Failure scenario:** the documentation repo and the booth script describe map 3 as Rocky with a heart. The audience sees a heart. Someone asks which Rocky element is in it, and the honest answer is none.
+**Suggested direction:** either put both shapes in the map once map 2's mask is corrected (a disc-plus-notch mark and a heart as two separate filled shapes, both silhouette-class, which is what the technique can hold), or rename the design intent in the record so map 3 is described as the heart and the pairing is stated as a sequence across maps 2 and 3 rather than one map containing both.
+
+### The contrast figure. I agree with the number, and it is a floor rather than an overstatement
+**Severity:** nit, agreement recorded
+**Where:** `maps23_report.json`, `measure_silhouette.py:38-54`
+**Problem:** none with the value. The report derives three identical 6.745 figures (`thumbnail_wcag`, `main_render_contrast.wcag`, `booth_sim_wcag`) from one pair of dominant tones, ground (176,176,176) against glyph (36,40,56), so one measurement is presented as three.
+**Failure scenario:** none for the gate. The risk is presentational, a reader counts three independent confirmations of contrast when there is one.
+**My measurements, `measure.py`.** Region-mean contrast on the real whole-map thumbnail render: map 2 ground (192,192,192) against design (36,40,56) gives 8.040, map 3 ground (190,190,190) against design (36,40,56) gives 7.870. Region-mean on the main-canvas frames: 8.957 and 6.764. Tone spreads present in the renders are design 0.0118 to 0.0544 relative luminance across 15 tones and ground 0.3325 to 1.0000 across 9 tones, so the worst pair that actually appears in the pixels is 0.3325 against 0.0118, which is 6.19. Every pair I computed is above the 3.0 gate with margin. I agree with 6.745 as the reported figure and I confirm the contrast gate passes on both maps.
+
+### Coverage 46.31 and 36.84 percent confirmed by an independent measure on the real render
+**Severity:** nit, agreement recorded
+**Where:** `maps23_report.json` `code_coverage_pct`, `thumbnail_dark_share_pct`
+**Problem:** the report's thumbnail dark shares 40.41 and 32.16 percent are diluted by the overview panel's margins, because the 134x140 crop contains non-map pixels around the 127x127 map body. The two coverage numbers in the same file are therefore not comparable to each other without saying so.
+**Failure scenario:** a reader treats 40.41 percent as the map coverage and reports a 6-point discrepancy against 46.31 percent, or a future crop change silently shifts the number.
+**My measurements.** Dark share over the 127x127 map body of the real render: map 2 47.00 percent against 46.31 percent claimed, map 3 37.41 percent against 36.84 percent claimed. Both within 0.7 points. The code coverage figures are correct. State the crop so the percentage is reproducible.
+
+### The gate-artifact filenames in `## Next Actions` do not exist on disk
+**Severity:** nit
+**Where:** doc:154, `/tmp/opencode/t0042/`
+**Problem:** doc:154 names `rocky-logo-jump.png` and `rocky-with-heart-jump.png`. No such files exist. The captures are named `rlogo-jump.png`, `rlogo-100.png`, `rlogo-reopen.png` and `rheart-jump.png`, `rheart-100.png`, `rheart-reopen.png`. The `-100.png` and `-reopen.png` forms named in the dispatch brief are likewise absent.
+**Failure scenario:** `Vector` writes the booth run script or the documentation repo from doc:154 and cites files a reader cannot open, and the gate reads as unevidenced.
+**Suggested direction:** one artifact table with the real filenames, or rename the captures to the `<map>-*` scheme the record already uses for the derived artifacts.
+
+### The measured presentation constraint at this target, which the booth script needs
+**Severity:** nit
+**Where:** `geom.py` on `rlogo-100.png`, `rlogo-25.png`, `rlogo-z25.png`
+**Problem:** the editor canvas interior is 1723x727 px and the terrain grid pitch measures 32 px in both axes (54 vertical lines, 23 horizontal lines, spacing 32 in all measured gaps), so the viewport at 100 percent shows about 54 by 23 tiles. Map 2's design is 203x198 tiles and map 3's is 170x196. The whole design can never be framed in the canvas at 100 percent, and the 25 percent attempts never applied, since `rlogo-25.png` and `rlogo-z25.png` both still read Zoom 100 in the toolbar and both measure the same 32 px pitch. The only whole-design view at this target is the overview thumbnail at 127x127 px, about 7 percent of a 1920-wide screen.
+**Failure scenario:** the presenter opens `rocky-logo.scm` at the default zoom in front of the audience and sees flat ground (which is what `rlogo-100.png` shows), because the viewport opens at the map origin, outside the silhouette bbox.
+**Suggested direction:** the run script must state the overview thumbnail as the whole-design view for maps 2 to 5, and enlarge it for the audience (the editor window maximized, or a captured whole-map render displayed outside the editor). Same finding I recorded for map 1 at doc:1700, now measured rather than inferred.
+
+### Brand colour cannot be carried by Ice World, and that needs a recorded disposition
+**Severity:** nit
+**Where:** `maps23_report.json` glyph (36,40,56), `start-here.svg` `fill="#10B981"`
+**Problem:** the Rocky mark is Rocky green. Maps 2 and 3 render dark navy on light grey Ice World tiles. That is an accepted difference against the reference artwork, and the record does not yet say it is accepted.
+**Failure scenario:** the review chain or the operator checks the maps against the Rocky brand and finds an undocumented difference, which is the same class of gap the icon-parity rule in `AGENTS.md` section 7 exists to catch.
+**Suggested direction:** record the disposition in the map notes, terrain tone is chosen by measured contrast and not by brand colour, and the brand match is carried by the shape and by the booth narration rather than by tile colour.
+
+### Correction to my own 2026-11-20 findings on this batch's shape risk
+**Severity:** nit, correction to my own earlier finding
+**Where:** doc:1617, doc:1733
+**Problem:** I wrote that Rocky's shield carries the internal counter of the R and that maps 2 to 5 are therefore at counter risk. Both halves are wrong. There is no shield and no R in the Rocky mark, verified above against the distro's own assets, so the counter risk I named for map 2 does not exist. My conclusion at doc:1733 that filled silhouettes should read more easily than letterforms still holds, and it is now measured rather than predicted.
+**Failure scenario avoided:** a reader taking doc:1733 literally would ask `Tails` to carve an R that the real logo does not have.
+
+### Maps 2 and 3 legibility verdict
+**Map 3 `rocky-with-heart`, PASS on the shape that is in it.** The heart is unmistakable. It reads as a heart in the native overview thumbnail, in the 2x enlargement, in my 127 px map-body crop, downscaled to 64 px, and downscaled to 32 px, where it is small but still reads as a heart with two lobes and a point. The re-opened render (`rheart-reopen.png`, `rheart-reopen-thumb.png`) shows the same shape, so re-open persistence is visually confirmed and not just hash-confirmed. What I cannot resolve about map 3 is the map's own name, see the finding above, and whether the heart is meant to be paired with a Rocky mark in the same map.
+
+**Map 2 `rocky-logo`, FAIL on identifiability as the Rocky logo, PASS as a shape.** The silhouette itself survives booth downscaling cleanly. At 64 px the chamfered top, the straight sides, and the single bottom point are all still there, so the technique demonstrably carries this shape with its corners intact. It does not read as Rocky, because the shape is not the Rocky mark. The internal lettering question has a flat answer for this map, `rocky.py:12-13` puts no lettering in the mask at all, so nothing internal was lost at distance, and the real Rocky symbol carries no lettering either, so there was nothing to lose.
+
+**Coverage and contrast, agreement with the builder.** 46.31 and 36.84 percent coverage confirmed to within 0.7 points by measurement on the real render. 6.745 confirmed as a conservative floor, my independent figures are 6.19 worst-case, 6.745 dominant-tone, 7.870 to 8.957 region-mean, all above the 3.0 gate. I agree with the builder's numbers and I disagree with two of their labels, see the booth-simulation and calibration-render findings.
+
+### Ruling on the question this read was staged to answer
+**The programmatic terrain technique carries silhouettes. The GR-graphics contingency stays closed.** Maps 4 `republic-of-korea` and 5 `tux` may proceed on `build_ts.py silhouette` at Ice World 192 on 64. The evidence is that this batch's shapes survived a 4x downscale intact, the heart survived an 8x downscale, the shield's corners survived, and the correct Rocky mark, which is the harder silhouette in this family because its identity sits in a 45-tile notch cut out of a disc, reads at both 128 px and 64 px (`rocky-mark-reference-booth128.png`, `rocky-mark-inverted-booth64.png`). Shape risk is not what is blocking these maps. Shape *selection* is what is blocking map 2, and that is a mask fix, not a tooling change.
+
+Two conditions I attach to that ruling. (1) `tux` is not a pure silhouette in the plan's own description, doc:769 lists body and feet against a background, and the belly-to-body contrast I named at doc:1733 is a genuine two-tone internal feature. Build Tux as one filled body silhouette first and gate it as a silhouette. Add a belly only if the filled version passes. (2) `republic-of-korea` as a peninsula outline is silhouette-class and should carry. The Taegeuk option at doc:768 needs a second contrasting tone inside the shape plus four trigram marks, which is a counter problem, and it should not be built on the strength of this read.
+
+**What I could not resolve, stated so the gate row is not over-read.** No StarCraft in-game render or literal in-game minimap exists for either map, so legibility here is legibility in SCMDraft 2's renderer, not in the game engine, and the DoD minimap box at doc:81 remains met only by the proxy `Robotnik` already recorded at doc:28. The tile elevation class of values 192 and 64 is untested, so if 192 is a high or transition tile class the game could draw cliff faces along the silhouette boundary that the editor does not show; nothing in these captures measures that. Physical booth distance is not measured either, my booth sims are pixel downscales of editor captures, not a screen at a distance in a lit hall. And SCMDraft 2's own map-validation dialog has still been run on no saved map, which is outside my remit and still open for the review chain.
 
 ---
 
