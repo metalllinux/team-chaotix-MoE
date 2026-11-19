@@ -110,8 +110,8 @@
 - [ ] `Omega`: supply-chain ruling on COPR `forecastwolf157/Wine-test` and Flatpak Wine from Flathub as the demo's two Wine runtimes, and on the final repo set left on the target.
 - [ ] Dispatch queue for the fresh `Robotnik` session, in this order, one at a time, each in its own fresh child session.
 - [x] `Tails`, dispatch 1, terrain value harvest. **Verdict, acceptance met on the precise-statement branch.** The plaintext CHK came from River Crossing through StormLib (MIT, `github.com/ladislav-zezula/StormLib` at `d60b7e6d3501474f4d92c7b9c752a37e78385f67`), built controller-side, 257441 bytes, verified head `56455220020000003b00495645520200`. The writer's invalid fields are named with the diff in `## Implementation` (Terrain value harvest): `ISOM` at `build_map.py:103` is half the required size, the real size is `4*(W+2)*(H+1)`, and it is filled with zero where both harvested maps use non-zero brush indices; the `MTXM` and `TILE` values at `build_map.py:149` span groups 0 to 255 including groups 0 and 1 that no tile of either real map uses, and harvested Jungle flat ground is groups 8 and 9 at subtile 0, values 128 and 144. Attempt 1 is closed as impossible with binary-string evidence, the `-IGNORE_PROTECTION` switch is compiled in. Four isolation maps `harvA`, `harvB`, `harvC`, `harvD` are built and left on the target, unread, because the target now refuses the screenshot call every earlier map reading used.
-- [ ] `Tails`, next, restore a screenshot path on the target before any further map verification. `org.gnome.Shell.Screenshot.Screenshot` returns `AccessDenied: Screenshot is not allowed` through both `gdbus` and `dbus-send`, `org.gnome.Screenshot` has no object at `/org/gnome/Screenshot`, `gnome-screenshot` is not installed, and `ScreenSaver.GetActive` is false (DEMO-LOG 2026-11-19). Cheapest candidate is `dnf install gnome-screenshot` from an already enabled repo with NEVRA and the removal command recorded. The fallback that touches the target not at all is framebuffer capture inside the team's own FreeRDP client, since `freerdp-devel` is already on the controller. Then read `harvA`, `harvB`, `harvC`, `harvD` in that order and record which render.
-- [ ] `Tails`, dispatch 2, blocked on the screenshot item above, not on the harvest. Rewrite the writer with the harvested ISOM size `4*(W+2)*(H+1)`, a non-zero harvested ISOM brush value, and Jungle ground values 128 and 144 alternating, then build map 1 at 256 by 256. Any protected map on the target is now readable with `chkdump`, so the terrain reference for every tileset is available.
+- [ ] `Tails`, screenshot-path restoration ran 2026-11-20 and is BLOCKED, verdict in `## Implementation` (Screenshot path restoration) and DEMO-LOG 2026-11-20. Both named candidates failed with evidence. Candidate 1 (`dnf install gnome-screenshot` from an enabled repo) cannot run: `dnf repoquery --available gnome-screenshot` is empty across all eight enabled repos, so it needs a new repo, which the brief forbids. Candidate 2 (FreeRDP framebuffer read, target untouched) built and runs (`/tmp/opencode/t0042/rdp-shot.c`, connects to gnome-remote-desktop, RDPGFX caps confirm 107, `CreateSurface 0`, four `CAPROGRESSIVE` frames) but captures a uniform white buffer (PIL 1 colour, luma 255) because `gdi->gfx` is nil and `rdpgfx_client_context_new` is not exported in this distro FreeRDP 3.32 (`WITH_CLIENT_INTERFACE=OFF`). No install on the target, target unchanged, harvA to harvD still unread. Next lever, in cost order: (a) target-side, test whether disabling or reconfiguring gnome-remote-desktop lifts the `org.gnome.Shell.Screenshot` denial that TASK-0041 proved (the denial appears only while grd serves), recorded with its inverse, since that restores the already-proven screenshot and input loop; (b) controller-side, build FreeRDP with `WITH_CLIENT_INTERFACE=ON` so rdp-shot can bind the gfx pipeline; (c) controller-side, render via xfreerdp into a window and grab that window. Then read `harvA`, `harvB`, `harvC`, `harvD` in that order and record which render.
+- [ ] `Tails`, dispatch 2, blocked on the screenshot item above, not on the harvest. Once a screenshot path works, launch harvA to harvD in SCMDraft 2 under the proven seat0 session export, capture each with the restored path, and record which render terrain. Only then rewrite the writer with the harvested ISOM size `4*(W+2)*(H+1)`, a non-zero harvested ISOM brush value, and Jungle ground values 128 and 144 alternating, and build map 1 at 256 by 256. Any protected map on the target is already readable with `chkdump`, so the terrain reference for every tileset is available.
 - [x] `Tails`, dispatch 1, terrain value harvest, the same item marked complete above. The brief is kept verbatim below for the record. Objective, obtain one plaintext CHK from a map that SCMDraft 2 actually renders, because those terrain values are the only trustworthy source of valid TILE group and ISOM pairs. Order of attempts. 1, find a SCMDraft 2 save or options setting that writes without Blizzard map protection, using the upstream options documentation at stormcoast-fortress rather than guessing at the UI, driven by keyboard commands because dialog buttons do not respond to injected clicks. 2, a published open-source CHK or MPQ tool, with its upstream repository and licence recorded before anything is installed. 3, the bitmap-to-terrain generator already recommended at doc:984, same licence-first rule. Then diff the real map's terrain encoding against the writer at `/tmp/opencode/t0042/build_map.py` and name the invalid field. Acceptance, either a code-written map that renders terrain in SCMDraft, or a precise statement of which field of the writer is wrong and why. Reuse the proven launch method recorded in the previous pass, the seat0 Wayland environment export, and do not kill processes the dispatch did not start.
 - [ ] `Tails`, dispatch 2, only after dispatch 1 lands. Build map 1 `foss-for-all` at full 256 by 256 extent with the corrected encoding, then the four remaining maps, each with the legibility gate artifacts, editor screenshot, minimap screenshot, 4x booth simulation, coverage numbers, and an independent reader.
 - [ ] `Shadow`, independent read of every booth-simulation artifact, per the legibility gate in `## Definition of Done`.
@@ -1281,6 +1281,48 @@ known, rewrite `/tmp/opencode/t0042/build_map.py` with the harvested ISOM size
 alternating pattern, then build map 1 at 256 by 256. 4, the harvest route itself is now cheap and
 repeatable: any protected map on the target can be read with `chkdump`, so the terrain reference for
 every tileset is obtainable, including from a map the team builds and reopens.
+
+---
+
+### Screenshot path restoration (2026-11-20, `Tails`, blocked, recorded not claimed)
+
+Objective: restore a working screenshot path on the target, then read `harvA`, `harvB`, `harvC`, `harvD` in order and record which render terrain. Both candidates the brief named are blocked on this target/controller pair. Continuous log: DEMO-LOG 2026-11-20.
+
+**Alternatives considered.**
+
+*Candidate 1, `dnf install gnome-screenshot` from an already enabled repo (the brief's "cheapest"). Blocked at the availability gate, no install performed.* `dnf repoquery --available gnome-screenshot` returns empty across all eight enabled repos; `dnf repoquery --available '*screenshot*'` returns only a shell extension; `grim` and `weston-screenshooter` are empty; the only provider of `org.gnome.Screenshot.service` is `gnome-screenshot` and it has no repo provider. Installing it needs a new repo, which the brief forbids. So candidate 1 as written cannot run.
+
+*Candidate 2, framebuffer read inside the team's own FreeRDP client, target untouched (the brief's fallback). Connects and negotiates, but yields no frame.* Chosen to build because it touches the target not at all. `rdp-shot.c` (FreeRDP 3, `freerdp3`+`freerdp-client3`, Apache-2.0) reaches `CONNECTION_STATE_ACTIVE` with NLA HYBRID_EX, the RDPGFX exchange completes (server confirms `RDPGFX_CAPVERSION_107 flags 0x22`, sends `CreateSurface 0 1920x1080 format 0x20`, `MapSurfaceToOutput`, four `RDPGFX_CODECID_CAPROGRESSIVE` frames). But `instance->context->gdi->gfx` is NULL and the captured buffer is a uniform white field (PIL, 1 colour, mean luma 255). The decoded RDPGFX surface never reaches GDI because `gdi_graphics_pipeline_init` needs a `RdpgfxClientContext*` whose constructor `rdpgfx_client_context_new` is not exported in this distro build (`WITH_CLIENT_INTERFACE=OFF`, confirmed no `.so` under `/usr/lib64` exports it), and the deprecated `SupportGraphicsPipeline` auto-bind is gone in 3.32. `/gfx:RFX9` parses but does not wire `gdi->gfx`; `/gfx:AVC444` and `/gfx:off` are rejected by this build's parser. The brief's assumption that `freerdp-devel` alone suffices is the gap: it covers input (proven, rdp-input works) but not gfx-to-GDI rendering here.
+
+*Option considered and rejected: read the addin's internal gfx surface directly.* The addin decodes `CAPROGRESSIVE` into its own context, but that context is not reachable through any exported symbol (`client/channels.h` exposes no gfx getter). Not attempted.
+
+**Changes table (controller only, target unchanged).**
+
+| File / system | Change | Why | Inverse |
+|---|---|---|---|
+| controller gdb | `sudo dnf install -y gdb` (NEVRA `gdb-17.2-4.el10_3.x86_64`) | get a backtrace of the connect-phase crash | `sudo dnf remove -y gdb` |
+| `/tmp/opencode/t0042/rdp-shot.c`, `rdp-shot`, `sanity_desktop.ppm`, `*.log` | created | candidate 2 capture tool and test frames | `rm -f /tmp/opencode/t0042/rdp-shot{,.c} /tmp/opencode/t0042/sanity_desktop.{ppm,png}` |
+
+Target: no package, no repo change, no file, no process started. `harvA-D` unchanged. Pre-existing `wineserver` (62669) and two `winedevice.exe` (62678, 62710) untouched.
+
+**Checks run.**
+
+| Check | Result |
+|---|---|
+| `dnf repoquery --available gnome-screenshot` (target) | empty across 8 enabled repos |
+| `dnf repoquery --whatprovides 'org.gnome.Screenshot.service'` | no provider |
+| `grdctl status` | gnome-remote-desktop active, RDP enabled 3389, view-only no |
+| rdp-shot connect | CONNECTION_STATE_ACTIVE, NLA HYBRID_EX, 1920x1080 |
+| rdp-shot RDPGFX trace | caps confirm 107, CreateSurface 0, MapSurfaceToOutput, 4x CAPROGRESSIVE |
+| `probe: gdi->gfx` at capture | `(nil)`, pipeline_wired 0 |
+| PIL of captured frame | 1 distinct colour, mean luma 255 (undecoded white buffer) |
+| `nm` for `rdpgfx_client_context_new` | not exported in libfreerdp3, libfreerdp-client3, winpr3, or any `/usr/lib64` plugin |
+| build flags via library strings | `WITH_CLIENT_INTERFACE=OFF`, `WITH_OPENH264=OFF`, `WITH_GFX_H264=OFF` |
+| `ls -la harvA-D` after dispatch | all four present, sizes unchanged |
+
+**Checks NOT run (named honestly).** `dnf install gnome-screenshot` (blocked, not run). Visual read of `harvA`, `harvB`, `harvC`, `harvD` (blocked, not run). No terrain render captured. No editor screenshot, no minimap, no booth-sim, no colour-coverage.
+
+**Verdict for `## Next Actions`.** Screenshot path NOT restored. harvA-D remain unread. The cheapest next lever is target-side: the `org.gnome.Shell.Screenshot` API that TASK-0041 proved is denied *while gnome-remote-desktop serves*; test whether disabling or reconfiguring gnome-remote-desktop lifts the denial, with a recorded inverse, since that restores the already-proven screenshot path and the proven input path can then drive SCMDraft. A controller-side alternative is a FreeRDP built with `WITH_CLIENT_INTERFACE=ON` so `rdp-shot` can bind the gfx pipeline.
 
 ---
 
