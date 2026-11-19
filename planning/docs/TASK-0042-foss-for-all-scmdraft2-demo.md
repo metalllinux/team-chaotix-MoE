@@ -109,7 +109,10 @@
 - [ ] `Charmy` and `Flicky`: rule on the archive.org Anthology ISO as the game-data source, and on the fact that no redistribution occurs.
 - [ ] `Omega`: supply-chain ruling on COPR `forecastwolf157/Wine-test` and Flatpak Wine from Flathub as the demo's two Wine runtimes, and on the final repo set left on the target.
 - [ ] Dispatch queue for the fresh `Robotnik` session, in this order, one at a time, each in its own fresh child session.
-- [ ] `Tails`, dispatch 1, terrain value harvest. Objective, obtain one plaintext CHK from a map that SCMDraft 2 actually renders, because those terrain values are the only trustworthy source of valid TILE group and ISOM pairs. Order of attempts. 1, find a SCMDraft 2 save or options setting that writes without Blizzard map protection, using the upstream options documentation at stormcoast-fortress rather than guessing at the UI, driven by keyboard commands because dialog buttons do not respond to injected clicks. 2, a published open-source CHK or MPQ tool, with its upstream repository and licence recorded before anything is installed. 3, the bitmap-to-terrain generator already recommended at doc:984, same licence-first rule. Then diff the real map's terrain encoding against the writer at `/tmp/opencode/t0042/build_map.py` and name the invalid field. Acceptance, either a code-written map that renders terrain in SCMDraft, or a precise statement of which field of the writer is wrong and why. Reuse the proven launch method recorded in the previous pass, the seat0 Wayland environment export, and do not kill processes the dispatch did not start.
+- [x] `Tails`, dispatch 1, terrain value harvest. **Verdict, acceptance met on the precise-statement branch.** The plaintext CHK came from River Crossing through StormLib (MIT, `github.com/ladislav-zezula/StormLib` at `d60b7e6d3501474f4d92c7b9c752a37e78385f67`), built controller-side, 257441 bytes, verified head `56455220020000003b00495645520200`. The writer's invalid fields are named with the diff in `## Implementation` (Terrain value harvest): `ISOM` at `build_map.py:103` is half the required size, the real size is `4*(W+2)*(H+1)`, and it is filled with zero where both harvested maps use non-zero brush indices; the `MTXM` and `TILE` values at `build_map.py:149` span groups 0 to 255 including groups 0 and 1 that no tile of either real map uses, and harvested Jungle flat ground is groups 8 and 9 at subtile 0, values 128 and 144. Attempt 1 is closed as impossible with binary-string evidence, the `-IGNORE_PROTECTION` switch is compiled in. Four isolation maps `harvA`, `harvB`, `harvC`, `harvD` are built and left on the target, unread, because the target now refuses the screenshot call every earlier map reading used.
+- [ ] `Tails`, next, restore a screenshot path on the target before any further map verification. `org.gnome.Shell.Screenshot.Screenshot` returns `AccessDenied: Screenshot is not allowed` through both `gdbus` and `dbus-send`, `org.gnome.Screenshot` has no object at `/org/gnome/Screenshot`, `gnome-screenshot` is not installed, and `ScreenSaver.GetActive` is false (DEMO-LOG 2026-11-19). Cheapest candidate is `dnf install gnome-screenshot` from an already enabled repo with NEVRA and the removal command recorded. The fallback that touches the target not at all is framebuffer capture inside the team's own FreeRDP client, since `freerdp-devel` is already on the controller. Then read `harvA`, `harvB`, `harvC`, `harvD` in that order and record which render.
+- [ ] `Tails`, dispatch 2, blocked on the screenshot item above, not on the harvest. Rewrite the writer with the harvested ISOM size `4*(W+2)*(H+1)`, a non-zero harvested ISOM brush value, and Jungle ground values 128 and 144 alternating, then build map 1 at 256 by 256. Any protected map on the target is now readable with `chkdump`, so the terrain reference for every tileset is available.
+- [x] `Tails`, dispatch 1, terrain value harvest, the same item marked complete above. The brief is kept verbatim below for the record. Objective, obtain one plaintext CHK from a map that SCMDraft 2 actually renders, because those terrain values are the only trustworthy source of valid TILE group and ISOM pairs. Order of attempts. 1, find a SCMDraft 2 save or options setting that writes without Blizzard map protection, using the upstream options documentation at stormcoast-fortress rather than guessing at the UI, driven by keyboard commands because dialog buttons do not respond to injected clicks. 2, a published open-source CHK or MPQ tool, with its upstream repository and licence recorded before anything is installed. 3, the bitmap-to-terrain generator already recommended at doc:984, same licence-first rule. Then diff the real map's terrain encoding against the writer at `/tmp/opencode/t0042/build_map.py` and name the invalid field. Acceptance, either a code-written map that renders terrain in SCMDraft, or a precise statement of which field of the writer is wrong and why. Reuse the proven launch method recorded in the previous pass, the seat0 Wayland environment export, and do not kill processes the dispatch did not start.
 - [ ] `Tails`, dispatch 2, only after dispatch 1 lands. Build map 1 `foss-for-all` at full 256 by 256 extent with the corrected encoding, then the four remaining maps, each with the legibility gate artifacts, editor screenshot, minimap screenshot, 4x booth simulation, coverage numbers, and an independent reader.
 - [ ] `Shadow`, independent read of every booth-simulation artifact, per the legibility gate in `## Definition of Done`.
 - [ ] `Tails`, the one remaining `uinput` playability attempt, after the maps.
@@ -1147,6 +1150,137 @@ Objective: get one plaintext CHK from a map that SCMDraft 2 actually renders, to
 **Recommendation for next dispatch.** The terrain encoding problem is now precisely characterized. Two paths forward: (A) Install `winetricks wmp4` or equivalent to provide MFC42.DLL in the Wine prefix, then retry Unused Unprotector 2 (a Windows binary available at `github.com/Ar3sgice/starcraft-tools/Unused Unprotector.rar`) under Wine on the target. If it runs, it reads River Crossing, saves an unprotected CHK, and the terrain values become readable. Licence: "Unused" 2008 freeware per the source repo README. (B) Search for a published open-source StarCraft terrain lookup table (someone may have extracted and published the Jungle CV5 group→tile mapping). This would eliminate the need to decrypt anything. Neither was tested this pass.
 
 **Target changes this pass (all reversible).** Map probe dir additions: `~/scmdraft-maps/probe/{isom10.scm, calib3.scm, calib4.scm, unprotect-test/rc-copy.scm}` (inverse `rm -rf ~/scmdraft-maps/probe/ ~/scmdraft-maps/unprotect-test/`). `~/game-data/bmp2scx/` extracted (inverse `rm -rf ~/game-data/bmp2scx/`). `~/game-data/bmp2scx1.0.rar` downloaded (inverse `rm ~/game-data/bmp2scx1.0.rar`). `/tmp/build_isom10*.py`, `/tmp/calib3.py`, `/tmp/calib4.py`, `/tmp/decrypt_chk.py`, `/tmp/try_keys.py`, `/tmp/try_listfile.py`, `/tmp/check_mpq.py`, `/tmp/cmp_mpq.py`, `/tmp/real_vcod.bin` on target (inverse `rm -f`). Wine processes started and terminated. No package installed. No repo enabled. No credential on any command line. No binary or game data committed to any git path.
+
+---
+
+### Terrain value harvest (2026-11-19, `Tails`, dispatch 1, acceptance met on the precise-statement branch)
+
+Objective: one plaintext CHK from a map SCMDraft 2 renders, then a diff against the writer at
+`/tmp/opencode/t0042/build_map.py`, naming the invalid field. Ordered attempts run in the order the
+brief gave. Continuous log: DEMO-LOG 2026-11-19, 23:25-23:55.
+
+**Attempt 1, a SCMDraft 2 save that writes without map protection. FAILED, closed with evidence.**
+The upstream Options Overview page carries no protection setting. `strings -n 2 ~/scmdraft2/"ScmDraft 2.exe"`
+piped to `grep -n "(\*\."` returns nothing, so SCMDraft 2 exposes no save filter for any format other
+than the ones it already uses; the `.chk` strings in the binary are the MPQ member name
+`staredit\scenario.chk` (doc:1008) and a file-type label inside the backup dialog, not a save format.
+The binary contains `Opening protected maps disabled! Compile with -IGNORE_PROTECTION option set`, so the
+switch is compiled in, not selectable. SCMDraft's `Scm*.tmp` files are byte copies of the file that was
+opened, proven by parsing them: the tmps beside River Crossing copies are encrypted, the tmps beside
+this team's own plaintext maps are plaintext. `~/scmdraft2/backupDB.scmdDB` is an MPQ with 7 entries,
+every one flagged ENCRYPTED. There is no SCMDraft 2 route to an unprotected map file.
+
+**Attempt 2, a published open-source MPQ tool. SUCCEEDED. This is the unlock.** Upstream and licence
+recorded before anything was installed: `github.com/ladislav-zezula/StormLib`, commit
+`d60b7e6d3501474f4d92c7b9c752a37e78385f67`, `LICENSE` = `The MIT License (MIT)`, Copyright (c)
+1999-2013 Ladislav Zezula. Built controller-side only (`cmake -DSTORM_USE_BUNDLED_LIBRARIES=ON`,
+`cmake --build build -j8`, then `g++ chkdump.c -I StormLib/src -L StormLib/build -lstorm`). StormLib
+reads what mpyq 0.2.5 cannot: `./chkdump maps/rc.scm 'staredit\scenario.chk' rc.chk` returned
+**257441 bytes of plaintext CHK** beginning `56 45 52 20 02 00 00 00 3b 00 49 56 45 52 02 00`, and
+`bn.chk` from Bottleneck returned 186130 bytes. The maps were copied off the target read-only for the
+test, SHA-256 recorded in `/tmp/opencode/t0042/maps.sha256`; nothing was committed.
+
+**Container facts established from blocks that are not encrypted in the same archives.** In Bottleneck,
+`(listfile)` (47 stored, 39 archived) and `(attributes)` (42 stored, 68 archived) are unencrypted. Both
+begin `[u32 8][u32 stored_length]`; the payload of a compressed block then starts with the byte `0x02`
+followed by a zlib stream (`78 9c ...`), and the listfile payload is raw text:
+`blizzard_2.cnd\r\nstaredit\scenario.chk\r\n`. Every map CHK blob inspected across 50 bundled and
+team-saved maps carries flags `0x80010200` (mpyq's constants: EXISTS, ENCRYPTED, COMPRESS), so stored
+length is smaller than archived length: the plaintext is compressed before it is encrypted. mpyq's
+`MPQ_FILE_COMPRESS` is `0x00000200`, not `0x00000100`, which is why earlier size readings looked odd.
+
+**Known-plaintext recovery of the file key was attempted and is recorded as a dead end.** MPQ file
+crypt is a stream XOR whose seed chain depends on the key and on already-decrypted plaintext, so a
+known leading dword collapses the 32-bit key to about one candidate: `seed1 = (cipher0 ^ plain0 -
+0xEEEEEEEE - TABLE[0x400 + (seed1 & 0xFF)])` with the low byte self-consistent. Candidates that
+reproduced `[8][stored_length]` in the first two dwords on four blocks in two maps diverged from dword 2
+on, and the standard name-derived keys (`mhash("staredit\\scenario.chk", 3) = 9255D2BE`, also the type 1
+and 2 variants) decrypt to garbage. Ciphertext structure across the bundled set (dword0 bytes 2 and 3
+identical in every map, dword3 identical between Bottleneck and River Crossing) shows the keystreams are
+nearly shared, so the key is close to constant but is not the name-derived one. StormLib knows the real
+derivation; reimplementing it is unnecessary now, so this line is closed.
+
+**Diff of the harvested CHK against the writer at `/tmp/opencode/t0042/build_map.py`.** River Crossing
+is 96 x 256, ERA 4 (Jungle). Bottleneck is 128 x 128. Both are protected maps that SCMDraft 2 renders.
+
+| Field | Writer (`build_map.py:98-133`) | River Crossing | Bottleneck | Verdict |
+|---|---|---|---|---|
+| ISOM section size | `(W//2+1)*(H+1)*4` = 8580 B at 64x64 (line 103) | 100744 B = `4*(W+2)*(H+1)` at 96x256 | 67080 B = `4*(W+2)*(H+1)` at 128x128 | **wrong, half the required size** |
+| ISOM content | all zero | 50372 entries, values 16..2062, dominant value 64 (12920 tiles) | 33540 entries, values 16..2398, dominant 16 | **wrong, zero is not a valid brush index set** |
+| MTXM group indices | arbitrary `group*16` for groups 0..255 (line 149) | 387 groups, minimum group 2 (smallest value 32), dominant pair 8 and 9 | 412 groups, minimum group 2, dominant pair 4 and 5 | **wrong, groups 0 and 1 are used by no real map, and the Jungle flat ground is group 8 and 9 at subtile 0, values 128 and 144** |
+| TILE | equal to MTXM | 736 of 24576 tiles differ from MTXM | 242 of 16384 differ | **acceptable for a no-doodad map**; the differences sit where DD2 and THG2 are non-empty |
+| Subtile nibble | 0 in every tile | 0..14 | 0..14 | acceptable for flat ground, wrong for anything with elevation |
+| VER | 205 (`ver=205`, line 98) | `0x3b` = 59 | `0x3b` = 59 | writer value not what a rendering map uses |
+| VCOD | 1040 zero bytes (line 108) | 1040 bytes, 1037 non-zero | 1040 bytes, 1037 non-zero | writer writes an empty code table |
+| Sections present | 18 | 30, including `IOWN`, `PUNI`, `UPGR`, `PTEC`, `UPRP`, `UPUS`, `WAV `, `UNIS`, `UPGS`, `TECS`, `MBRF` | same family | writer omits them; SCMDraft opened the synthetic maps anyway, so these are not proven render gates |
+| MTXM size | `W*H` u16 | 49152 = 96*256*2 | 16384 = 128*128*2 | correct |
+| MASK size | `W*H` bytes | 24576 | 16384 | correct |
+
+**Precise statement of the invalid field.** The writer's `ISOM` is invalid in two ways at once, and its
+`MTXM`/`TILE` value selection is invalid in a third. `isom=b"\x00" * ((W//2 + 1) * (H + 1) * 4)` at
+`build_map.py:103` produces half the bytes a real map carries (`4*(W+2)*(H+1)`), and fills them with
+zero, while the two harvested maps use non-zero brush indices (dominant 64 for Jungle, 16 for Badlands).
+The terrain values the writer writes, `group*16` for groups 0 through 255 (`build_map.py:149`), include
+groups 0 and 1, which no tile of either real map uses, and for Jungle the flat ground a player sees is
+group 8 and group 9 at subtile 0, values 128 and 144, alternating tile to tile. So the previous pass's
+answer (doc:1113, "the group index") is confirmed and extended: the group index was wrong, and the
+ISOM size and content are wrong as well. The `TILE == MTXM` assumption (doc:1015) is sound for a
+no-doodad map and is not the defect.
+
+**Which defect gates rendering is isolated but not yet read.** Four maps were built on the target from
+the harvested CHK and the writer, using the container SCMDraft 2 is already known to accept (doc:1069):
+
+| Map | Content |
+|---|---|
+| `harvA.scm` | the harvested River Crossing terrain arrays, verbatim, in the writer's unencrypted single-unit container. Control: should render Jungle terrain |
+| `harvB.scm` | the writer's own structure at 64x64, fill = 128 (a harvested valid Jungle value), writer's half-size zero ISOM |
+| `harvC.scm` | same fill, ISOM resized to `4*(W+2)*(H+1)` and filled with the harvested dominant value 64 |
+| `harvD.scm` | harvested terrain verbatim with the ISOM payload zeroed in place, isolating ISOM content |
+
+All four were launched in SCMDraft 2 with the proven seat0 session export (`bash /tmp/run_viewer.sh
+<A|D|B|C>`, `nohup wine64 ~/scmdraft2/"ScmDraft 2.exe" <map>`, profile dialog dismissed with
+`rdp-input rdp-args key 0x1C`) and each was then killed with `pkill -f "ScmDraft[ ]2"`. None could be
+read, because the target no longer permits the D-Bus screenshot call that TASK-0041 proved and that
+every earlier map reading in this task used. The exact refusal and the diagnostics are in DEMO-LOG
+2026-11-19. The four maps remain on the target for a later pass.
+
+**Checks run.**
+
+| Check | Result |
+|---|---|
+| `./chkdump maps/rc.scm 'staredit\scenario.chk' rc.chk` | 257441 B plaintext CHK, head `56455220020000003b00495645520200` |
+| `./chkdump maps/bn.scm ... bn.chk` | 186130 B plaintext CHK |
+| `python3 chk_analyze.py rc.chk` | 30 sections, covered 257441/257441, DIM 96x256, ERA 4, ISOM 100744 B |
+| `python3 chk_analyze.py bn.chk` | ISOM 67080 B, MTXM n 16384, min value 32, dominant groups 4 and 5 |
+| StormLib licence | `LICENSE` = MIT, upstream commit `d60b7e6d3501474f4d92c7b9c752a37e78385f67` |
+| Map copies verified | `sha256sum`, recorded in `/tmp/opencode/t0042/maps.sha256` |
+| Four SCMDraft launches | started, all terminated, `scmdraft_count=0`, pre-existing wineserver untouched |
+| Screenshot attempts | `AccessDenied: Screenshot is not allowed` via gdbus and dbus-send; `org.gnome.Screenshot` object absent; `gnome-screenshot` not installed; `ScreenSaver.GetActive` false |
+
+**Checks NOT run (named honestly).** No editor screenshot, no minimap screenshot, no re-open screenshot,
+no 4x booth simulation, no colour-coverage measurement, and no independent reader for the four test
+maps. The isolation experiment (A, B, C, D) is built but unread. `bmp2scx` was not re-run; its
+`chkoriginal.bin` (49860 B) was parsed this pass and contains 33 sections starting `TYPE`, with no
+`MTXM`, `TILE`, `ISOM`, `ERA` or `DIM` at all, so it carries no terrain table and cannot be the terrain
+source. StormLib was not installed on the target, only on the controller.
+
+**For the review chain.** `Charmy` and `Flicky`: StormLib is MIT with the licence file present in the
+repo, and it is built and used only on the controller, never committed and never shipped; the harvested
+plaintext CHK and the two map copies are derived from the team's legally held Anthology data and stay
+under `/tmp/opencode`, never in a git path. `Omega`: the new trust item is a controller-side build of an
+MIT library from GitHub at a pinned commit, with no new target package and no new target repo.
+
+**Next dispatch, in cost order.** 1, restore a screenshot path on the target. The refusal is a target
+state fact, not a code problem. Cheapest candidate is `dnf install gnome-screenshot` from an already
+enabled repo with NEVRA and the removal command recorded, since the Shell D-Bus API is now denied to a
+non-session bus client; the fallback that needs no target change is a framebuffer capture inside the
+team's own FreeRDP client, since `freerdp-devel` is already installed on the controller. 2, read
+`harvA`, `harvB`, `harvC`, `harvD` in that order and record which render. 3, once a rendering variant is
+known, rewrite `/tmp/opencode/t0042/build_map.py` with the harvested ISOM size
+`4*(W+2)*(H+1)`, a non-zero ISOM brush value, and Jungle flat ground values 128 and 144 in an
+alternating pattern, then build map 1 at 256 by 256. 4, the harvest route itself is now cheap and
+repeatable: any protected map on the target can be read with `chkdump`, so the terrain reference for
+every tileset is obtainable, including from a map the team builds and reopens.
 
 ---
 

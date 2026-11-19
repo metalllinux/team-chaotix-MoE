@@ -661,3 +661,59 @@ No new package installed. No repo enabled. No credential on any command line. No
 **10:05 Robotnik — dispatch ceiling made mechanical, TASK-0043.** Operator instruction, update the team so the context-ceiling failure cannot recur. New `scripts/dispatch-gate`, read-only against `~/.local/share/opencode/opencode.db`, peak prompt over a window of recent assistant calls plus the worst single jump, times an inherit ratio of 1.6, answering PASS WARN or BLOCK with exit codes 0, 3, 4. Calibration is measured, against this very session the gate reported child projection 285280 of 262144, 108.8 percent, BLOCK, and the real failures were 262191. `tests/selftest.sh` gained four asserted checks, 56 to 61. Rule added to AGENTS.md section 14 item 4 and to `.opencode/agents/robotnik.md` as `## The dispatch ceiling`. Recorded as a deviation that `Robotnik` wrote this rather than `Tails`, because delegation was impossible in a session already at the ceiling.
 
 **10:40 Robotnik — TASK-0043 merged and pushed.** Branch `task-0043-dispatch-gate`, commit `418e8b2`, pull request #1 opened and merged with `merge_method=merge`, merge commit `44a017e`, local `main` fast-forwarded. The pre-push hook ran `tests/selftest.sh` and printed `SELFTEST: 61 checks passed` before the push was accepted. Verified present on `origin/main`, `scripts/dispatch-gate`, the selftest block, AGENTS.md section 14 item 4, and `.opencode/agents/robotnik.md` `## The dispatch ceiling`. GitHub writes used the token at `~/AI/secrets/token.md` read at run time through a `GIT_ASKPASS` helper and a header file under `/tmp/opencode`, both mode 700 and 600 and both deleted immediately after the last GitHub call, with no token in any remote URL, commit message, log, or committed file. Commit signatures verified with `git log --show-signature`, good signature for Team Chaotix.
+
+## 2026-11-19
+
+**23:25–23:55 Tails, TASK-0042 dispatch 1, terrain value harvest.** Objective: obtain one plaintext
+CHK from a map SCMDraft 2 actually renders, then diff that terrain encoding against the writer at
+`/tmp/opencode/t0042/build_map.py`. Acceptance met on the precise-statement branch. The harvest
+succeeded with an MIT-licensed open-source library, `StormLib`.
+
+**Attempt 1, a SCMDraft 2 save without map protection. FAILED, evidence recorded.** Upstream options
+page `stormcoast-fortress.net/cntt/software/scmdraft/options/` has no protection setting. Command
+`strings -n 2 ~/scmdraft2/"ScmDraft 2.exe" > /tmp/sd2.strings` then `grep -n "(\*\." /tmp/sd2.strings`
+returns nothing, so there is no save dialog filter for any format other than the ones the binary
+already uses; the only `.chk` strings in the binary are the internal MPQ member name
+`staredit\scenario.chk` and a file-type label in the backup dialog. The binary also carries the string
+`Opening protected maps disabled! Compile with -IGNORE_PROTECTION option set`, which puts the switch
+at build time, not in the UI. `find ~ -name "Scm*.tmp"` found SCMDraft's temp files, and parsing them
+showed they are byte copies of the file that was opened: the temp files beside River Crossing copies
+are encrypted, the temp files beside this team's own plaintext maps are plaintext.
+`~/scmdraft2/backupDB.scmdDB` is itself an MPQ whose 7 entries all carry the ENCRYPTED flag.
+
+**Attempt 2, a published open-source MPQ tool. SUCCEEDED.** Upstream and licence recorded before
+install: `github.com/ladislav-zezula/StormLib`, commit `d60b7e6d3501474f4d92c7b9c752a37e78385f67`,
+`LICENSE` is `The MIT License (MIT), Copyright (c) 1999-2013 Ladislav Zezula`. Built on the controller
+only, no build toolchain was added to the target.
+
+| Step | Command | Inverse |
+|---|---|---|
+| Copy two protected maps off the target, read-only | `sshpass -f ~/AI/secrets/scm_draft_pass.md ssh howard@192.168.1.99 'cat "/home/howard/game-data/sc-clean/Starcraft/maps/(2)River Crossing.scm"' > /tmp/opencode/t0042/maps/rc.scm`, same for `(2)Bottleneck.scm` | `rm -f /tmp/opencode/t0042/maps/rc.scm /tmp/opencode/t0042/maps/bn.scm` |
+| Record the copies | `sha256sum maps/* > maps.sha256`. rc.scm `481364dc58e8401d966ef9ce04f87b375344a95838b292007a05fdeb0b721a9e`, bn.scm `02e9c31af0405439f5cf6e813f8570e8daa0473ec20e56ff25aa96898b833cbc` | none, a controller text file |
+| Clone StormLib | `git clone --depth 3 https://github.com/ladislav-zezula/StormLib /tmp/opencode/t0042/StormLib` | `rm -rf /tmp/opencode/t0042/StormLib` |
+| Build it | `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTORM_USE_BUNDLED_LIBRARIES=ON`, `cmake --build build -j8` | `rm -rf /tmp/opencode/t0042/StormLib` |
+| Build the extractor | `g++ chkdump.c -I StormLib/src -L StormLib/build -lstorm -o chkdump -lpthread -lm` | `rm -f /tmp/opencode/t0042/chkdump` |
+| Harvest | `./chkdump maps/rc.scm 'staredit\scenario.chk' rc.chk` gives 257441 bytes, head `56455220020000003b00495645520200`. `./chkdump maps/bn.scm ... bn.chk` gives 186130 bytes | `rm -f /tmp/opencode/t0042/rc.chk /tmp/opencode/t0042/bn.chk` |
+
+**Target changes this step, all reversible.** `scp /tmp/opencode/t0042/{rc.chk,build_map.py,mk_variants.py,shot.py,run_viewer.sh}
+howard@192.168.1.99:/tmp/` (inverse `rm -f /tmp/rc.chk /tmp/build_map.py /tmp/mk_variants.py /tmp/shot.py /tmp/run_viewer.sh`).
+`python3 /tmp/mk_variants.py /tmp/rc.chk /home/howard/scmdraft-maps/probe` wrote `harvA.scm` 273912 B,
+`harvB.scm` 48818 B, `harvC.scm` 57398 B, `harvD.scm` 273912 B (inverse `rm -f ~/scmdraft-maps/probe/harv{A,B,C,D}.scm`).
+Four launches `bash /tmp/run_viewer.sh <A|D|B|C>`, each `nohup wine64 ~/scmdraft2/"ScmDraft 2.exe" <map>` under the
+exported seat0 session environment, each terminated by `pkill -f "ScmDraft[ ]2"`. Final state
+`scmdraft_count=0`. The `wineserver` and `winedevice.exe` processes that were already running when this
+dispatch started were not touched. No package installed on the target, no repo enabled, no credential on any
+command line (`sshpass -f` only), no SCMDraft binary, no third-party binary, and no game data in any
+git-tracked path. All StormLib work and all extracted data live under `/tmp/opencode/t0042`.
+
+**Read attempts that the target refused.** The screenshot path that TASK-0041 proved now fails on this
+target. Commands and exact errors: `gdbus call --session --dest org.gnome.Shell.Screenshot --object-path
+/org/gnome/Shell/Screenshot --method org.gnome.Shell.Screenshot.Screenshot false false /tmp/harvA.png`
+gives `GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: Screenshot is not allowed`, the same through
+`dbus-send`, and the same with `XDG_SESSION_ID`, `XDG_CURRENT_DESKTOP`, `WAYLAND_DISPLAY` and
+`XDG_SESSION_TYPE` exported. `org.gnome.Screenshot` at `/org/gnome/Screenshot` gives
+`org.freedesktop.DBus.Error.UnknownMethod: Object does not exist at path "/org/gnome/Screenshot"`.
+`command -v gnome-screenshot` returns nothing. `org.gnome.ScreenSaver.GetActive` returns `(false,)`, so
+the screen is not locked. `rpm -q gnome-shell` is `gnome-shell-49.4-9.el10_2.rocky.0.2.x86_64`. Nothing
+was changed on the target to try to force the API open, so no visual verification of the four test maps
+was captured in this step, and the four maps remain on the target for a later step to read.
