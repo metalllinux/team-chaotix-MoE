@@ -15,7 +15,15 @@
 
 **PM handoff required, this session can no longer dispatch (2026-11-15).** Two dispatch attempts failed with request 262191 tokens against the 262144 context limit, the same number both times, and what the child inherits is this session's own context. That is learned rule r001, and the remedy is a fresh `Robotnik` session in this directory rather than a smaller brief. `Robotnik` can still edit files, so the record is completed here instead of left stale. Everything a fresh session needs is in this doc, in `planning/docs/TASK-0041-remote-visual-control.md`, and in `DEMO-LOG.md`, and `## Next Actions` now carries the next dispatch written out verbatim so it does not have to be reconstructed from memory.
 
-**Now:** Programmatic construction is the technique, and the unknown has narrowed to a single field. The launch method is proven, an SSH-spawned SCMDraft reaches the Wayland driver once the seat0 session environment is exported, and the earlier `nodrv_CreateWindow` wall was a missing-environment problem rather than a target limit. The container format is accepted, SCMDraft 2 0.9.10 opens the unencrypted combined-CHK MPQ the writer produces with its scenario tree populated. What fails is terrain values, arbitrary TILE group and ISOM values render blank while River Crossing renders the full Jungle World under the same launch. So the valid values must be harvested from a map that renders, and a dispatch is running to obtain one plaintext CHK.
+**Now (2026-11-20):** Map 1 `foss-for-all` is built at 256 by 256 and is legible. `Shadow`'s independent read PASSED the legibility gate, both lines read as words at 4x downscale and on the rendered thumbnail, coverage agreed to within 0.04 points, and the 2026-11-14 legibility blocker is closed for the programmatic technique. `Shadow` ruled the technique fit for maps 2 to 5 with one condition, apply the contrast fix first, so that is the next dispatch.
+
+**Robotnik decision on contrast (2026-11-20, recorded rather than asked).** The live risk is contrast, not legibility. `Shadow` measured WCAG ratios of 1.15 to 1.23 between glyph and ground against a 3.0 text minimum, and within Jungle the brightest tested tone reaches only 1.98 against the darkest blue. A bright exhibition hall with off-axis viewing is the expected booth condition, so a 1.2 ratio is a likely failure rather than a theoretical one. Maps 2 to 5 must not be built on the Jungle palette. Next dispatch tests a brighter tileset from the harvested reference and rebuilds map 1 against it, gated on a measured ratio at or above 3.0 rather than on an impression. `Shadow` named the brighter tileset as a hypothesis to test, not a fact, so the acceptance is the measurement.
+
+**Robotnik decision on the in-game minimap box (2026-11-20, recorded rather than asked).** The DoD asks for the design to be readable on the in-game minimap. That box is met by proxy, not literally, and it stays in the DoD rather than being rewritten. Evidence met today is SCMDraft 2's own overview thumbnail in three separate captures, which is the editor's render of the whole 256 by 256 map. A literal in-game minimap needs the playability path that item 3 proved unreachable on this target, and the single remaining `uinput` attempt is the only route to it, scheduled after the maps. If that attempt fails the box is recorded as blocked by the playability blocker with the proxy evidence named, which is a stated limitation rather than a removed requirement.
+
+**Robotnik decision on map 1 filenames (2026-11-20).** `Shadow` flagged that two files exist for map 1 and the illegible 2026-11-14 build holds the plain name. The legible build holds `foss-for-all.scm`, the rejected build is renamed with a `rejected-` prefix, and the rename inverse is recorded. Booth readiness must not be able to select the illegible file.
+
+**Earlier state (2026-11-19):** Programmatic construction is the technique, and the unknown had narrowed to a single field. The launch method is proven, an SSH-spawned SCMDraft reaches the Wayland driver once the seat0 session environment is exported, and the earlier `nodrv_CreateWindow` wall was a missing-environment problem rather than a target limit. The container format is accepted, SCMDraft 2 0.9.10 opens the unencrypted combined-CHK MPQ the writer produces with its scenario tree populated. What fails is terrain values, arbitrary TILE group and ISOM values render blank while River Crossing renders the full Jungle World under the same launch. So the valid values must be harvested from a map that renders, and a dispatch is running to obtain one plaintext CHK.
 
 **Earlier state:** Items 1 to 4 complete, map building has started. Item 4 fixed the control path, keyboard scancode injection through `scripts/rdp-input.c` for Ctrl+T, Ctrl+U, Ctrl+S and Enter, canvas clicks for terrain painting, and a save path of `taskkill` followed by two Enters, proven by a file that grew from 90426 to 93113 bytes and by tiles that survived a relaunch. Item 5, map 1 `foss-for-all`, is built and saved at `~/scmdraft-maps/foss-for-all/foss-for-all.scm`, 95081 bytes, with editor screenshots and a clean load. `Shadow` is verifying the one claim that matters for everything downstream, whether terrain lettering is actually legible, before four more maps are built on the same technique.
 
@@ -1525,6 +1533,100 @@ Targeted verification of item 5, ahead of the normal chain, 2026-11-14. Question
 **Suggested direction:** capture the completed map in 2D view as the legibility reference, cheaply, before the next map work.
 
 **Review verdict:** one blocker. Items 6 through 9 should not be dispatched on the terrain-drag technique as recorded until legibility is re-proven on a blank map or the technique changes per the recorded contingency at doc:83.
+
+---
+
+### Map 1 `foss-for-all` independent legibility read, programmatic build (2026-11-20, `Shadow`)
+
+Per the legibility gate at doc:80. Artifacts read with `read` (visual) from `/tmp/opencode/t0042`: `foss-booth4x.png`, `foss-maskrender-booth4x.png`, `foss-minimap.png`, `foss-minimap-mm.png`, `foss-reopen.png`, `foss-reopen-mm.png`, `foss-maskrender.png`, `foss25b.png`, `foss-25.png`, `foss-100.png`, `foss125.png`, `foss25.png`, `foss25c.png`, `foss-z1.png`, plus the eight `calibshot-*.png` calibration captures for my own colour numbers.
+
+**Verdict, stated plainly: the picture is identifiable as the intended design at booth distance.** The 2026-11-14 blocker at doc:1479 is closed for the programmatic technique. The item 5 brush-painted map remains illegible and is superseded, not fixed.
+
+What I can resolve, from the whole-map artifacts:
+- `foss-maskrender-booth4x.png` (128x128, the 256x256 design downscaled 4x): both lines read as words. I read "FOSS" on the upper line and "FOR ALL" on the lower line, including the word space between FOR and ALL. The internal counters survive: the O reads as a ring with a hole, both A's read with their counters, the R reads as bowl plus leg. Inter-letter gaps survive. Nothing merges into a blob.
+- `foss-minimap.png` and `foss-minimap-mm.png` (real SCMDraft 2 overview-thumbnail renders, not masks): both lines legible, axis-aligned, on a uniform olive field. `foss-reopen-mm.png`, the thumbnail after kill and relaunch, also reads both lines. This is the decisive evidence, because it is SCMDraft's own render of the saved disk file.
+- `foss-reopen.png` (full editor, 50% zoom): title bar shows the saved path `foss-for-all-programmatic.scm` with no asterisk, no dialog, and its top-left overview thumbnail shows FOSS over FOR ALL legibly. Re-open persistence is visually confirmed.
+- `foss25b.png` (25% main canvas): "FOSS" is unmistakable, strokes are clean solid rectangles of a single blue tone.
+- No cliff zigzag, no herringbone texture, no raised-wall artefact anywhere in any capture. My 2026-11-14 cause 2 is gone. Strokes are uniform single-tone bands, so my cause 1 is gone too.
+
+What I cannot resolve:
+- The tile texture. In `foss-maskrender.png` (512x512) the ground is a visible two-tone checkerboard of the 128 and 144 tiles; at the 4x booth sim it collapses to one olive field. The glyph edges get slightly softer but stay legible.
+- The 4x *editor-canvas* downscale `foss-booth4x.png` shows only a partial FOSS, cut off at the bottom edge. It does not show the design, see the finding below.
+- Identity of the red diamond outline visible in the main canvas of `foss25b.png` and `foss-reopen.png` at the tile the status bar reports as (105,23). I read it as a start-location marker. I did not open the Locations layer, so this is my reading, not a confirmed fact.
+- Whether units or doodads from the River Crossing harvest are present, from the render alone. The canvas shows none, and the harvest record at doc:1448 lists family sections rather than unit or doodad arrays, so I found no evidence of carried-over content in the render.
+
+**My own colour-coverage measurements, against the builder's three figures.** Blue test: `b > r+10 and b > g+10` over the whole image unless a crop is named.
+
+| Artifact | My number | Builder's claim (doc:1463) | Agreement |
+|---|---|---|---|
+| `foss-maskrender.png` 512x512, the design mask | 10.84 percent (28416 px, glyph tone (32,32,48)) | 10.8 percent design | agree, matches to two decimals |
+| `foss-minimap.png` 378x372, editor overview render | 11.19 percent of all pixels, 11.52 percent excluding the white viewport outline | 11.8 percent overview | agree in substance, within threshold tolerance |
+| `foss-minimap-mm.png` 300x300 same render, other crop | 9.71 percent | (same claim) | the figure moves 2 points with the crop, so the crop must be named |
+| `foss-reopen-mm.png` 300x300 after re-open | 7.31 percent | (same claim) | lower because the crop carries more ground margin. Not a regression, a crop difference |
+| `foss25b.png` 1920x1080 whole screenshot | 6.99 percent loose blue, 2.81 percent strict | 6.5 percent at 25 percent canvas | agree in substance, my number is higher because I count antialiased edges |
+| `foss25b.png` canvas crop (172,130)-(1878,881) | 7.57 percent | 6.5 percent | differs by crop and by blue test. Substance agrees |
+
+I agree with all three builder figures as stated, and I measured the design coverage exactly. The overview and canvas figures are crop- and threshold-dependent, which is why I have written the crop and the test above rather than just the percentage.
+
+**Design extent, measured.** Glyph bounding box in `foss-maskrender.png`: tiles x 14 to 241, y 64 to 191 of 256. Line 1 "FOSS" spans tiles x 59 to 196, line 2 "FOR ALL" spans x 14 to 241. Each line is 56 tiles tall, each cell is 6x8 tiles, each stroke is 6 tiles thick. So the design fills 89 percent of map width and 50 percent of map height, centred, not in a corner. The claim at doc:1439 that the design "fills the extent" is true horizontally and half-true vertically.
+
+**Booth geometry, computed from that extent.** On a 24 inch 1080p panel with the 256x256 map scaled to fill the viewport height, one tile is 4.2 px = 1.17 mm. A 6-tile stroke is 7.0 mm, a 56-tile letter is 65 mm. At 2 m the letters subtend 1.9 degrees, comfortable, and the strokes subtend 0.20 degrees, which is thin for a low-contrast feature. Resolution is not the limiting factor. Contrast is, finding 1.
+
+### Contrast between glyph and ground is the remaining legibility risk, and it is not measured anywhere in the record
+**Severity:** should-fix
+**Where:** `/tmp/opencode/t0042/foss-maskrender.png`, `foss-minimap.png`, `calibshot-*.png`, doc:1444, doc:1463
+**Problem:** the chosen pair is dark blue on dark olive. I measured WCAG contrast ratios of 1.23 (glyph (32,32,48) against ground (44,52,16)), 1.18 (against (56,44,28)), 1.15 in the editor overview render ((20,20,32) against (32,36,12)), and 1.19 in the 4x booth sim. WCAG asks for 3.0 for text and 4.5 for comfortable reading. Nothing in the record measures contrast, only coverage.
+**Failure scenario:** a conference hall is brightly lit and a booth screen is viewed off-axis. At CR 1.15 to 1.23 the tonal difference that carries the letters is a fraction of the panel's luminance range, so a viewer at 2 m off-centre sees a two-tone field rather than "FOSS for All", even though the geometry is generous. The same artifact read on my calibrated screen reads fine, which is exactly the situation a booth is not.
+**Evidence, and the measured headroom.** The calibration captures give the luminance of every value the builder tested: value 96 renders tones at relative luminance 0.0155 to 0.0271, 128/144 ground at 0.027 to 0.030, 192 at 0.0400, 2240 reaches a tone at 0.0838, 2880 tops out at 0.0316. Swapping ground 128/144 for 192 with the same glyph raises the ratio only to about 1.32. The whole Jungle palette is dark, so a large gain is not available inside it. That the largest gain would come from a brighter tileset (Winter and Ice have near-white ground tiles) is a hypothesis I did not test, offered as the direction to test, not as a fact.
+**Suggested direction:** add contrast ratio as a fourth gate number beside coverage, for all five maps, with the tones and the ratio recorded. Before maps 2 to 5 are built, re-run the whole-map single-value calibration the builder already has working (`calib-*.scm`, `build_map1.py`) across at least one brighter tileset and pick a pair at ratio 2 or better. If no pair reaches 2, cap the booth viewing distance at about 1.5 m in the run script and say so in the map notes. Maps 2 to 5 should also size features larger than 56 tiles, since the silhouettes have room to be bigger than the letterforms.
+
+### The artifact named as the booth simulation is a viewport slice, not a booth simulation
+**Severity:** should-fix
+**Where:** `/tmp/opencode/t0042/foss-booth4x.png` (421x189), cited at doc:1459, gate wording at doc:80
+**Problem:** the DoD gate says "the editor screenshot downscaled about 4x". Applied literally to a 256x256 map at the minimum 25 percent zoom, that produces a 4x downscale of a viewport that cannot contain the map, and the result here shows a partial FOSS cut off at the lower edge. It does not depict the design at all.
+**Failure scenario:** a later reader, or `Espio`, checks the gate box literally, finds `foss-booth4x.png` as the named artifact, sees one cropped word, and either rejects the map or accepts a number (0.94 percent strict blue, 7.98 percent loose blue in that file) that has nothing to do with the design. The gate then measures the wrong thing for maps 2 to 5.
+**Suggested direction:** define the booth artifact for the remaining maps as the whole-map overview render downscaled to the pixel size the map would occupy on the booth display at the assumed viewing distance, and name that display size and distance in the gate row. `foss-maskrender-booth4x.png` (128x128) is the right shape, and the overview thumbnail is a real SCMDraft render that always contains the whole map (doc:1446), so a 4x downscale of the thumbnail capture is the honest artifact. Record that no single editor canvas view shows a 256x256 map whole at any zoom, since 25 percent is the floor and the diamond is taller than the viewport.
+
+### The maximum-extent box and the editor's 25 percent zoom floor mean no single editor view shows the whole design at the booth
+**Severity:** should-fix
+**Where:** doc:81, doc:1446, `foss25b.png`, `foss-reopen.png`
+**Problem:** the operator requirement demands maximum 256x256 extent and a readable whole design. SCMDraft 2's minimum zoom is 25 percent, at which the 256x256 diamond exceeds the viewport height. At 25 percent the canvas shows "FOSS" and "FOR ALL" is off screen. At 50 percent the canvas shows only ground. So in the editor there is no zoom at which an audience sees the whole design at once.
+**Failure scenario:** on 2026-11-28 the presenter opens `foss-for-all`, lands at the default zoom, and the audience sees a dark field, then scrolls to a giant FOSS with the second line missing. The demo's one-line story, "look, we drew FOSS for All", fails at the screen even though the map is correct, and the failure is caused by the presentation, not the build.
+**Suggested direction:** the booth run script must specify the presentation, and `Vector` needs it written explicitly: either pan FOSS to FOR ALL in a named sequence, or show the overview thumbnail enlarged, or display the whole-map render outside the editor. Decide which before the maps exist, because it also decides which screenshot counts as the legibility artifact for maps 2 to 5.
+
+### The DoD minimap box is met by a proxy, and the record must not let that read as the box being met
+**Severity:** should-fix
+**Where:** doc:81 ("readable on the in-game minimap"), doc:1446, doc:1465
+**Problem:** the box names the in-game StarCraft minimap. The evidence supplied is SCMDraft 2's editor overview thumbnail. The builder names this honestly as not run, and I confirm it is not run: no StarCraft render of map 1 exists.
+**Failure scenario:** maps 2 to 5 are each delivered with an editor thumbnail, and the DoD row is ticked five times on a proxy. Then at the booth, or in the review chain, the literal box is found unmet, and the playability fallback at doc:79 (c) is also still unmet because SCMDraft 2's map-validation dialog has never been run on any saved map (doc:1465).
+**Suggested direction:** either revise the box to name the editor overview thumbnail as the accepted whole-map view for this target, with the reason (the exclusive-fullscreen pointer capture at doc:34 blocks the game render), or produce the in-game render through the recorded `uinput` attempt before the review chain runs. Do not leave the box wording unchanged while the evidence is a different thing.
+
+### Map 1 now has two files on the target and the DoD names neither of the pair correctly
+**Severity:** nit
+**Where:** `~/scmdraft-maps/foss-for-all/foss-for-all.scm` (item 5, 95081 bytes, brush-painted, illegible), `~/scmdraft-maps/foss-for-all/foss-for-all-programmatic.scm` (dispatch 3, SHA-256 `051fc139...`), doc:76, doc:1461
+**Problem:** the DoD names map 1 `foss-for-all`. The legible map is named `foss-for-all-programmatic.scm`, and the illegible one still occupies the plain name in the same directory.
+**Failure scenario:** the booth run script or a reader following the documentation repo opens `foss-for-all.scm`, and the audience sees the 2026-11-14 noise map.
+**Suggested direction:** record which single file is map 1, and state the disposition of the item 5 file (renamed, removed with its inverse, or kept only as the superseded artifact).
+
+### My own 2026-11-14 isometric-shear nit does not apply to this technique
+**Severity:** nit, correction to my own earlier finding
+**Where:** doc:1520, superseded for the programmatic build by `foss25b.png` and `foss-minimap.png`
+**Problem:** I recorded that every legibility screenshot was isometric and therefore sheared. In these captures the terrain grid renders axis-aligned: the letters are upright rectangles in both the main canvas and the overview thumbnail, while the status bar reads "Isometrical Terrain" (doc:1520 wording).
+**Failure scenario avoided:** a reader applying the earlier nit would ask for a 2D re-capture that would add nothing, and would treat upright text in an isometric-labelled view as an inconsistency.
+**Suggested direction:** retire the shear requirement for this technique. Keep a 2D top-down capture only if a future capture shows shear.
+
+### The white rectangle crossing the FOSS line in the overview captures is editor chrome
+**Severity:** nit
+**Where:** `foss-minimap.png` (2.8 percent white pixels), `foss-minimap-mm.png`, `foss-reopen-mm.png`
+**Problem:** the SCMDraft overview thumbnail draws the current viewport as a white outline, and it sits across the top line in three of the gate artifacts.
+**Failure scenario:** a reader of the gate artifacts reads the white rule as damage across the letters, or a coverage script counts it as background and shifts the percentage.
+**Suggested direction:** note the overlay in the artifact table, and state coverage crops so the percentage is reproducible.
+
+**Legibility gate verdict for map 1: PASS on identifiability.** The design reads as "FOSS for All" in the whole-map booth sim and in SCMDraft's own re-opened render. The builder's coverage figures are correct as far as they go, and I agree with them.
+
+**Technique fitness for maps 2 to 5: fit to proceed, with the contrast fix applied first.** Letterforms with internal counters are the hardest case this technique has, and they read at 4x. Filled silhouettes (Rocky's shield body, the heart, the Korean peninsula outline, Tux's body) have larger features and no counters to lose, so they should read more easily. Two conditions. (1) The contrast finding above should be resolved before maps 2 to 5 are built, because Rocky's shield carries the internal counter of the R and Tux carries a belly-to-body contrast, and those are exactly the features that a 1.2 contrast ratio washes out under hall lighting. (2) The booth-artifact definition and the presentation plan should be settled first, so the four maps are gated against the right artifact rather than the viewport-slice shape. The GR-graphics contingency at doc:1445 stays closed on the evidence in front of me; it reopens if the brighter-pair calibration cannot reach ratio 2 in any tileset.
+
+**Not in my remit and still open, restated so the gate row is not over-read:** SCMDraft 2 map-format validation has been run on no saved map (doc:1465). The literal in-game minimap has been captured for no map. Playability fallback (c) at doc:79 therefore has no evidence yet.
 
 ---
 
