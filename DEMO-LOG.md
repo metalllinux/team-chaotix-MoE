@@ -1036,3 +1036,39 @@ No package installed, no repo enabled or disabled, no registry change, no creden
 **Target state after dispatch.** `~/scmdraft-maps/live-demo/live-demo-ice.scm` holds the banded version (persistence proof). `/tmp/l4-*.png` removed. `/tmp/t0042-run.sh` left in place (used by future dispatches). SCMDraft not running. No package installed, no repo enabled, no registry change, no credential on any command line.
 
 **Command producing this entry:** `python3 drive_l4.py` (controller), captures via `gnome-screenshot-tool` on target, SCP return. Inverse for target artifacts: `rm -f ~/scmdraft-maps/live-demo/live-demo-ice.scm`.
+
+## 2026-11-21 00:01 — Dispatch M3, step 1: republic-of-korea mask and CHK build (`Tails`)
+
+**Objective.** Build map 5 `republic-of-korea` at the full 256x256 extent on Ice World era 6 with glyph 192 on ground 64 as a coarse filled peninsula outline with coastal features at 10 tiles or larger and no Taegeuk and no trigrams. Carry two `tux` corrections from `M2` should-fixes.
+
+**Mask.** `/tmp/opencode/t0042/korea.py` defines `republic_of_korea()` returning a 256x256 boolean mask. The mainland polygon uses the 17-vertex simplified South Korea outline from Natural Earth derived GeoJSON (`github.com/johan/world.geo.json KOR.geo.json`, retrieved 2026-11-21), projected through an equirectangular mapping at midpoint latitude 36.0N with cosine longitude correction. Jeju Island is a separate filled ellipse at 126.53E 33.37N, 22x14 tiles. The mask has 2 connected components (mainland + Jeju), zero enclosed ground tiles (no internal counter), bbox x78-198 (121w) y11-250 (240h), code coverage 16390/65536 = 25.01 percent. Registered in `rocky.py` MASKS as `republic-of-korea`.
+
+**Build.** `python3 build_ts.py silhouette ts-harvest/ref-era6.chk republic-of-korea 192 64 64 republic-of-korea`. Output: `republic-of-korea.chk` 614215 B, `republic-of-korea.scm` 614566 B, SHA-256 `50e55299dd86fafbcf5976f841992dd326e3d9b56c4d27fecbfdebfd06ea03ca`. ERA 6, DIM 256x256, STR name `republic-of-korea`, MTXM==TILE 65536 u16 values distinct [64, 192], ISOM 265224 B of 0x10.
+
+**Inverse.** `rm -f /tmp/opencode/t0042/republic-of-korea.{chk,scm}`. Target inverse recorded with placement.
+
+## 2026-11-21 00:06-00:30 — Dispatch M3, step 2: republic-of-korea target placement, capture, persistence (`Tails`)
+
+**Target placement.** `~/scmdraft-maps/republic-of-korea/republic-of-korea.scm` placed, 614566 B, mtime `2026-11-21 00:05:59`, SHA-256 `50e55299dd86fafbcf5976f841992dd326e3d9b56c4d27fecbfdebfd06ea03ca`, identical to controller. Inverse: `rm -f ~/scmdraft-maps/republic-of-korea/republic-of-korea.scm`.
+
+**SCMDraft launch and capture.** Launched via `bash /tmp/t0042-run.sh` (seat0 Wayland export, `~/.wine-scmdraft` prefix). Profile dismissed with Enter (0x1C). First launch used single-quoted `~` path which Wine did not expand; killed and relaunched with `$HOME` expansion, title bar then reads `/home/howard/scmdraft-maps/republic-of-korea/republic-of-korea.scm`. Overview thumbnail panel shows the peninsula silhouette. Overview-jump click at panel pixel (110,140) jumped the viewport to a boundary frame containing both ground and glyph tones. Captures: `korea-100c.png` (editor overview), `korea-jump1.png` (main-canvas boundary frame), `korea-reopen.png` (re-opened).
+
+**Gate numbers.** Coverage: code 16390/65536 = 25.01 percent, overview thumbnail map-body dark share 25.07 percent (measured ground 12277 + glyph 4108 = 16385 tiles in the body crop, close to the code count). WCAG: ground (176,176,176) vs glyph (36,40,56) = 6.745, measured on the overview thumbnail map-body crop AND on the main-canvas boundary frame `korea-jump1.png` crop (155,105)-(1878,832). Map body bounds in the overview panel: x 8-149, y 85-259 (142w x 175h).
+
+**Booth artifacts.** `korea-mm.png` (real overview thumbnail map body crop), `korea-booth64.png` and `korea-booth32.png` (Lanczos downscales of the real overview thumbnail map body, contain SCMDraft pixels), `korea-mm-2x.png` (2x enlargement of the same crop). `korea-calibration-render.png` and `-4x.png` (synthetic mask render, labelled calibration only, no SCMDraft pixel).
+
+**Re-open persistence.** Kill SCMDraft, SCMDraft wrote `Scmdecf.tmp` backup, relaunch the same disk file. File identical: 614566 B, SHA-256 `50e55299...` identical, mtime `2026-11-21 00:05:59` identical. Visual: 0.00 percent pixel diff in the overview panel crop (threshold 16), 0 pixel diff in the title bar. SCMDraft's `Scmdecf.tmp` backup left in place per r002.
+
+**Byte-stability verified.** All four prior deliverable maps unchanged: `foss-for-all` `e856f0e1...`, `rocky-logo` `447360ce...`, `rocky-with-heart` `b9b056c2...`, `tux` `79002eacd5d6...`.
+
+**Target state after step.** `~/scmdraft-maps/republic-of-korea/republic-of-korea.scm` in place with `Scmdecf.tmp` backup. `/tmp/korea-*.png` captures created on target (inverses: `rm -f /tmp/korea-*.png`). SCMDraft not running. No package installed, no repo enabled, no registry change, no credential on any command line.
+
+**Command producing this entry:** `bash /tmp/t0042-run.sh` on target, `rdp-input rdp-args key 0x1C` and `rdp-input rdp-args click 110 140` on controller, `gnome-screenshot-tool` captures on target, SCP return. Inverse for target artifacts: `rm -f ~/scmdraft-maps/republic-of-korea/republic-of-korea.scm ~/scmdraft-maps/republic-of-korea/Scmdecf.tmp /tmp/korea-*.png`.
+
+## 2026-11-21 00:30 — Dispatch M3, step 3: `tux` M2 should-fix corrections (`Tails`)
+
+**Correction 1: `tux` booth artifacts re-cropped.** `M2` finding doc:2274: Shadow measured the real map body in `tux-100.png` at x 18-145, y 112-240 (128x129 px, 0.5 px/tile). The record's `THUMB_BODY` crop (4,4,131,131) maps to absolute (12,109)-(139,236), 6 px left and 3 px up from the true body. The old crop excluded 447 dark design pixels (4.07 percent) including the right flipper tip and feet bottom edge, and included 952 panel chrome pixels (5.81 percent). Re-cropped `tux-mm.png`, `tux-booth64.png`, `tux-booth32.png`, and `tux-mm-2x.png` from the measured body bounds. Corrected dark share 67.37 percent (ground 5322 + glyph 10988 = 16310 of 128x129 = 16512 total, 0 chrome px). WCAG 6.745 confirmed on the re-cropped body and on booth64. Corrected absolute map body: x 18-145 y 112-240. Corrected panel-relative crop: [10,7,137,135].
+
+**Correction 2: truncation note.** The `tux` outline is truncated by the map frame. The union of the six ellipses touches all four map borders (head top row 0, flipper tips at columns 0 and 255, body and feet bottom at row 255). The widest design row (row 174) spans the full 256 tiles. There is no ground margin on the silhouette's left, right, or bottom. The feet do not protrude below the body (both reach row 255), so the foot separation is a 1 px gap at 127 px and vanishes at 64 px. This is a design fact of the current silhouette construction (the ellipses fill the extent), not a build error, and it is the reason Shadow recorded that `tux` reads as a silhouette at 64 px but not at 32 px (doc:2280-2284).
+
+**No target state change.** These corrections are controller-side re-crops of existing captured artifacts. The `tux.scm` map on the target is unchanged at `79002eacd5d6...`, 614552 B.
