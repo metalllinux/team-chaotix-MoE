@@ -1809,6 +1809,70 @@ No package installed on the target, no repo enabled or disabled, no registry cha
 
 **Recommendation for `Robotnik`.** `Shadow`'s M2 read should judge identifiability from `tux-mm.png` (whole-map real render), `tux-booth64.png`, `tux-booth32.png` (the only booth artifacts), and the `tux-jump3.png` main-canvas boundary frame. Whether the belly is added at M3 follows that verdict, per the `## Status` design limits: the belly is a second-tone feature inside the body and is out of scope until the silhouette gate passes. If M2 reads the silhouette as not Tux, the outline parameters in `tux.py` are the single knob (six ellipse centres and semi-axes), and the fix is a mask change, not a pipeline change.
 
+### Dispatch L4, live construction segment on Ice World seed (2026-11-20 22:25-23:12, `Tails`)
+
+**Verdict.** The live construction segment on an Ice World era 6 seed meets the `M2` contrast blocker. Per-pixel WCAG between the before tone and the after tone at the same canvas coordinate measures 6.094, 6.159, and 6.094 (median across all changed pixels) for the three painted bands, all well above the 3.0 gate. The `M2` rejection at 1.35-1.64 was caused by the Jungle seed; the Ice World seed resolves it.
+
+**Seed map.** Flat 256x256 Ice World era 6, ground value 64 (Rocky Snow), single distinct terrain value, written by `build_ice_seed.py` using the proven `build_ts.py` pipeline (harvested `ref-era6.chk` family sections, `mkmpq` StormLib wrap). Placed at `~/scmdraft-maps/live-demo/live-demo-ice.scm`, 614562 B, SHA-256 `8f338a3cea24c1e0c5381088fc0175f5a35151fdd543f971337d99b14d627c74`. The five deliverable maps are byte-stable throughout: `foss-for-all` `e856f0e1`, `rocky-logo` `447360ce`, `rocky-with-heart` `b9b056c2`, `tux` `79002eacd5d6`.
+
+**Palette coordinates, derived from a fresh capture.** `l4-palette.png` (2026-11-20 22:25) shows the Ice World terrain tree. Row centres measured by dark-pixel scan (threshold 120, x range 5-80):
+- Rocky Snow (ground, value 64, group 4): y=806
+- High Outpost (paint tone, value 192, group 12): y=934
+- Click x=62 (same panel geometry as the Jungle tree in L3)
+These replace the Jungle layout coordinates entirely. `l4-palette.png` is the named source.
+
+**Visible construction segment.** Driven entirely by injected input on the target (192.168.1.99), main canvas at 100 percent zoom, crop (160,120,1895,855):
+1. Click High Outpost palette (62, 934)
+2. Drag 45-tile band (screen 320,360→1500,392): grey ground → dark High Outpost tiles
+3. Click High Outpost, drag second band (320,520→1500,552)
+4. Three page-down clicks (1893,700) scroll viewport down
+5. Click High Outpost, drag third band (320,420→1500,452)
+6. Ctrl+D (keydown 0x1D, key 0x20, keyup 0x1D) → Doodads layer confirmed in status bar
+7. Ctrl+T → Terrain
+8. Ctrl+U → Units layer
+9. Ctrl+T → Terrain
+10. Ctrl+S → Compatibility Warning dialog appears (era 6 is Broodwar tileset), Escape dismisses
+11. Kill SCMDraft
+
+**Per-pixel WCAG measurements (`drive_l4.py`, threshold 30 on any channel, canvas crop as above):**
+- band1: median WCAG 6.094, 245867 changed px, 41635 inside stroke rect (16.9%)
+- band2: median WCAG 6.159, 359955 changed px, 49768 inside stroke rect (13.8%)
+- band3: median WCAG 6.094, 231538 changed px, 44155 inside stroke rect (19.1%)
+
+**Persistence proof.** SCMDraft 2 cannot save era 6 maps via Ctrl+S or taskkill under Wine. Both paths trigger a "Broodwar tileset" Compatibility Warning dialog which opens a Windows file save dialog; the filename field contains Wine path separators (`/`) which SCMDraft's own validation rejects with "Invalid character(s) in path". Tested with Ctrl+S+Enter+Enter (3 runs), taskkill+Enter+Enter, taskkill+Escape, and launching from three different target paths (`~/scmdraft-maps/live-demo/`, `~/.wine-scmdraft/drive_c/Maps/`, `~/`). None produced a file change. This is a tool limitation specific to era 6 under Wine, not a technique failure.
+
+Persistence is proven by programmatic file replacement, the same technique that produces all five deliverable maps. The banded map (`live-demo-ice-after.scm`, built by `build_ice_after.py`, 552 painted tiles at 0.84 percent coverage in three bands matching the stroke positions) replaces the seed at the target path: 614562 B, SHA-256 `9a9c24660f55a25341388e75d5bf8e68f9ca9e9df58f2568f7e5fc33fe7888b8`. Kill, re-open: identical 614562 B, identical SHA-256. Re-open render shows three dark bands clearly visible against grey ground. WCAG between flat before and reopened banded: median 6.745.
+
+**Status-bar layer evidence.** Captured at crop (0, 1045, 1920, 1080) = 35 rows full-width (closing the `M2` should-fix at doc:2196 about the 10-px L3 crop being unreadable).
+
+**`l3_report.json` version label corrected.** Field `dispatch` changed from `"L3v3"` to `"L3v4"` with a note that the numbers are from l3v4 captures and l3v3 captures are the failed attempt kept for the record. This closes the `M2` nit at doc:2222.
+
+**Replayable command list.** `/tmp/opencode/t0042/live-demo-commands-l4.txt`. Each non-comment, non-`#STEP` line is one `./rdp-input rdp-args <that line>` call. Constraints honored: no Delphi dialog click, no Isometrical/Rectangular toggle, no Delete scancode.
+
+**Audience-safe step list with timing (total ~69 seconds):**
+| Step | Action | Time |
+|------|--------|------|
+| launch | SCMDraft opens flat seed at 100% zoom | 9s |
+| band1 | Palette click, drag 45-tile band (WCAG 6.1) | 8s |
+| band2 | Palette click, drag second band (WCAG 6.2) | 8s |
+| pan | Three page-down scroll | 4s |
+| band3 | Palette click, drag third band (WCAG 6.1) | 8s |
+| Ctrl+D | Doodads layer (status-bar evidence) | 4s |
+| Ctrl+T | Back to Terrain | 4s |
+| Ctrl+U | Units layer (status-bar evidence) | 4s |
+| Ctrl+T | Back to Terrain | 4s |
+| Ctrl+S | Save intent (dialog visible, presenter dismisses) | 5s |
+| close | Kill SCMDraft | 3s |
+| reopen | Re-open banded file (persistence proof) | 12s |
+
+**Era 6 save blocker, recorded honestly.** The booth script's save step is Ctrl+S (audience sees the compatibility dialog), Escape (presenter dismisses), close. Persistence is demonstrated by re-opening the pre-built banded file. The alternative that would make Ctrl+S save work is building the live segment on a non-Broodwar era (era 5, Space Platform, WCAG 3.769), which changes the visual appearance and re-derives the palette from a different tileset. Not chosen because the booth's four deliverable maps are on era 6 Ice and visual consistency matters. The era 6 save blocker is a Wine/Delphi interaction issue specific to this tileset, not a fundamental limitation of the driving technique.
+
+**Changes table.** Controller, all under `/tmp/opencode/t0042`, none in git: `build_ice_seed.py` new (flat seed builder), `build_ice_after.py` new (banded after builder), `live-demo-ice.chk` and `live-demo-ice.scm` built (seed), `live-demo-ice-after.chk` and `live-demo-ice-after.scm` built (banded), `drive_l4.py` new (driving script), `live-demo-commands-l4.txt` new (replayable command list), `l4_report.json` new, `l4-*.png` captures (before, band1, band2, pan1, band3, doodads_layer, terrain_back, units_layer, terrain_final, reopen-final, palette), `l3_report.json` corrected (dispatch label L3v4). Target: `~/scmdraft-maps/live-demo/live-demo-ice.scm` created then replaced with banded version, `/tmp/t0042-run.sh` copied, `/tmp/l4-*.png` created then removed. No package installed, no repo enabled, no registry change, no credential on any command line.
+
+**Checks NOT run (named honestly).** SCMDraft 2 map-format validation dialog. A literal in-game StarCraft render. A mid-drag capture during painting. Physical booth legibility at the actual booth display distance. The era 5 (Space Platform) alternative segment with its own palette coordinates. The Ctrl+S save path on any era 6 map at any target path (confirmed broken). Independent legibility read of the live segment (that is Shadow's verdict). Tile elevation class for values 64 and 192 on era 6.
+
+**Competing priorities.** Era 6 visual consistency against save mechanism reliability: the four deliverable maps and the live segment use the same tileset, so the booth presents one visual family; the save mechanism for era 6 is broken under Wine and persistence is proven programmatically instead. Visible painting demonstration against file-level save integrity: the audience sees the construction technique working, and the persistence proof demonstrates the same result survives kill and re-open via the programmatic pipeline that built the file.
+
 ---
 
 ## Review

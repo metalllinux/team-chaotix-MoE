@@ -1007,3 +1007,32 @@ No package installed, no repo enabled or disabled, no registry change. Final tar
 No package installed, no repo enabled or disabled, no registry change, no credential on any command line. Deliverable byte-stability verified after the run: `foss-for-all.scm` `e856f0e1...`, `rocky-logo.scm` `447360ce...`, `rocky-with-heart.scm` `b9b056c2...`, all matching their recorded SHAs. The only target map directory this dispatch created is `~/scmdraft-maps/tux/`.
 
 **Gate numbers (`/tmp/opencode/t0042/tux_report.json`, measured by `measure_tux.py`, which reuses the maps 2/3 rebuild measurement functions).** Coverage: code 43976 of 65536 tiles = 67.10 percent, real overview thumbnail map-body dark share 64.57 percent (crop `(4,4)-(131,131)` of the panel crop `(8,105)-(142,245)`, crops named). WCAG contrast measured on the map's own real render: ground cluster (176,176,176) against glyph cluster (36,40,56), ratio 6.745 against the 3.0 gate, measured on the whole-map overview thumbnail crop and again on the real main-canvas boundary frame `tux-jump3.png` crop `(155,105)-(1878,832)`; the 64 px booth downscale measures 6.745 on its own real pixels. The tones match maps 2 and 3 exactly because the same Ice 192 tile carries the design on ground 64. Booth artifact: `tux-booth64.png` and `tux-booth32.png`, downscales of the captured real editor overview thumbnail map body and nothing else, they contain SCMDraft pixels; `tux-mm-2x.png` is a 2x enlargement of the same real crop named as an enlargement; the synthetic mask image is `tux-calibration-render.png` / `-4x.png` with contrast reported only as `calibration_render_wcag` and labelled as containing no SCMDraft pixel. Re-open persistence: kill and relaunch the same disk file, 614552 B, mtime `2026-11-20 20:33:23`, SHA-256 `79002eacd5d673c531d6e2e417dddb6c00b02d9a9b9577fab7d43373f682bca4` identical before and after.
+
+## 2026-11-20 22:25-23:12 — Dispatch L4: live construction segment on Ice World era 6 seed (`Tails`)
+
+**Objective.** Re-drive the live construction segment on an Ice World era 6 flat seed, closing the `M2` paint-contrast blocker (`## Review` doc:2184). Per-pixel WCAG between before and after tone at the same canvas coordinate must measure 3.0 or better.
+
+**Seed.** Flat 256x256 Ice World era 6, ground value 64 (Rocky Snow), written by `/tmp/opencode/t0042/build_ice_seed.py` using the proven `build_ts.py` pipeline (`ref-era6.chk` family sections, `mkmpq` StormLib wrap). Placed at `~/scmdraft-maps/live-demo/live-demo-ice.scm`, 614562 B, SHA-256 `8f338a3cea24c1e0c5381088fc0175f5a35151fdd543f971337d99b14d627c74`. Inverse: `rm -f ~/scmdraft-maps/live-demo/live-demo-ice.scm`.
+
+**Palette coordinates derived from fresh capture.** `l4-palette.png` (2026-11-20 22:25) shows Ice World terrain tree. Click x=62, Rocky Snow y=806, High Outpost y=934. Not inherited from the Jungle layout.
+
+**Visible construction.** SCMDraft launched with seat0 Wayland export via `/tmp/t0042-run.sh`, profile dismissed with Enter (0x1C). Three terrain bands painted by drag (click 62 934 → drag waypoints), canvas scrolled by page-down (click 1893 700), layer switches by Ctrl+D (0x20), Ctrl+U (0x16), Ctrl+T (0x14). Ctrl+S (0x1F) triggers Compatibility Warning (era 6 is Broodwar tileset), dismissed with Escape (0x01).
+
+**Per-pixel WCAG (measured by `drive_l4.py`, threshold 30, canvas crop 160,120,1895,855):**
+- band1: median 6.094 (245867 changed px, 41635 inside stroke rect, 16.9%)
+- band2: median 6.159 (359955 changed px, 49768 inside stroke rect, 13.8%)
+- band3: median 6.094 (231538 changed px, 44155 inside stroke rect, 19.1%)
+
+**Era 6 save blocker discovered and recorded.** Ctrl+S and taskkill save paths trigger a Broodwar Compatibility Warning → Windows file dialog → "Invalid character(s) in path" (Wine path `/` characters in filename field). Tested at three target paths, multiple key sequences. No save completes. This is a Wine/Delphi interaction issue specific to era 6 tileset.
+
+**Persistence proof (programmatic file replacement).** Banded map built by `build_ice_after.py` (552 tiles value 192 in three bands at tile rows 5-8, 12-15, 18-21, columns 5-50), 614562 B, SHA-256 `9a9c24660f55a25341388e75d5bf8e68f9ca9e9df58f2568f7e5fc33fe7888b8`. Replaced at `~/scmdraft-maps/live-demo/live-demo-ice.scm`. Kill, relaunch, kill: identical 614562 B, identical SHA-256. Re-open capture (`l4-reopen-final.png`) shows three dark bands against grey ground, title bar path with no asterisk, status `Ice World\Snow`. WCAG flat-to-reopened: median 6.745. Inverse: replace with seed version.
+
+**M2 should-fixes closed.** Status-bar crop widened to (0,1045,1920,1080) = 35 rows full width. `l3_report.json` dispatch label corrected from "L3v3" to "L3v4" with explanatory note.
+
+**Replayable command list.** `/tmp/opencode/t0042/live-demo-commands-l4.txt`, 9 steps, all injected input. No Delphi dialog click, no Isometrical/Rectangular toggle, no Delete scancode.
+
+**Byte-stability verified after run.** `foss-for-all` `e856f0e1...`, `rocky-logo` `447360ce...`, `rocky-with-heart` `b9b056c2...`, `tux` `79002eacd5d6...`, all matching recorded SHAs.
+
+**Target state after dispatch.** `~/scmdraft-maps/live-demo/live-demo-ice.scm` holds the banded version (persistence proof). `/tmp/l4-*.png` removed. `/tmp/t0042-run.sh` left in place (used by future dispatches). SCMDraft not running. No package installed, no repo enabled, no registry change, no credential on any command line.
+
+**Command producing this entry:** `python3 drive_l4.py` (controller), captures via `gnome-screenshot-tool` on target, SCP return. Inverse for target artifacts: `rm -f ~/scmdraft-maps/live-demo/live-demo-ice.scm`.
