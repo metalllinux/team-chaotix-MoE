@@ -1651,3 +1651,54 @@ artifacts were not re-cut or renamed, and the panel EDID geometry was not re-mea
 **Inverse.** `rm -rf /tmp/opencode/t0042/publish /tmp/opencode/t0042/d2_stage.py /tmp/opencode/t0042/d2_report.py /tmp/opencode/t0042/d2_verify.py /tmp/opencode/t0042/d2_stage_plan.tsv`, revert this entry by git, restore the clone remote `git remote set-url origin https://github.com/metalllinux/foss-for-all-booth-demonstration-scmdraft-2.git`. No target state touched.
 
 **Checks not run.** No target contact, so target-side map hashes are not re-verified here, they remain `M9`'s claim.
+
+## 2026-11-21 22:47 — Dispatch D2 step 2, booth repo pushed and verified from the remote (`Tails`, controller-side only, no target contact)
+
+**Push.** Booth repo commit `39f2119feda546bce916f474eeeee3ae0eb2f974` on top of `3da0937`, answered
+`3da0937..39f2119  main -> main` against `https://github.com/metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2`.
+Team repo step-1 commit `ba5af6b`, pre-push selftest green at 61 checks. Working tree in the booth clone was rebuilt from the
+staged plan (`rsync -a --delete` of `publish/`, root files and planning docs copied from the team repo at `ba5af6b`), so no
+published file survives by accident.
+
+**Content as published.** `maps/deliverable/i-love-korea.scm` is the accepted two-line build `16fe455d46fd...`.
+`maps/superseded/` now holds four builds, the two pre-existing plus `superseded-i-love-korea.scm` at `82589b4205f5...` and
+`superseded-i-love-korea-2line.scm` at `e7ad27b2f4e7c6d1...`, and `PUBLISH-STATUS.md` states the measured distinction between
+them, the `-2line` file name-superseded with `MTXM` identical to the accepted build cell for cell and the whole 6-byte size
+difference in the `STR` name field, the plain-prefixed one content-superseded at 19666 glyph tiles, two designs not three. The
+four `M7`-era artifacts (`i-love-korea-mm.png`, `-mm-2x.png`, `-booth32.png`, `-booth64.png`) moved from `booth-artifacts/` to
+`booth-artifacts/superseded/` with names unchanged, recorded where they went. Accepted booth artifacts for `i-love-korea` are
+the `i-love-korea-2line-` trio with source capture named as `m9-open.png` per the `F2` ruling, and the `F2` re-cut and inpaint
+set landed as `booth-artifacts/f2-recut/`, byte-identical to the published trio at matching SHA-256 values
+(`f9446f81dd86...`, `0fdee8346af6...`, `2a9a0b860967...`). Added with `D0`'s rules, `captures/m9-open.png`, `m9-zoom25.png`,
+`m9-jump.png`, `m9-reopen.png`, the `M9` and `F2` scripts under `code/`, and `gate-reports/i-love-korea-2line_report.json`,
+`f2_artifact_check.json`, `f2_control.json`.
+
+**Verified from the remote, not from the push command.** Fresh clone at `/tmp/opencode/t0042/booth-verify-d2`: `git log` shows
+`39f2119` on `3da0937` on `7e0d58d`, `git ls-tree -r HEAD` holds 606 paths, `sha256sum` in that clone reproduces all six
+deliverable maps at their recorded values with `i-love-korea` at the accepted one, and both superseded `i-love-korea` builds at
+their recorded values. Manifest cross-check `python3 /tmp/opencode/t0042/d2_verify.py .` answers 605 rows, 605 unique paths,
+0 omitted by manifest, 0 listed-but-absent, 0 size or hash mismatches, PASS. `README.md` `e278208f88b9...` and `LICENSE`
+`5c620b9317b6...` byte-unchanged, `git diff --stat` for them between the two commits empty. API answers `"private": true`,
+`"visibility": "private"`, `"id": 1455994123`, `"pushed_at": "2026-11-21T13:47:17Z"`, visibility unchanged. Both repo names
+and the redirect evidence are recorded in `MANIFEST.md` and `PUBLISH-STATUS.md`.
+
+**Categories `D2` did not copy, named.** All `D0` withholding re-applied unchanged, chk-or-scx-intermediate 68 files including
+`m9-extracted.chk`, the rewritten `i-love-korea.chk`, `superseded-i-love-korea-2line.chk` and the three `F2` `x-*.chk`,
+harvested-reference-chks 170, upstream-library 905, upstream-dataset 5, probe-map 38, build-log-or-probe 66 including `xf2.log`,
+compiled-binary 4, build-artifact 17, shipped-starcraft-data 4, upstream-code 3, transient-note 4, credential 1, raw PPM 1,
+`colorbase.bin` 1, ISOs 0 with none on the controller, SCMDraft and Wine binaries 0 existing on the target only, game data 0.
+Named as empty rather than silently absent, booth-geometry-captures 0 (`B1` removed `b1-editor.png` under its own inverse rule,
+its measurements publish in the planning doc) and shadow-independent-read-scripts-and-reading-aids 0 from the staging directory
+(`M10`'s aids live under `/tmp/opencode/shadow-t0042`, outside the classified tree, same as at `D0`).
+
+**Inverse.** Team repo, revert this entry and the step-1 entry and the `## Implementation` D2 subsection by git. Booth repo,
+`git revert 39f2119` and push, which restores the `D0` state exactly. Controller, `rm -rf /tmp/opencode/t0042/publish
+/tmp/opencode/t0042/booth-verify-d2 /tmp/opencode/t0042/d2_stage.py /tmp/opencode/t0042/d2_report.py
+/tmp/opencode/t0042/d2_verify.py /tmp/opencode/t0042/d2_stage_plan.tsv /tmp/opencode/d2_repo_new.json
+/tmp/opencode/d2_repo_after.json`. No target state touched, no visibility change, no credential in any argv, commit message or
+landed file.
+
+**Checks that did not run, named.** No target contact, target-side map sizes, mtimes and SHAs remain `M9`'s claim, last checked
+target-side by `B1` at 18:40. SCMDraft 2's own map-validation dialog still run on no map, `V1`. No licence ruling on the landed
+captures, `R4` and `R5` open. No re-adjudication of any legibility verdict, and no new capture or map was produced by this
+dispatch.

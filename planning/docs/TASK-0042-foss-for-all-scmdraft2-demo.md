@@ -2637,9 +2637,54 @@ staging, all byte-exact, `i-love-korea` at the accepted `16fe455d46fd...`. Holds
 `__pycache__` (17), probe maps, `colorbase.bin`, compiled ELFs, ISOs absent, SCMDraft and Wine binaries exist on the target
 only.
 
+**Push result, verified on the remote rather than reported from the push command.** Booth repo commit
+`39f2119feda546bce916f474eeeee3ae0eb2f974` on top of `3da0937`, answered `3da0937..39f2119  main -> main` against the new-name
+URL; `git ls-remote` then answers the same hash at `refs/heads/main`. A fresh clone at `/tmp/opencode/t0042/booth-verify-d2`
+shows `39f2119` on `3da0937` on `7e0d58d` in `git log`, `git ls-tree -r HEAD` holds 606 paths, and `sha256sum` **in that fresh
+remote clone** reproduces all six deliverable maps at their recorded values with `i-love-korea` at the accepted
+`16fe455d46fd...`, plus `superseded-i-love-korea.scm` at `82589b42...` and `superseded-i-love-korea-2line.scm` at `e7ad27b2...`
+at their recorded values. The four `M7`-era artifacts exist only under `booth-artifacts/superseded/` in the tree, the old
+accepted-set paths are gone, and the `F2` re-cuts carry the same SHA-256 values as the published trio
+(`f9446f81dd86...`, `0fdee8346af6...`, `2a9a0b860967...`), readable in the manifest. Manifest cross-check
+`python3 /tmp/opencode/t0042/d2_verify.py .` in the fresh clone, 605 rows, 605 unique paths, 0 omitted by manifest, 0 listed but
+absent from the tree, 0 size or hash mismatches, PASS. `README.md` `e278208f88b9...` and `LICENSE` `5c620b9317b6...`
+byte-unchanged and `git diff --stat` between the two commits for them is empty, so `D1`'s brief and the licence file are intact.
+API after the push answers `"private": true`, `"visibility": "private"`, `"id": 1455994123`,
+`"pushed_at": "2026-11-21T13:47:17Z"`, visibility unchanged, and both repo names plus the redirect evidence are stated in
+`MANIFEST.md` and `PUBLISH-STATUS.md`.
+
+**Categories `D2` did not copy, named in full.** `D0`'s withholding re-applied unchanged by the imported ruleset,
+chk-or-scx-intermediate 68 files (was 62, the six additions are the `M9`-rewritten `i-love-korea.chk`,
+`superseded-i-love-korea-2line.chk`, `m9-extracted.chk` and the three `F2` `x-*.chk` extractions), harvested-reference-chks 170,
+upstream-library 905, upstream-dataset 5, probe-map 38, build-log-or-probe 66, compiled-binary 4, build-artifact 17,
+shipped-starcraft-data 4, upstream-code 3, transient-note 4, credential 1, raw-desktop-capture 1, undocumented-binary 1,
+iso-or-image 0, scmdraft-or-wine-binary-or-prefix 0, game-data 0. Two named empty categories recorded rather than left silent,
+booth-geometry-captures 0, because `B1` removed its own `b1-editor.png` under its brief's inverse rule and its measurements
+publish in the planning doc, and shadow-independent-read-scripts-and-reading-aids 0 from the staging directory, because
+`M10`'s aids and scripts live under `/tmp/opencode/shadow-t0042`, outside the classified tree, exactly as at `D0`.
+
+**Changes table.** Booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` (formerly
+`foss-for-all-booth-demonstration-scmdraft-2`, same repository, id `1455994123`), one commit `39f2119` on top of `3da0937`,
+tree 580 to 606 paths, `maps/deliverable/i-love-korea.scm` content replaced, two maps added, four booth artifacts moved,
+booth-artifacts 65 to 73 counting the moved set (64 accepted, 4 in `superseded/`, 5 in `f2-recut/`), captures 166 to 170,
+gate-reports 9 to 12, code 81 to 90, `README.md` and `LICENSE` untouched,
+visibility unchanged. Team repo, this `## Implementation` subsection and DEMO-LOG entries 22:43 and 22:47, commit `ba5af6b` for
+step 1 carrying `Robotnik`'s uncommitted `D3` queue line in the same file, step 2 follows. Controller, new files
+`/tmp/opencode/t0042/d2_stage.py`, `d2_report.py`, `d2_verify.py`, `d2_stage_plan.tsv`, the rebuilt `/tmp/opencode/t0042/publish/`
+and new clone `/tmp/opencode/t0042/booth-verify-d2`, clone remote moved to the new name, all outside git-tracked paths, inverse
+recorded in DEMO-LOG. No target state touched, no visibility change, no credential in any argv, commit message or landed file.
+
+**Competing priorities.** Brief fidelity against measured accuracy, the brief's "the last two hold content identical apart from
+the `STR` name" sentence would have published a false equivalence between the `M7` build and the accepted one, chosen, the
+measured distinction stated instead and the conflict named, traded against a manifest sentence slightly longer than the one the
+brief dictated. Four-file artifact move against the brief's named two, chosen for set consistency, traded against moving two
+files the brief did not name. Complete re-stage against a hand-edited delta tree, chosen for rule traceability, traded against
+the extra staging time and a rebuilt tree that shows zero accidental survivors.
+
 **Checks that did not run, named.** No target contact, target-side map sizes, mtimes and SHAs are not re-verified in this
 dispatch and remain `M9`'s claim, and the six target maps' byte-stability was last checked target-side by `B1` at 18:40. No
-re-adjudication of any legibility verdict, the repo carries them. No licence ruling, `R4` and `R5` are open.
+re-adjudication of any legibility verdict, the repo carries them. No licence ruling, `R4` and `R5` are open. The `D3` dispatch
+will re-stage this tree with the booth runner, its rules are recorded here.
 
 ---
 
