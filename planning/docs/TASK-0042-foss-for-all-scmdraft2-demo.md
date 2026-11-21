@@ -2573,6 +2573,12 @@ of at most 2 px and retention of at most 3.4 points, mine reports the moved-pixe
 point, **no glyph-tone pixel in either artifact moves when the overlay is removed, so the chrome-free ruling holds for these
 artifacts and holds only for the 100 percent captures.**
 
+**Execution and record order, stated.** Steps 1 and 3 ran and were recorded first, the `m9-jump.png` label edit and its finding-2
+record landed after them, and the finding-2 block was placed before finding 3 so the findings read in the order `M10` numbered
+them. The consequence is that finding 2's record was written in the same pass rather than at the moment the edit landed. Checks
+that ran, `python3 /tmp/opencode/t0042/f2_check.py`, `python3 /tmp/opencode/t0042/f2_control.py`, `sha256sum` before and after
+the rename, and `tests/selftest.sh` on the push, 61 checks passed, team repo commit `7a7c4a3`.
+
 **Checks that did not run in F2, named.** No target contact of any kind, so the target's
 `~/scmdraft-maps/i-love-korea/i-love-korea.scm` size, mtime and SHA-256 are not re-verified by me and the byte-stability of the
 other five deliverables on the target is not re-verified by me, both remain `M9`'s claim. SCMDraft 2's own map-validation dialog,
