@@ -1417,3 +1417,63 @@ content. On the controller, `rm -rf /tmp/opencode/t0042/publish /tmp/opencode/t0
 /tmp/opencode/t0042/d0_reasons.py /tmp/opencode/t0042/d0_report.py /tmp/opencode/t0042/d0_stage_plan.tsv`.
 No target state was touched, no visibility setting was changed, no repo, package or registry change was
 made on any machine.
+
+## 2026-11-21 18:20-18:40, dispatch B1, booth geometry on the target panel (Tails)
+
+Booth geometry measured from the target's own EDID and from one real SCMDraft 2 capture on the panel,
+ahead of `M9`, no map change and no map rebuild. Target `scmdraft2-map-creator` (`192.168.1.99`), kernel
+`6.12.0-211.74.1.el10_2.x86_64`.
+
+**Step 1, panel identity and size from the target's EDID and mode information.** Connected output is the
+built-in laptop panel, sysfs connector `card1-eDP-1`, `status: connected` (`card1-DP-1` and `card1-DP-2`
+disconnected), from `ls /sys/class/drm/` and each `<output>/status`. `xxd /sys/class/drm/card1-eDP-1/edid`
+gives the 128-byte EDID, manufacturer bytes 0x08-0x09 (`09 e5`) decode to `BOE`, product bytes 0x0A-0x0B
+(`4a 09`) are `0x094a`. `gdbus call --session --dest org.gnome.Mutter.DisplayConfig --object-path
+/org/gnome/Mutter/DisplayConfig --method org.gnome.Mutter.DisplayConfig.GetCurrentState` confirms
+`('eDP-1','BOE','0x094a','0x00000000')`, `is-builtin: true`, current mode `1920x1080@60.004` at scale
+1.0. EDID basic display bytes 0x15 = 34 cm and 0x16 = 19 cm give a **340 x 190 mm** panel, diagonal
+389.487 mm (15.33 in), **0.177083 mm/px horizontal** and **0.175926 mm/px vertical** at 1920x1080, the
+small h/v difference being EDID's whole-centimetre rounding.
+
+**Step 2, the two views from a real capture.** SCMDraft 2 launched for viewing with
+`/tmp/t0042-run.sh ~/scmdraft-maps/i-love-korea/i-love-korea.scm` (pid 151870), profile dialog dismissed
+with `./rdp-input rdp-args key 0x1C`, one capture via the GNOME Shell Screenshot D-Bus call to
+`/tmp/b1-editor.png` fetched to `/tmp/opencode/t0042/b1-editor.png`, 1920x1080 unscaled, title bar showing
+the `i-love-korea` path and Zoom combo `100%`, status bar `Ice World\Snow`. Overview thumbnail body is
+**128x128 px for the whole 256x256 map**, 0.500000 screen px per tile, 0.0885 mm per tile, 22.67 x 22.52
+mm on the panel, origin (18,112) reproducing `M6`/`M8` and the 128 figure resting on `M8`'s 16384-pixel
+point-sample reconstruction. Main canvas at 100 percent zoom measured by direct grid-line detection at a
+**32.0 px pitch** on both axes, viewport x167..1879 and y110..863, **1713x754 px = 53.53 x 23.56 tiles**,
+32 screen px per tile, 5.667 mm per tile horizontal and 5.630 mm vertical.
+
+**Step 3, on-screen size and angular subtence.** 5-tile stroke, main canvas 160 px = 28.333 mm, 1.623 /
+1.082 / 0.812 deg at 1 / 1.5 / 2 m; thumbnail 2.5 px = 0.4427 mm, 0.0254 / 0.0169 / 0.0127 deg, the
+thumbnail stroke falling below the about 1 arcmin reference acuity by 2 m, which is the mechanism behind
+the `M8` 64 px failures. 238-tile glyph height, thumbnail 119 px = 20.935 mm, 1.200 / 0.800 / 0.600 deg;
+main canvas 7616 px = 1339.85 mm, taller than the 190 mm panel, so at 100 percent zoom only 23.56 tiles
+of its 238-tile height are on screen at once and the rest is panned. The 1 to 2 m distances are a bounded
+band, not a measured venue fact.
+
+**Step 4, the 64 px and 32 px bounds restated.** Both are thumbnail-class whole-map bounds (0.5 and 0.25
+of the 128 px body), 0.25 and 0.125 px per tile, whole-map 11.333 mm and 5.667 mm, 5-tile stroke 0.38 to
+0.76 and 0.19 to 0.38 arcmin across the band. The main-canvas booth view has no whole-map 64/32 px bound,
+it renders at 32 px per tile, and the shipped 5-tile stroke there is 160 px = 28.3 mm = 0.812 to 1.623 deg.
+So the `M8` 64 px blocker is thumbnail-class, and on the booth medium (the main canvas, panned) the shipped
+single-row build survives at the measured stroke size.
+
+**Checks that did not run, named.** No blind human viewer check at the named distances, the venue distance
+at Centerfield EAST 18F is unmeasured. No in-game StarCraft minimap capture, the playability path is
+blocked on this target, the thumbnail proxy stands. No independent re-read of these numbers, a `Shadow`
+read is not part of `B1`. No per-pixel WCAG on this dispatch, `S1` re-measures contrast. Canvas width
+measured 1713 px here against the 1735 px recorded by `L3`/`L4`/`M1`, the 22 px difference is this launch's
+dock and scrollbar chrome and is recorded, not reconciled.
+
+**Exact inverse.** SCMDraft opened for viewing only, maps not saved, teardown `kill 151870`,
+`pkill -u howard -f "ScmDraft 2.exe"`, `pkill -u howard -x wineserver`, all verified `NONE`, no other
+process killed. Target captures removed `rm -f /tmp/b1-capture.png /tmp/b1-editor.png`, verified
+`NO_CAPTURES`. Controller files `b1-capture.png`, `b1-editor.png`, `b1_measure.py`, `b1_measure2.py`,
+`b1_measure3.py`, `b1_thumb.py`, `b1_calc.py` under `/tmp/opencode/t0042`, inverse `rm -f` each.
+Deliverables byte-stable after the viewing open, target `sha256sum` reproduces `i-love-korea`
+`82589b4205f5...`, `foss-for-all` `e856f0e1...`, `rocky-logo` `447360ce...`, `rocky-with-heart`
+`b9b056c2...`, `tux` `79002eacd5d6...`, `republic-of-korea` `c773a534a564...`. No map changed, no map
+rebuilt.

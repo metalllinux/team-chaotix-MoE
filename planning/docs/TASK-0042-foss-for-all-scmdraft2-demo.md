@@ -13,6 +13,8 @@
 
 ## Status
 
+**B1 measures the booth geometry, it re-bases the legibility question on the main canvas, and the `i-love-korea` decision that follows (2026-11-21 18:40, `Robotnik` session `ses_e02cb72dbffeRUE9SOHAZEtldT`).** `Tails`'s pass is at `## Implementation` doc:2252 and DEMO-LOG 1421, no map changed, target left clean with its teardown verified and all six deliverable SHAs reproducing afterwards. Measured from the target, not inferred. Output `card1-eDP-1`, built-in, `BOE 0x094a`, mode `1920x1080@60.004` at scale 1.0, EDID 340 x 190 mm, 389.487 mm diagonal, 0.177083 mm/px horizontal and 0.175926 mm/px vertical. Overview thumbnail body 128x128 px for the whole 256x256 map, 0.500000 screen px/tile, 0.0885 mm/tile. Main canvas at 100 percent zoom, 32.0 px/tile by direct grid-line detection on both axes, viewport 1713x754 px, 53.53 x 23.56 tiles, 5.667 mm/tile horizontal and 5.630 mm/tile vertical. The 64 px and 32 px bounds are restated as thumbnail-class whole-map bounds, 0.25 and 0.125 px/tile, whole-map 11.333 mm and 5.667 mm, and `M8`'s `I`, `O` and `E` failures are now precisely a 2.5 px, 0.443 mm stroke failing at 0.0127 to 0.0254 degrees. **The arithmetic B1 makes possible, derived by `Robotnik` from B1's numbers and stated as derived rather than as measured.** The booth medium cannot show a whole map legibly at all, 256 tiles at 32 px/tile is 8192 px against a 1920 px panel, so every main-canvas presentation is framed and panned, and what decides whether a letterform reads is the zoom at which one line of glyphs fits the 23.56-tile-tall viewport. At that zoom the shipped single-row build puts a line of 238 tiles into 23.56 tiles, 0.099 scale, 3.17 px/tile, so a 5-tile stroke is 15.8 px, 2.80 mm, 0.160 degrees at 1 m and 0.080 degrees at 2 m, which is 4.8 to 9.6 arcmin. The two-line rebuild `M8` measured puts 112 tiles into the same viewport, 6.74 px/tile, so an 8-tile stroke is 53.9 px, 9.54 mm, 0.54 degrees at 1 m and 0.27 degrees at 2 m, 16 to 32 arcmin, 3.4 times the shipped figure. **Decision, recorded rather than asked.** `M9` runs, on the two-line 8-tile-stroke layout `M8` measured as passing, then `M10` reads it, and `M10` is the reader that can still prefer the shipped build with its own numbers attached. Reason, the shipped build sits at the borderline of the arcmin band a normal viewer needs for form discrimination and the venue distance is unmeasured, while the rebuild sits 3.4 times above that band, and with six days left headroom is the property to buy. Counter-reading kept rather than dismissed, B1 confirms `M8`'s blocker is thumbnail-class only and that on a panned main canvas the shipped 5-tile stroke is 160 px and 28.33 mm, which is enormous, so if `M10` reads the shipped build as the better booth answer the decision is reversible because the shipped file stays on disk under its `superseded-` name. **One requirement B1 adds to every later booth artifact and to `S1`, and it is now a gate item rather than a style note.** A booth capture must state its zoom as screen pixels per tile and millimetres per stroke, and the legibility claim must be made at the zoom where the design fits the viewport, because the same map spans 3.4 orders of magnitude between the thumbnail and a fit-to-viewport main-canvas frame and a claim that does not name the zoom is not a claim. **Two facts I accept as recorded rather than reconciled.** B1 measures the canvas at 1713 px against the 1735 px `L3`, `L4` and `M1` recorded, and the 22 px difference is this launch's chrome. B1's numbers are builder-measured with no independent re-read and no per-pixel contrast, so `M10` re-derives them rather than inheriting them, and the angular subtence band of 1 m, 1.5 m and 2 m remains a bounded band rather than a venue fact because the audience distance is still unmeasured.
+
 **D0 published the interim booth record to the documentation repo, and I verified it from GitHub rather than from the dispatch report (2026-11-21 18:20, `Robotnik` session `ses_e02cb72dbffeRUE9SOHAZEtldT`).** `Tails`'s pass is at `## Implementation` (Dispatch D0), booth repo commit `3da0937`, team repo commits `2b29d7e` and `60aa555`, DEMO-LOG 17:50 and 18:10, selftest green at 61 checks on both pushes. My own checks, run against the GitHub API with the token read at run time through a stdin `curl --config` so nothing lands in argv or in a file. `commits?per_page=3` returns `3da0937` named `TASK-0042 D0: publish the interim booth record` on top of `7e0d58d`. The recursive tree at `3da0937` holds 580 blobs totalling 170675048 B, `maps/deliverable/` holds the six `.scm` files at 614552 to 614566 B, and `maps/superseded/` holds the two ratified prefixed builds. The repo still answers `"private": true`. Interrogating the manifest against the tree rather than trusting it, `MANIFEST.md` lists 585 paths against 580 blobs, and the six listed-but-not-present paths are the withheld categories named by their controller origin (`base-map.scx`, `colorbase.bin`, `starcraft_mpq_io.py`, the Natural Earth `v5.1.2` dataset, two `D0` scratch scripts) while the one present-but-not-listed path is the pre-existing `LICENSE`. That reads as a manifest that states what it withheld, which is what the box asked for, and I have ticked the interim publication box on that evidence with the licence caveat kept visible. **One exclusion decision of mine to record, because it is the kind a later reader would otherwise call inconsistent.** `D0` withheld 62 CHK and SCX intermediates including the team's own generated CHKs, on the reasoning that the published `.scm` containers already hold the same terrain data, so publishing the loose intermediates adds format detail without adding a deliverable. Accepted, and the consequence is named. A reader who wants the CHK layout the team harvested must read it out of the published `.scm` files with their own StormLib build, which the record already cites at the pinned commit. **What the publish does not settle, stated so nobody reads it as settled.** The 166 editor captures and 65 booth artifacts are published into a private repo, and they are renders of Blizzard tileset tones. `R4` and `R5` have not ruled on them, the target-side copies of the maps were not re-hashed in this dispatch (`M7` last did that at 14:28), and SCMDraft 2's own map-validation dialog has still run on no map, which remains `V1`'s job.
 
 **One credential found on the controller during `D0`, with the operator's rotation step recorded here (2026-11-21 18:20, `Robotnik`).** The target's GNOME remote-desktop credential sits as one line of `/tmp/opencode/t0042/rdp-args`, mode 600, 79 B. It is in no commit and no published or tracked file, and the full evidence and the checks that came back clean are written in `## Security`, where AGENTS.md section 4 puts it. Operator action, rotate `~/AI/secrets/scm_draft_rdp_pass.md` together with the target's credential store and TASK-0041 hygiene item 2, and separately fix `~/AI/secrets/scm_draft_pass.md` from mode 644 to 600, which is re-verified as still unfixed today. Deleting the scratch file is not rotation and I have not deleted it, because `S1`'s booth run script and `B1`'s capture work both need the injector to authenticate before the booth.
@@ -265,7 +267,7 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
 - [ ] Dispatch M7, `Tails`, build the sixth map `i-love-korea` per the `## Status` decision of 2026-11-21 09:55. Brief, paste verbatim. "Read `## Status` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, the sixth-deliverable decision, and the proven pipeline. Add one new mask function to the existing mask module under `/tmp/opencode/t0042` that composes one row reading a large capital `I`, one filled heart silhouette, then `KOREA` in capitals, reusing the `glyph.py` letterform renderer at the largest glyph height the 256 by 256 extent permits and the `rocky.py` heart for the `<3`, with no internal counter in the heart and no second tone anywhere in the design, and apply the feature floor `F1` settled, the minimum-dimension reading, every kept component at least 10 tiles on both axes. Build it with `build_ts.py silhouette ts-harvest/ref-era6.chk <out> 192 64 64 <maskname>` and place it at `~/scmdraft-maps/i-love-korea/i-love-korea.scm` on 192.168.1.99. Produce your own four gate numbers, coverage percent, WCAG contrast measured on that map's own real SCMDraft render, a booth artifact that is a uniform Lanczos downscale of a crop of the captured editor overview thumbnail containing zero chrome, and the re-open hash, size and mtime after a kill and relaunch. Report the measured glyph height in tiles and the thinnest stroke width in tiles, and state whether each letterform survives the 4x downscale, measured rather than asserted. Do not touch the four accepted maps or the `republic-of-korea` rebuild that `M5` is producing. Constraints unchanged, one dated `DEMO-LOG.md` entry per target step with its exact inverse, everything under `/tmp/opencode/t0042` or a maps directory on the target, no binary and no game data in a git-tracked path, write your `## Implementation` subsection and the log entry as each step completes rather than at the end, and do not declare the map legible because `M8` decides that. **Complete 2026-11-21 14:52, commits `3ceceb8` and `0e70f28`, child `ses_e0384dbc6ffe4xQHojAgvaVPbo`, DEMO-LOG 14:26, 14:28, 14:52, selftest green at 61 checks.** Coverage 30.01 percent, WCAG 6.745 on its own render, 614561 B `82589b4205f5...` re-open identical, glyph height 238 tiles, thinnest stroke 5 tiles, heart 70x68. See the `## Status` entry of 2026-11-21 15:00 for the 4-of-7 booth64 result that `M8` must judge."
 - [x] Dispatch M8, `Shadow`, independent read of the `M7` `i-love-korea` artifacts, deciding whether an unaided viewer reads `I`, a heart, and `KOREA` at the real whole-map overview render and at 64 px, with its own coverage and contrast measurements attached, and whether the booth crop is uniform and chrome-free. If `M8` rejects, record which of a larger glyph height, fewer characters, or a two-line layout the measurement points to, and whether the map is blocked or rebuilt. Carry one measured fact into that read, `M7` reports that at the real booth64 render 4 of 7 letterforms pass, `K`, `R`, `A` and the heart, while `I`, `O` and `E` fail as mid-tone faded strokes rather than as absent glyphs, so the question `M8` answers is whether an unaided reader can read the row at all, not whether every stroke survives. **Complete 2026-11-21 15:15, child `ses_e03445089ffeMfFIZEP3bpQJat`, verdict at `## Review` doc:2727 to doc:2790. Not booth-accepted as shipped, not blocked, reads at 128 px and fails at 64 px on `I`, `O` and `E` stroke width. Two facts carried, the editor thumbnail is a top-left 2x2 point sample, and the viewport-indicator overlay sits inside the body crop at 2.169 contrast. Rebuild dispatched as `M9`, read as `M10`.**
 - [ ] Dispatch B1, `Tails`, measure the booth geometry on the target, ahead of `M9`, per the `## Status` decision of 2026-11-21 15:40. Brief, paste verbatim. "Read `## Status` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, the booth display medium entry. Derive the booth geometry from the target itself, from commands and real captures, not from assumptions. 1, read the laptop panel's identity and physical size from the target's own EDID and mode information, record the connected output name, the panel width and height in millimetres, and the millimetres per screen pixel at 1920x1080, naming the command that produced each number. 2, from a real capture of SCMDraft 2 running on that display, measure the on-screen pixel size of the overview thumbnail body and of the main canvas viewport at 100 percent zoom, and report screen pixels per tile and millimetres per tile for both views. 3, report the on-screen size of a 5-tile stroke and of the shipped 238-tile glyph height in each view, with their angular subtence at each of 1 m, 1.5 m and 2 m, stating plainly that those distances are a bounded band and not a measured venue fact. 4, restate the recorded 64 px and 32 px artifact bounds in terms of the two views so a later reader can tell which bound applies where, and name every check that did not run. No map rebuild in this dispatch, no change to any map, and the exact inverse of every capture or file you create."
-- [ ] Dispatch M9, `Tails`, rebuild `i-love-korea` as the two-line variant, GATED ON `B1`. Do not run this dispatch until `B1` reports, because `B1` decides whether the rebuild is needed at all, and the shipped single-row 238-tile build stays on the target unchanged until then. on the layout `M8` measured as passing, per the `## Status` decision of 2026-11-21 15:20. Brief, paste verbatim. "Read `## Status` and the `M9` bullet in `## Next Actions` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, and `Shadow`'s `M8` findings at `## Review` doc:2727 to doc:2790. Rebuild the mask as two lines, `I` and the filled heart on the first line and `KOREA` on the second, at `S_X` 8 and `S_Y` 16 so every stroke is 8 tiles or thicker, with the heart kept at 10 tiles or more on both axes under the minimum-dimension floor, and ground margins of at least 8 tiles. Keep the shipped single-row build on disk under the `superseded-` prefix and name the inverse. Produce the four gate numbers from your own measurements, coverage, WCAG on that map's own real render, a uniform single-step Lanczos booth artifact at 0.5 and 0.25 of a body crop you locate yourself, and the re-open hash, size and mtime. Because `M8` proved the editor thumbnail is a top-left point sample of each 2x2 tile block, state the width of every stroke and every gap in tiles so a reader can tell what the thumbnail can represent at all. Capture a body crop with no viewport-indicator overlay, or name each glyph position the overlay covers and its contrast against ground, and do not call an artifact chrome-free without that check. Report measured letter height per line and measured per-letter ink retention at the 64 px artifact, and do not declare the map legible because `M10` decides that."
+- [ ] Dispatch M9, `Tails`, rebuild `i-love-korea` as the two-line variant, `B1` HAS REPORTED and the gate reading is in the `## Status` entry of 2026-11-21 18:40, so this dispatch is cleared to run. Amendment carried from `B1`, every booth capture must state its zoom as screen pixels per tile and millimetres per stroke, and it must include a main-canvas frame at the zoom where one line of glyphs fits the 23.56-tile-tall viewport, about 0.21 px/tile for a 112-tile line, because `B1` proved a whole map cannot be shown legibly on the panel at all and the readable zoom is the fit-to-line zoom. Do not run this dispatch until `B1` reports, because `B1` decides whether the rebuild is needed at all, and the shipped single-row 238-tile build stays on the target unchanged until then. on the layout `M8` measured as passing, per the `## Status` decision of 2026-11-21 15:20. Brief, paste verbatim. "Read `## Status` and the `M9` bullet in `## Next Actions` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, and `Shadow`'s `M8` findings at `## Review` doc:2727 to doc:2790. Rebuild the mask as two lines, `I` and the filled heart on the first line and `KOREA` on the second, at `S_X` 8 and `S_Y` 16 so every stroke is 8 tiles or thicker, with the heart kept at 10 tiles or more on both axes under the minimum-dimension floor, and ground margins of at least 8 tiles. Keep the shipped single-row build on disk under the `superseded-` prefix and name the inverse. Produce the four gate numbers from your own measurements, coverage, WCAG on that map's own real render, a uniform single-step Lanczos booth artifact at 0.5 and 0.25 of a body crop you locate yourself, and the re-open hash, size and mtime. Because `M8` proved the editor thumbnail is a top-left point sample of each 2x2 tile block, state the width of every stroke and every gap in tiles so a reader can tell what the thumbnail can represent at all. Capture a body crop with no viewport-indicator overlay, or name each glyph position the overlay covers and its contrast against ground, and do not call an artifact chrome-free without that check. Report measured letter height per line and measured per-letter ink retention at the 64 px artifact, and do not declare the map legible because `M10` decides that."
 - [ ] Dispatch M10, `Shadow`, independent read of the `M9` rebuild, deciding whether `I`, the heart, and `KOREA` read at the real 128 px overview render and at 64 px, with its own coverage, contrast and ink-retention numbers, whether the booth crop is uniform and genuinely chrome-free against the viewport-indicator overlay, and whether the two-line layout or a single row with thicker strokes is the better booth answer. If it rejects again, `i-love-korea` is recorded as blocked with the measurement as the reason and the documentation states that limitation rather than presenting the map.
 - [ ] Dispatch P1, `Tails`, the one remaining `uinput` injection pass on the target as the last playability attempt, DoD option (b).
 - [ ] Dispatch V1, `Tails`, SCMDraft 2's own map validation on each of the five saved maps. This DoD box has never run on any map, and dialog buttons do not respond to injected clicks, so drive it by keyboard navigation or record it as not achievable with the evidence.
@@ -2248,6 +2250,131 @@ the licence question is now concrete rather than hypothetical: the captures are 
 tone renders, `code/` contains the MIT StormLib consumer `chkdump.c` and the unruled `richchk` fragments are
 withheld, and the Korea mask's Natural Earth derivation is documented in `planning/`. The `rdp-args` credential
 finding above needs a `## Security` entry and a rotation line in `## Status`, which only `Robotnik` may write.
+
+### Dispatch B1, booth geometry on the target panel (2026-11-21 18:20-18:40, `Tails`, session `ses_e02948a62ffe0IkVVyrYhp6aDU`)
+
+Booth geometry measured from the target itself and from one real capture, no map change and no map
+rebuild. The target is `scmdraft2-map-creator` (`192.168.1.99`), kernel `6.12.0-211.74.1.el10_2.x86_64`,
+read through `sshpass -f ~/AI/secrets/scm_draft_pass.md ssh howard@192.168.1.99`.
+
+**Step 1, panel identity and physical size from the target's own EDID and mode information.** The
+connected output is the laptop's built-in panel, sysfs connector `card1-eDP-1`, `status: connected`
+from `ls /sys/class/drm/` and each `<output>/status` (`card1-DP-1` and `card1-DP-2` are
+`disconnected`). Command `xxd /sys/class/drm/card1-eDP-1/edid` returns the 128-byte EDID, whose
+manufacturer field (bytes 0x08-0x09, `09 e5`) decodes to `BOE` and whose product code (bytes 0x0A-0x0B,
+`4a 09`) is `0x094a`. GNOME Mutter confirms the same identity through
+`gdbus call --session --dest org.gnome.Mutter.DisplayConfig --object-path /org/gnome/Mutter/DisplayConfig
+--method org.gnome.Mutter.DisplayConfig.GetCurrentState`, which reports monitor tuple
+`('eDP-1', 'BOE', '0x094a', '0x00000000')`, `'is-builtin': true`, `'display-name': 'Built-in display'`,
+and the current mode `1920x1080@60.004` flagged `is-current` and `is-preferred` at scale 1.0, confirming
+the 16:9 panel the operator recorded. Physical size comes from the EDID basic display parameters, byte
+0x15 = `0x22` = 34 cm horizontal and byte 0x16 = `0x13` = 19 cm vertical, so the panel area is
+**340 mm x 190 mm**, diagonal `hypot(340,190) = 389.487 mm` = 15.33 in. Millimetres per screen pixel at
+1920x1080 are **0.177083 mm/px horizontal** (`340/1920`) and **0.175926 mm/px vertical** (`190/1080`).
+Those two differ because EDID stores the panel size in whole centimetres, so the true value is a square
+pixel near 0.176 mm/px, and every figure below names which axis it used. No panel model number beyond
+`BOE 0x094a` is claimed, the EDID carries no readable model-name descriptor.
+
+**Step 2, on-screen size of the two views from a real capture.** SCMDraft 2 was launched on the panel
+with `/tmp/t0042-run.sh ~/scmdraft-maps/i-love-korea/i-love-korea.scm` (pid 151870, launched for viewing
+only), the profile dialog dismissed with `./rdp-input rdp-args key 0x1C` (AT set 1 Enter), and one full
+screen capture taken with the GNOME Shell Screenshot D-Bus call to `/tmp/b1-editor.png`, fetched to
+`/tmp/opencode/t0042/b1-editor.png`. PIL reports the capture at **1920x1080**, equal to the panel, so it
+is unscaled. The title bar reads `SCmdDraft 2.0 (Beta 0.9.10) - [/home/howard/scmdraft-maps/i-love-korea/i-love-korea.scm ]`
+and the Zoom combo reads `100%`, so the capture is the 100 percent main-canvas view. The status bar
+reads `Ice World\Snow`, named here because `i-love-korea` was built on the Ice tileset and the editor
+label is `Snow`.
+
+Overview thumbnail body. The minimap preview box frame is detected by full-width dark runs at rows
+111 and 246 (x 8..166) and full-height dark runs at columns 8 and 165 (y 111..249). The map render
+origin is (18,112), which reproduces the body-crop origin used by `M6` and `M8`. `M8` established with a
+16384-pixel point-sample reconstruction that this body is exactly **128x128 px** for the whole 256x256
+map, and this capture's origin matches it, so the thumbnail body is **128 px for 256 tiles**, **0.500000
+screen px per tile**, and **0.0885 mm per tile** (`0.5 * 0.177083`). On the panel that body is
+128*0.177083 = 22.67 mm wide by 128*0.175926 = 22.52 mm tall. A fresh luminance scan of the box interior
+found the ground tone reaching x164 rather than x145, which is the box's inner bevel reading the same
+light tone as the map ground, not extra map, so the 128x128 figure from `M8`'s pixel-exact check is the
+one used and the extra width is recorded as bevel, not map.
+
+Main canvas viewport at 100 percent zoom. Direct grid-line detection over the canvas (`grid_pitch`,
+clear band y125-165 for vertical lines and x180-420 for horizontal lines) finds **32.0 px median pitch**
+on both axes, 53 vertical grid lines from x198 to x1862 and 23 horizontal grid lines from y141 to y845.
+Viewport edges are x167..1879 and y110..863, so the viewport is **1713x754 px = 53.53 x 23.56 tiles**,
+and the tile scale is **32 screen px per tile**, matching the `L3`/`L4`/`M1`/`M4` record of a
+1735x735, about 54x23 viewport to within the 22 px this capture's dock and scrollbar chrome consumes.
+That is **5.667 mm per tile horizontal** (`32 * 0.177083`) and **5.630 mm per tile vertical**
+(`32 * 0.175926`).
+
+**Step 3, on-screen size and angular subtence of a 5-tile stroke and the shipped 238-tile glyph, in each
+view.** Angular subtence is `2*atan(size/(2*distance))`, horizontal features using the horizontal mm/px
+and vertical features the vertical mm/px. The distances 1 m, 1.5 m and 2 m are a bounded band chosen to
+bracket an operator standing at a laptop on a booth table, **not a measured venue fact**, no venue
+distance was measured on this dispatch.
+
+5-tile stroke. Main canvas, 5*32 = 160 px = 28.333 mm, subtending 1.623 deg (97.4 arcmin) at 1 m,
+1.082 deg (64.9 arcmin) at 1.5 m, 0.812 deg (48.7 arcmin) at 2 m. Overview thumbnail, 5*0.5 = 2.5 px =
+0.4427 mm, subtending 0.0254 deg (1.52 arcmin) at 1 m, 0.0169 deg (1.01 arcmin) at 1.5 m, 0.0127 deg
+(0.76 arcmin) at 2 m. The eye's reference acuity of about 1 arcmin is the comparison, so a main-canvas
+5-tile stroke is 49 to 97 arcmin across the band, comfortably resolvable, while a thumbnail 5-tile stroke
+is about 1.5 arcmin at 1 m and falls below 1 arcmin by 2 m, which is the optical mechanism behind the
+`M8` 64 px letterform failures.
+
+238-tile glyph height. Overview thumbnail, 238*0.5 = 119 px = 20.935 mm, subtending 1.200 deg at 1 m,
+0.800 deg at 1.5 m, 0.600 deg at 2 m. Main canvas, 238*32 = 7616 px = 1339.85 mm. That glyph is taller
+than the panel itself (190 mm tall, which subtends 10.854 deg at 1 m, 7.248 at 1.5 m, 5.439 at 2 m), so at
+100 percent zoom the whole glyph cannot appear in one viewport, a viewport shows 23.56 tiles of its
+238-tile height (754 px, about 132.5 mm) and the rest is reached by panning. The full-extent subtences
+(67.6 deg at 1 m, 48.1 at 1.5 m, 37.0 at 2 m) are reported as the whole-glyph figure and are larger than
+the panel can show, which is stated rather than smoothed.
+
+**Step 4, restating the 64 px and 32 px artifact bounds as view bounds.** Both recorded bounds are
+downscales of the 128x128 overview thumbnail body (0.5 and 0.25 of it), so both are **thumbnail-class
+whole-map bounds**, not main-canvas bounds. The 64 px bound is a whole 256-tile map shown at **0.25 px per
+tile**, whole-map 11.333 mm on the panel, where the shipped 5-tile stroke is 1.25 px = 0.2214 mm =
+0.38 to 0.76 arcmin across the band, below reference acuity. The 32 px bound is **0.125 px per tile**,
+whole-map 5.667 mm, 5-tile stroke 0.111 mm = 0.19 to 0.38 arcmin, the already recorded out-of-scope floor.
+The main-canvas booth view has no whole-map 64 or 32 px bound, it renders at 32 px per tile and shows
+53.5x23.5 tiles, and there the same 5-tile stroke is 160 px = 28.3 mm. So the `M8` 64 px blocker is a
+thumbnail-class failure, and on the booth medium the `Status` entry of 2026-11-21 15:40 records (the main
+canvas, panned) the shipped 238-tile, 5-tile-stroke build puts a stroke at 0.812 to 1.623 deg, which is
+not the regime that failed at 64 px. This is the measurement the `B1` gate on `M9` was staged to produce,
+and it says the shipped single-row build survives on the main canvas at the measured stroke size while the
+thumbnail-class artifact is where it fails.
+
+**Checks that did not run, named.** No blind human reader verified these angular figures against a real
+viewer at the named distances, the 1 to 2 m band is a bounded band not a venue measurement, and the venue
+distance at Centerfield EAST 18F on 2026-11-28 is unmeasured. No in-game StarCraft minimap render was
+captured, the playability path (TASK-0042 item 3) is blocked on this target, so the thumbnail proxy stands
+and a literal in-game minimap geometry is unconfirmed. No independent agent has re-read these
+measurements, a `Shadow` re-read is not part of `B1`. The EDID reports centimetre-rounded panel size, so
+millimetres per pixel carries about plus or minus 0.5 mm of panel-size rounding across the whole panel
+width and height. The main-canvas viewport width measured 1713 px here against the 1735 px recorded by
+`L3`, `L4` and `M1`, the difference is this launch's dock and scrollbar chrome and is recorded rather than
+reconciled to the earlier figure. No per-pixel WCAG or tone measurement was taken on this dispatch, `B1`
+measures geometry, `S1` re-measures contrast on the palette entry the live segment selects.
+
+**Exact inverse of every target change and file.** SCMDraft 2 was opened on the target for viewing only
+and its maps were not saved, the teardown is `kill 151870`, `pkill -u howard -f "ScmDraft 2.exe"`,
+`pkill -u howard -x wineserver`, all verified `NONE` afterwards, and no other process was killed. The two
+captures the dispatch created on the target, `/tmp/b1-capture.png` and `/tmp/b1-editor.png`, are removed by
+`rm -f /tmp/b1-capture.png /tmp/b1-editor.png`, verified `NO_CAPTURES`. Controller-side files created are
+`/tmp/opencode/t0042/b1-capture.png`, `b1-editor.png`, `b1_measure.py`, `b1_measure2.py`, `b1_measure3.py`,
+`b1_thumb.py`, `b1_calc.py`, inverse `rm -f` on each. Deliverables verified byte-stable after the viewing
+open, `sha256sum` on the target reproduces `i-love-korea` `82589b4205f5...`, `foss-for-all` `e856f0e1...`,
+`rocky-logo` `447360ce...`, `rocky-with-heart` `b9b056c2...`, `tux` `79002eacd5d6...`, `republic-of-korea`
+`c773a534a564...`, every one unchanged. No map changed and no map rebuilt.
+
+**Alternatives considered.** Option A, read panel size from the EDID basic display parameters at bytes
+0x15/0x16, chosen, it is the target's own declared physical size and Mutter confirms the identity.
+Option B, read physical millimetres from `xrandr`, rejected, the session is Wayland and GNOME Mutter does
+not expose width_mm/height_mm on `GetCurrentState`, the EDID is the authoritative Wayland source. Option C,
+derive tile scale from the previously recorded viewport figures rather than measure it, rejected for the
+canvas because the brief requires a real capture, the 32 px pitch was measured from grid lines in this
+capture; the thumbnail body scale is taken from `M8`'s 16384-pixel reconstruction because that check is
+pixel-exact and a fresh luminance scan cannot separate the box bevel from map ground. Competing priorities
+traded, a single viewing launch was used for both view measurements to keep the target footprint to one
+launch and one teardown, which means the thumbnail and canvas measurements come from the same capture and
+`i-love-korea`'s specific chrome (dock width, scrollbar) is what sets the 1713 px canvas width.
 
 ---
 
