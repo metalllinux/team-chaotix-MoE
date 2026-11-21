@@ -2412,7 +2412,9 @@ identity, independent read. These land in the target step.
 Superseded build 614561 B `82589b4205f5...` (mtime unchanged, not a git-tracked path), rebuild 614561 B `16fe455d46fd...`.
 Viewing launch only (pid 152909), no editor save, per the `## Status` deliverable-save prohibition. Captures
 `m9-open.png` (Zoom combo `100%`), `m9-zoom25.png` (Zoom combo walked to `25%`, the editor floor), `m9-jump.png`
-(overview-jump click (81,175), line 2 framed), `m9-reopen.png`. Kill and relaunch, then teardown `rm -f /tmp/m9-*.png`,
+(overview-jump click (81,175); **label corrected by `F2`, this frame does not frame line 2**, see the `F2` record below,
+it frames map cols 18-233 and rows 78-173 at 25 percent, carrying 38 of line 2's 112 rows with `K` and `A` clipped),
+`m9-reopen.png`. Kill and relaunch, then teardown `rm -f /tmp/m9-*.png`,
 `NO_SCM_RUNNING` verified. All five other deliverables byte-stable after the run.
 
 **Fit-to-line zoom, honest bound.** `B1` derived the fit-to-line zoom as about 21 percent (6.74 px/tile) for a 112-tile
@@ -2467,6 +2469,118 @@ process killed. Controller files `m9-open.png`, `m9-zoom25.png`, `m9-jump.png`, 
 `i-love-korea-2line-booth64.png`, `i-love-korea-2line-booth32.png`, `i-love-korea-2line_report.json`, inverse `rm -f` each.
 The full M9 build inverse on the target, `mv superseded-i-love-korea.scm i-love-korea.scm` (restores the shipped single-row
 build to the plain name and removes the rebuild), which is the inverse `M10` may use if it prefers the shipped build.
+
+### Dispatch F2, closing three `M10` record and artifact findings (2026-11-21 21:38, `Tails`, controller-side only)
+
+**Scope, inputs, and what I ran.** The three findings `M10` wrote for me at `## Review` doc:3174, doc:3198 and doc:3212.
+Controller-side only. No target contact, no map content changed, the accepted map untouched, the target's map files untouched,
+no gate reopened. My scripts, `/tmp/opencode/t0042/f2_check.py` (containers, capture census, re-cut) and
+`/tmp/opencode/t0042/f2_control.py` (component decode, `STR` name decode, inpaint control), reports `f2_artifact_check.json`
+and `f2_control.json`, re-cut artifacts under `/tmp/opencode/t0042/f2-recut/`. Neither script imports a builder module. Masks
+come from `MTXM` low bytes, tones from the captures, `chkdump` (StormLib, MIT) only to decompress `.scm` containers.
+
+**Finding 1, the duplicate `i-love-korea-2line` name is closed under the ratified `superseded-` scheme.** `sha256sum` before,
+`i-love-korea.scm` 614561 B `16fe455d46fd88671a98a79f3db65d934400ce0d4edd98f677313e6668d38ba9`, `i-love-korea-2line.scm`
+614567 B `e7ad27b2f4e7c6d12771b410edd289821fe438d7e4f2bc62caacb40a0b63efab`, `superseded-i-love-korea.scm` 614561 B
+`82589b4205f5deb8ed123273f1c6b5262472806bb90373d6b267c8f27e2319a0`. Decoded each container myself, `MTXM` 131072 B,
+distinct low bytes `[64, 192]` for all three, glyph tiles 20600 for the first two and 19666 for the third. **The deciding
+measurement, `accepted` versus `-2line` `MTXM` is identical cell for cell, first differing tile none.** The `-2line` file is
+the same 20600-tile map as the accepted deliverable under a different internal map name, and the 6-byte size difference is
+exactly the name field. My `STR` decode, the name-length u16 including the terminating NUL sits at block offset 2 and reads 13
+for `i-love-korea` and 19 for `i-love-korea-2line`, the name string itself at block offset 2048, so 2062 B versus 2068 B and 614561
+versus 614567. `superseded-i-love-korea` decodes to `i-love-korea` with 19666 glyph tiles, a different map. **So the prefix on
+this pair marks a name-superseded duplicate, not a content-superseded build, and that distinction is recorded because `D2`'s
+decision turns on it.** Publishing the pair would add a differently named copy of terrain data the accepted container already
+carries. Applied, `mv i-love-korea-2line.scm superseded-i-love-korea-2line.scm` and `mv i-love-korea-2line.chk
+superseded-i-love-korea-2line.chk`. After, every SHA above is byte-for-byte identical to before and mtimes are unchanged at
+19:19. Cross-checks, each container's `chkdump` extraction equals its written CHK on disk (accepted `f55e9d9e...`, `-2line`
+`600c7592...`, superseded M7 `5dda6941...`), and `m9-extracted.chk` equals the accepted build's extraction. Controller inverse,
+`mv superseded-i-love-korea-2line.scm i-love-korea-2line.scm && mv superseded-i-love-korea-2line.chk i-love-korea-2line.chk`.
+
+**Alternatives considered, finding 1.** Option A, delete the pair, which `M10` also offered at doc:3174, rejected. It is an
+artifact `M10` read and cited by name, and deletion has no recorded inverse. Option B, a scratch or non-deliverable prefix,
+rejected, the ratified scheme in this task is `superseded-` (used for `foss-for-all` by `F1`, for `republic-of-korea` by `M5`,
+for the shipped `i-love-korea` by `M9`), and inventing a second prefix is the naming class these findings keep opening.
+Option C chosen, the ratified prefix, applied to the pair with SHAs recorded.
+
+**Naming state after this step, recorded for `D2` and `S1` in my own section.** Plain `i-love-korea.scm` holds the accepted
+`16fe455d...` build and is the only booth-reachable name in the family. `superseded-i-love-korea.scm` holds the `M7` single-row
+build at `82589b42...`. `superseded-i-love-korea-2line.scm` holds the name-superseded duplicate at `e7ad27b2...`. **The mirror
+of the same collision exists in the artifact class, and I verified it rather than inferred it.** `i-love-korea-mm.png` (128x128)
+is byte-identical to my crop (18,112)-(146,240) of `m7-open.png` (`ImageChops.difference` bbox None) and `i-love-korea-booth64.png`
+is exact single-step Lanczos 0.5 of that thumbnail, so the plain-named artifacts belong to the superseded `M7` build while the
+accepted build's artifacts carry the dispatch label, `i-love-korea-2line-thumbnail128.png`, `-booth64.png`, `-booth32.png` and
+`i-love-korea-2line_report.json`. I did not rename them. Renaming files that `M8` and `M10` cite by name inside `## Review`
+would make that record unreadable against the filesystem, and `## Review` is not mine to edit. `D2` decides, the mapping is
+recorded here and in the report JSON.
+
+**Finding 2, the `m9-jump.png` label is corrected in the `M9` record, the label line now at doc:2415, `M10` having cited the
+record at doc:2412, and the frame is described by my own indicator measurement.**
+`M10` recorded at doc:3212 that the label says line 2 is framed while the frame carries 38 of 112 rows with `K` and `A` clipped.
+I did not take that on trust, I derived the same rectangle from my own indicator census of the capture. Body-local bbox x 9-116,
+y 39-86, that is map cols 18 to 233 inclusive and rows 78 to 173 inclusive, 216 x 96 tiles, the 25 percent viewport, against the
+100 percent captures' 27x12 thumbnail px, which is the same 54 x 24 tile viewport. Line 2 occupies rows 136-247 and cols 12-243,
+so this frame carries **rows 136 to 173, 38 of 112 rows, 33.9 percent**, with cols 12-17 of `K` and cols 234-243 of `A` outside the
+canvas. Line 1 occupies rows 8-119, so the frame carries its rows 78-119, the lower 42 rows, and the heart's cols 93-202 lie fully
+inside the viewport's cols. **What the frame actually shows is the bottom of line 1 plus the top third of line 2 with both end
+letters cut, which is not a `KOREA` reveal frame, and the label is corrected in place with the correction marked rather than
+silently rewritten.** Consequence for `S1`, the overview click at (81,175) must not be scripted as the line-2 frame.
+
+**The frame arithmetic `S1` needs, and one gap `M10`'s direction leaves open.** At 25 percent the viewport is 216 x 96 tiles by
+the indicator outline and 214.25 x 94.12 tiles by the map-tone region `M10` measured, so a whole frame is between 94 and 96 tiles
+tall. `KOREA` is 232 tiles wide and 112 tall. Setting the viewport top at row 136 shows rows 136 to 230 by the pixel-measured
+height (95 of 112, agreeing with `M10` doc:3217) or to 231 by the indicator rectangle, and two horizontal frames at cols 12-227
+and 28-243 cover the 232-tile line with a 200-tile overlap, which agrees with `M10`'s cols 12-226 and 29-243 within one tile.
+**What I add to that direction, named as a difference rather than a correction.** A viewport top at row 136 still leaves rows 231
+or 232 to 247 unseen, 16 to 17 rows, the bottoms of all five letters, and `M10`'s direction does not name them. Showing the whole
+line at the reachable floor needs a third frame position, viewport top at row 152 (rows 152 to 246 or 247), so three vertical
+positions by two horizontal, or one position with a mid-frame vertical pan. `S1` must capture and measure the frames it scripts
+rather than script them from either record, and each presented frame must state its zoom and its viewport tile span, which `B1`
+already made a gate item.
+
+**Finding 3, the booth artifacts re-cut from the 100 percent capture only, and re-verified.** Source of truth `m9-open.png`
+(1920x1080 RGBA), body crop (18,112)-(146,240). My own body check against my own mask decimated by the editor's proven
+top-left-of-2x2 rule, 16384 of 16384 px in `m9-open.png` and 16384 of 16384 in `m9-reopen.png`, rendered glyph 5149 px against
+my decimated mask 5149 px. My re-cut `f2-recut/thumbnail128_recut.png` is byte-identical to the published
+`i-love-korea-2line-thumbnail128.png`, 0 px differing. Re-cut at single-step LANCZOS 0.5 and 0.25 into
+`f2-recut/booth64_recut.png` and `booth32_recut.png`. **Both are byte-identical to the published artifacts**, SHA-256
+`f9446f81dd86c724...` (booth64) and `0fdee8346af637e4...` (booth32), 0 px differing and 0 maximum channel delta over 4096 and
+1024 px. NEAREST on the same crop differs by 2658 px with maximum delta 109 at 64 and by 808 px with maximum delta 96 at 32,
+so the single-step uniform Lanczos claim is confirmed and no nearest-neighbour or stretched cut can pass it. No published file
+was overwritten, the re-cut landed under `f2-recut/` only, which is why no target artifact changed in this step.
+
+**Viewport-indicator pixel counts on glyph, my own census, recorded as the reason two captures are not artifact sources.**
+The same 128x128 rectangle in all four captures, the thumbnail panel does not move between zooms. Indicator classified as min
+channel >= 240, the map tones being (176,176,176) and (36,40,56). `m9-open.png` 100 percent, 74 indicator px, body-local bbox
+x 0-26 y 0-11, that is map cols 0-52 rows 0-22, **0 on glyph cells, 74 on ground**. `m9-reopen.png` 100 percent, identical at
+74 and 0. `m9-zoom25.png` 25 percent, 308 indicator px, bbox x 0-107 y 0-47, map cols 0-215 rows 0-95, **33 on glyph cells**,
+its crop differing from the published thumbnail by 306 px and a booth64 cut from it differing from the published booth64 by 639
+px. `m9-jump.png` 25 percent overview-jump, 308 indicator px, bbox x 9-116 y 39-86, map cols 18-233 rows 78-173, **102 on glyph
+cells**, crop differing by 382 px and a booth64 cut from it by 960 px. My 33 and 102 reproduce `M10`'s doc:3198 with my own code.
+**Ruling recorded, artifacts are cut from the 100 percent captures only, and a run script or manifest must name the source
+capture for every artifact.**
+
+**Inpaint control, mine, and where my number differs from `M10`'s in kind.** Replace the 74 indicator px in the 100 percent crop
+with ground tone and re-run the same single-step resize. booth64 moves 126 px of 4096 with maximum channel delta 57, booth32
+moves 43 of 1024 with maximum delta 29. Inside the `I` element box 16 of those px sit in the booth64 artifact and 12 of them on
+blocks that contain glyph tiles; booth32, 10 and 8. Every other element box, 0. The mechanism is kernel reach, not contamination,
+at 0.5 scale the Lanczos support extends beyond the 4x4-tile block and the indicator's rightmost column (body x 26, map col 52)
+sits one tile left of the `I`'s leftmost column 53. Glyph-tone census under my own stated criterion (within 40 of (36,40,56) and
+closer to glyph than to ground), published artifact against inpainted control, booth64 per element `I` 60 against 60, heart 501
+against 501, K 112, O 128, R 144, E 144, A 144, every delta 0. booth32, 8, 120, 2, 8, 12, 22, 12, every delta 0. Near-white px
+inside glyph blocks in the published artifacts, 0 at both sizes. `M10` reported this control as per-element glyph-count changes
+of at most 2 px and retention of at most 3.4 points, mine reports the moved-pixel count, and the two agree on the operative
+point, **no glyph-tone pixel in either artifact moves when the overlay is removed, so the chrome-free ruling holds for these
+artifacts and holds only for the 100 percent captures.**
+
+**Checks that did not run in F2, named.** No target contact of any kind, so the target's
+`~/scmdraft-maps/i-love-korea/i-love-korea.scm` size, mtime and SHA-256 are not re-verified by me and the byte-stability of the
+other five deliverables on the target is not re-verified by me, both remain `M9`'s claim. SCMDraft 2's own map-validation dialog,
+still run on no map, `V1`. No blind reader, and no independent re-read of this pass, that belongs to the review chain. The Zoom
+combo list was not opened and no typed zoom below 25 percent was tested, so the 25 percent floor stays evidenced rather than
+proven. I did not re-run any builder script, did not re-derive WCAG contrast (`M10`'s worst pair 5.889 on the 25 percent canvas
+is carried, not re-measured here), did not re-cut or rename the superseded `M7` artifacts, and did not re-verify the panel's
+EDID geometry, which stays `B1`'s measurement.
 
 ---
 

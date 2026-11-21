@@ -1579,3 +1579,65 @@ created: `m9-open.png`, `m9-zoom25.png`, `m9-jump.png`, `m9-reopen.png`, `m9_tar
 `sha256sum` reproduces `i-love-korea` `16fe455d46fd...`, `foss-for-all` `e856f0e1...`, `rocky-logo` `447360ce...`,
 `rocky-with-heart` `b9b056c2...`, `tux` `79002eacd5d6...`, `republic-of-korea` `c773a534a564...`, and the superseded
 `superseded-i-love-korea.scm` `82589b4205f5...`.
+
+## 2026-11-21 21:38 — Dispatch F2, the three `M10` record and artifact findings closed, controller-side only, no target contact, no map content changed (`Tails`)
+
+**Scope.** The three findings `M10` wrote for `Tails` at `## Review` doc:3174, doc:3198 and doc:3212. Two controller containers
+renamed, one planning-doc capture label corrected, one gate report given a provenance block. No file on 192.168.1.99 was read or
+written, no map content changed, the accepted `~/scmdraft-maps/i-love-korea/i-love-korea.scm` was not opened, moved, or rewritten.
+Scripts `/tmp/opencode/t0042/f2_check.py` and `/tmp/opencode/t0042/f2_control.py`, reports `f2_artifact_check.json` and
+`f2_control.json`, re-cut artifacts under `/tmp/opencode/t0042/f2-recut/`. No builder module imported by either.
+
+**Whether an entry is owed, stated rather than assumed.** The brief says to add an entry only if a target artifact actually
+changes. No file on the target changed and no published booth artifact's bytes changed. A deliverable-class artifact did change,
+its name, and it is the file dispatch `D2` publishes, so this entry is written and the condition is recorded rather than glossed.
+
+**Finding 1, the duplicate `i-love-korea-2line` name is closed under the ratified `superseded-` scheme.** Command,
+`sha256sum i-love-korea.scm i-love-korea-2line.scm superseded-i-love-korea.scm` before, then `mv i-love-korea-2line.scm
+superseded-i-love-korea-2line.scm` and `mv i-love-korea-2line.chk superseded-i-love-korea-2line.chk`, then `sha256sum` again.
+Plain `i-love-korea.scm` 614561 B `16fe455d46fd88671a98a79f3db65d934400ce0d4edd98f677313e6668d38ba9` is the accepted build and
+stays at the plain booth-reachable name. `superseded-i-love-korea.scm` 614561 B `82589b4205f5deb8ed123273f1c6b5262472806bb90373d6b267c8f27e2319a0`
+is the `M7` single-row build. The renamed pair is `superseded-i-love-korea-2line.scm` 614567 B
+`e7ad27b2f4e7c6d12771b410edd289821fe438d7e4f2bc62caacb40a0b63efab` and its CHK 614216 B `600c75929599088d81feda76e7b0561dfc5bab3b9107cf848183d96fac131f61`,
+SHAs identical to before the rename and mtimes unchanged at 19:19. Measured before renaming, the `-2line` container's `MTXM` is
+identical cell for cell to the accepted build, 20600 glyph tiles, distinct values `[64, 192]`, while its internal `STR` map name
+is `i-love-korea-2line` against `i-love-korea`; the name-length field at `STR` block offset 2 reads 19 against 13 and the name
+string sits at block offset 2048, which accounts for the whole 6-byte size difference. **So the prefix marks a name-superseded
+duplicate rather than a content-superseded build, recorded because `D2` publishes from these names.**
+
+**Finding 2, the `m9-jump.png` label is corrected in the `M9` record.** Derived from my own viewport-indicator census of the
+capture, body-local x 9-116, y 39-86, that is map cols 18-233 and rows 78-173 at 25 percent. Line 2 occupies rows 136-247 and
+cols 12-243, so the frame carries rows 136-173, 38 of 112, with `K` cols 12-17 and `A` cols 234-243 clipped, and line 1 rows
+78-119, the lower 42 rows. It is not a `KOREA` reveal frame and `S1` must not script the overview click at (81,175) as one. The
+label at `## Implementation` is corrected in place with the correction marked, and the frame arithmetic `S1` needs, including the
+16 to 17 letter-bottom rows that one vertical position at row 136 leaves unseen, is written in `## Implementation`.
+
+**Finding 3, the booth artifacts re-cut from the 100 percent capture only and re-verified, nothing overwritten.** Crop
+(18,112)-(146,240) of `m9-open.png` matches my own mask decimated by the editor's top-left-of-2x2 rule at 16384 of 16384 px in
+both `m9-open.png` and `m9-reopen.png`, glyph 5149 px. Re-cut at single-step LANCZOS 0.5 and 0.25 into `f2-recut/`, both
+byte-identical to the published `i-love-korea-2line-booth64.png` (`f9446f81dd86c724...`) and `i-love-korea-2line-booth32.png`
+(`0fdee8346af637e4...`), 0 px differing and 0 maximum channel delta; NEAREST on the same crop differs 2658 px (delta 109) and 808
+px (delta 96), so the uniform single-step Lanczos claim holds and the published files were left untouched. Indicator census, my
+own, same 128x128 rectangle in all four captures, `m9-open.png` 74 indicator px and **0 on glyph**, `m9-reopen.png` 74 and 0,
+`m9-zoom25.png` 308 and **33 on glyph** with its crop 306 px from the published thumbnail, `m9-jump.png` 308 and **102 on glyph**
+with its crop 382 px from it, which is the recorded reason those two captures are not artifact sources. Inpaint control, replacing
+the 74 overlay px with ground tone and re-running the same resize moves 126 of 4096 px in booth64 and 43 of 1024 in booth32, and
+the glyph-tone count of every one of the seven elements is unchanged, delta 0, with 0 near-white pixels inside glyph blocks.
+`i-love-korea-2line_report.json` gains a `f2_artifact_provenance` block naming the source capture for each artifact, the accepted
+and superseded containers with their SHAs, and the per-capture indicator counts, with no measured value altered. Also verified for
+`D2`, `i-love-korea-mm.png` is byte-identical to the crop (18,112)-(146,240) of `m7-open.png` and `i-love-korea-booth64.png` is
+exact Lanczos 0.5 of it, so the plain-named artifacts belong to the superseded `M7` build.
+
+**Inverse.** Undo the rename, `mv /tmp/opencode/t0042/superseded-i-love-korea-2line.scm /tmp/opencode/t0042/i-love-korea-2line.scm`
+and `mv /tmp/opencode/t0042/superseded-i-love-korea-2line.chk /tmp/opencode/t0042/i-love-korea-2line.chk`. Remove what this step
+created, `rm -rf /tmp/opencode/t0042/f2-recut /tmp/opencode/t0042/f2_check.py /tmp/opencode/t0042/f2_control.py
+/tmp/opencode/t0042/f2_artifact_check.json /tmp/opencode/t0042/f2_control.json`. The report block is additive, the report's
+measured values are unchanged and were re-read after the edit. Revert this entry and the planning-doc edits by git. No target
+state was changed, so nothing on 192.168.1.99 needs an inverse.
+
+**Checks that did not run, named.** No target contact, so the target's `i-love-korea` map size, mtime and SHA-256 and the
+byte-stability of the other five deliverables are not re-verified here and remain `M9`'s claim. SCMDraft 2's own map-validation
+dialog, still run on no map, `V1`. No blind reader and no independent re-read of this pass. The Zoom combo list was not opened and
+no typed zoom below 25 percent was tested. No builder script was run, WCAG contrast was not re-derived, the superseded `M7`
+artifacts were not re-cut or renamed, and the panel EDID geometry was not re-measured. The line-2 framing positions named for
+`S1` are arithmetic on measured viewport and mask extents, no capture at those positions exists yet.
