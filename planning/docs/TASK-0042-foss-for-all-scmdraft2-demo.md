@@ -2830,8 +2830,10 @@ path, so a byte-correct copy reported FAIL and the map aborted before any displa
 inverse `rm -f` each unless stated. `booth_loop.py` new (the runner). `s1a-rebuild/*.scm` and
 `.chk`, six deterministic rebuilds. `s1a-build/<map>.scm` and `.chk`, the three maps the cycle
 built. `s1a-run-log.jsonl`, 52 timed step records. `s1a_cycle_report.json`, the summary.
-`S1aL1-*-*.png`, 40 captures and their crops. `_title.png`, `_status.png`, `_palette_ocr.png` and
-`_c.png`, `_combo_*.png`, transient OCR aids. Team repo, six DEMO-LOG entries appended and this
+`S1aL1-*-*.png`, 31 full-panel captures, 6 for `foss-for-all`, 8 for `tux`, 8 for `i-love-korea`,
+9 for the scratch map. `_title.png`, `_status.png`, `_palette_ocr.png`, `_c.png`, `_combo_*.png`,
+`_pal*.png`, `_b.png`, `_bb.png`, `_z_*.png`, `_s_*.png`, `_o.png` and `_thumb_f2.png`, transient
+OCR aids, removed and verified removed. Team repo, six DEMO-LOG entries appended and this
 subsection, inverse `git revert`. Target, files created and removed, `C:\Maps\{foss-for-all,tux,
 i-love-korea}.scm` loop copies, `live-demo-ice.scm.pre-s1a` backup, `/tmp/t0042-run.log`,
 `/tmp/S1aL1-*.png`, all removed and verified. Target state left changed deliberately, the scratch
