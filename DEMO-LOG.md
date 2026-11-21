@@ -1702,3 +1702,148 @@ landed file.
 target-side by `B1` at 18:40. SCMDraft 2's own map-validation dialog still run on no map, `V1`. No licence ruling on the landed
 captures, `R4` and `R5` open. No re-adjudication of any legibility verdict, and no new capture or map was produced by this
 dispatch.
+
+## 2026-11-21 23:20-23:33 — Dispatch S1a step 1, booth loop runner built, deterministic rebuild gate run on all six maps (`Tails`, controller-side)
+
+Runner `/tmp/opencode/t0042/booth_loop.py`, one command per cycle, parameters `--maps`,
+`--loops`, `--display-seconds` (default 300). Inverse `rm -f /tmp/opencode/t0042/booth_loop.py`.
+
+Pre-state read from the target, command `sshpass -f ~/AI/secrets/scm_draft_pass.md ssh
+howard@192.168.1.99 'hostname; uname -r; pgrep -af "ScmDraft[ ]2"; ls -l /tmp/t0042-run.sh
+/tmp/t0042-run-dos.sh; sha256sum ...'`. Answers `scmdraft2-map-creator`, kernel
+`6.12.0-211.74.1.el10_2.x86_64`, `NO_SCM_RUNNING`, both launch helpers present, and the six
+deliverables at `e856f0e1d62e`, `447360ce8077`, `b9b056c27a67`, `79002eacd5d6`,
+`c773a534a564`, `16fe455d46fd`. No target file was written by this step.
+
+Determinism gate, six rebuilds into `/tmp/opencode/t0042/s1a-rebuild/` with the committed
+recipes, `python3 build_ts.py glyph ts-harvest/ref-era6.chk s1a-rebuild/foss-for-all 192 64 64`
+and `python3 build_ts.py silhouette ts-harvest/ref-era6.chk s1a-rebuild/<map> 192 64 64 <mask>`
+with masks `rocky-logo`, `rocky-with-heart`, `tux`, `republic-of-korea-10m`, `i-love-korea-2line`.
+All six rebuilt `.scm` reproduce their recorded SHA-256 byte for byte, era 6, `MTXM` 65536
+entries, distinct `[64, 192]`. So the loop's SHA gate can be a precondition rather than a hope.
+Inverse `rm -rf /tmp/opencode/t0042/s1a-rebuild`.
+
+Palette re-derivation method proven offline against `l4-palette.png` before any target contact:
+`tesseract --psm 6 tsv` on the panel crop gives label row centres Rocky Snow 839 and High
+Outpost 968 in that capture. The rows `L4` recorded, 806 and 934, sit on Moguls and High Grass
+in the same capture, which is the mechanism behind `L5`'s finding that the same pixel selected
+High Grass. Inverse `rm -f /tmp/opencode/t0042/_palette_ocr.png _pal.png _pal2.png _b.png _bb.png`.
+
+## 2026-11-21 23:35-23:38 — Dispatch S1a step 2, `foss-for-all` booth cycle on the target, first pass aborted at a report defect (`Tails`)
+
+First attempt aborted after the transfer: the runner compared the recorded SHA against the last
+whitespace-separated token of the target read, which is the file *path*, so a byte-correct copy
+reported `FAIL`. The target copy itself was correct, `614561 B
+e856f0e1d62ec8f7ecfccf8f0d5f08aee0d5798ef972ea9fee996bbf3bfd3eb0` at
+`/home/howard/.wine-scmdraft/drive_c/Maps/foss-for-all.scm`. The defect is a report defect, not
+a map or transfer defect. Fixed in the runner by a 64-hex extraction (`parse_stat`). No display
+step and no editor launch happened in the aborted attempt. The stray copy was removed by the
+second attempt's teardown, `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/foss-for-all.scm`,
+verified `REMOVED`.
+
+## 2026-11-21 23:36-23:38 — Dispatch S1a step 3, `foss-for-all` cycle complete, four main-canvas frames at the measured 8.00 px per tile floor (`Tails`)
+
+Command, `python3 /tmp/opencode/t0042/booth_loop.py --maps foss-for-all --loops 1
+--display-seconds 45 --no-paint`. Run log `/tmp/opencode/t0042/s1a-run-log.jsonl`.
+
+| Step | Measured |
+|---|---|
+| build | 0.04 s, 614561 B, `glyph: era 6 chk 614210 B MTXM 65536 ISOM 265224 distinct 2 [64, 192]` |
+| SHA verify before transfer | 0.00 s, `e856f0e1d62e` equals the record, PASS |
+| transfer to `C:\Maps\` | 0.50 s, target `614561 B e856f0e1d62e`, PASS |
+| open by `C:\Maps\foss-for-all.scm` | 25.51 s, title bar OCR `... - [C:\Maps\foss-for-all.scm ]` |
+| zoom to the floor | 14.82 s, one combo walk of 6 extended-Down steps, no retry needed |
+| display window, 4 frames | 56.24 s wall for a 45 s requested hold |
+| teardown | 2.92 s, `NO_SCM_RUNNING`, loop copy `REMOVED` |
+
+Every frame measured, from the capture and not from the record: viewport indicator 108 x 48
+thumbnail px, that is 216 x 96 tiles, 7.931 px per tile across the 1713 px canvas, and an
+independent run census, drawn dark runs 48/144/192/240 px explained 88 to 100 percent by the
+committed mask's own ink runs 6/18/24/30 tiles, giving 8.0 px per tile. Frame windows cols
+14-229 and 40-255, rows 64-159 and 144-239, reached by overview clicks at (79,168), (92,168),
+(79,208), (92,208). Main-canvas glyph tone share per frame 8.49, 20.32, 15.99, 14.54 percent.
+The open capture measures 54 x 24 tiles and 31.7 px per tile, so the zoom reset to 100 percent on
+open that `M1` recorded is confirmed by measurement in this pass.
+
+Target files this step created, `/tmp/S1aL1-foss-for-all-{open,zoom,f1..f4}.png`. Inverse
+`rm -f /tmp/S1aL1-foss-for-all-*.png /tmp/t0042-run.log`, not yet applied, applied at the
+end of the dispatch so the operator can inspect the captures (rule r002). Controller files
+`s1a-build/foss-for-all.{scm,chk}`, `S1aL1-foss-for-all-*.png`, `s1a-run-log.jsonl`. The
+deliverable original `/home/howard/scmdraft-maps/foss-for-all/foss-for-all.scm` was not opened,
+not written and not saved by the editor.
+
+## 2026-11-21 23:46-23:49 — Dispatch S1a step 4, `i-love-korea` booth cycle complete, six main-canvas frames on the `F2`-derived positions (`Tails`)
+
+Command, `python3 /tmp/opencode/t0042/booth_loop.py --maps i-love-korea --loops 1
+--display-seconds 45 --no-paint`.
+
+build 0.05 s, 614561 B; SHA verify 0.00 s, `16fe455d46fd` equals the record, PASS; transfer
+0.54 s to `/home/howard/.wine-scmdraft/drive_c/Maps/i-love-korea.scm`, target read `614561 B
+16fe455d46fd`, PASS; open 25.83 s by `C:\Maps\i-love-korea.scm`, title bar OCR `... -
+[C:\Maps\i-love-korea.scm ]`; zoom 15.03 s, one combo walk, no retry; display window 60.57 s
+for a 45 s request across 6 frames; teardown 2.92 s, `NO_SCM_RUNNING`, loop copy `REMOVED`.
+
+Frame windows and clicks, cols 12-227 and 28-243 crossed with rows 8-103, 136-231 and 152-247,
+clicks (78,140), (86,140), (78,204), (86,204), (78,212), (86,212). Every frame measures
+108 x 48 thumbnail px of viewport indicator, 216 x 96 tiles, 7.931 px per tile, and the run
+census reads 8 px per tile explaining 88.1 to 100 percent of drawn runs. The row-152 frames are
+the ones that carry the bottoms of all five letters, which is the position `F2` derived at
+doc:2544-2547 and did not capture. Main-canvas glyph tone share 45.62, 45.47, 38.41, 38.69,
+36.56, 36.73 percent. `S1aL1-i-love-korea-f5.png` shows `KOREA` with letter bottoms inside the
+viewport, read visually, and its Zoom combo reads 25 percent.
+
+Target captures created, `/tmp/S1aL1-i-love-korea-{open,zoom,f1..f6}.png`, inverse
+`rm -f /tmp/S1aL1-i-love-korea-*.png /tmp/t0042-run.log`, applied in step 6 and verified.
+The deliverable original was not opened, written or saved.
+
+## 2026-11-21 23:56-23:58 — Dispatch S1a step 5, the proven painting segment run inside the cycle on the scratch map, palette coordinates re-derived from a live capture (`Tails`)
+
+Command, `python3 /tmp/opencode/t0042/booth_loop.py --paint-only`. Scratch map only, no
+deliverable map was opened, saved or touched by the editor.
+
+Pre-state of the scratch map on the target, `/home/howard/.wine-scmdraft/drive_c/Maps/
+live-demo-ice.scm` 12502 B `f00d1f60521c...` mtime 2026-11-21 08:18:33, the file `L5`'s editor
+save wrote. Backup taken, `cp -f live-demo-ice.scm live-demo-ice.scm.pre-s1a`, inverse
+`cp -f live-demo-ice.scm.pre-s1a live-demo-ice.scm && rm -f live-demo-ice.scm.pre-s1a`. The
+flat seed `/tmp/opencode/t0042/live-demo-ice.scm` was verified at `8f338a3cea24...` on the
+controller and transferred in 0.28 s. Open 25.74 s by `C:\Maps\live-demo-ice.scm`.
+
+Palette re-derivation, 2.10 s, `tesseract --psm 6 tsv` on a fresh capture of the panel, method
+`ocr-tsv-label-rows`, answers Rocky Snow y 839, High Outpost y 968, High Grass y 935. The click
+was made at (62, 968) and the status bar readout after the click reads
+`Isometrical Terrain Ice World\High Outpost`, read from the capture. This closes the `L5`
+finding on the evidence: the palette rows are stable across launches and match `l4-palette.png`
+exactly, and `L4`'s recorded click at y 934 sits on the High Grass row, so `L5`'s High Grass
+selection was a mis-mapped row in `L4`, not an unstable tree.
+
+Segment, `L4`'s proven step list, band1 7.08 s, band2 6.95 s, three page-down pan clicks 8.67 s,
+band3 6.89 s, Ctrl+D Ctrl+T Ctrl+U Ctrl+T 9.81 s, status-bar evidence capture 1.88 s. Measured
+change, `S1aL1-live-demo-ice-{before,band1,band2,pan,band3,layers,statusbar,palette,open}.png`
+on the target, inverse `rm -f` applied in step 6. Contrast measured in this pass on the tone the
+segment actually selected, ground (176,176,176) against the painted High Outpost tone
+(48,40,24) WCAG 6.713, and 6.267 as the median across 42581 sampled changed pixels, against the
+3.0 gate. Share of each commanded stroke rectangle that changed, 55.8, 49.73 and 57.64 percent,
+measured as changed pixels divided by rectangle pixels, which is a different ratio from `L4`'s
+13.8 to 19.1 percent (changed pixels inside the rectangle divided by all changed pixels).
+
+Teardown 2.66 s, `NO_SCM_RUNNING`, and the scratch map restored from the backup to 12502 B
+`f00d1f60521c...`, byte-identical to its pre-step state with mtime 2026-11-21 23:58:13. No save
+was performed on any map in this step.
+
+## 2026-11-22 00:02 — Dispatch S1a step 6, post-run target verification and capture teardown (`Tails`)
+
+Six deliverables re-read on the target, all at their recorded SHA-256 with their pre-dispatch
+mtimes unchanged, `foss-for-all` `e856f0e1d62e` 614561 B mtime 2026-11-20 06:03:19,
+`rocky-logo` `447360ce8077` 614559 B 2026-11-20 08:17:08, `rocky-with-heart` `b9b056c27a67`
+614565 B 08:17:09, `tux` `79002eacd5d6` 614552 B 2026-11-20 20:33:23, `republic-of-korea`
+`c773a534a564` 614566 B 2026-11-21 10:49:37, `i-love-korea` `16fe455d46fd` 614561 B 19:28:35.
+`pgrep -af "ScmDraft[ ]2"` answers `NO_SCM_RUNNING`. Loop copies in `C:\Maps\` absent, only
+`live-demo-ice.scm` restored to `f00d1f60521c...` and the pre-existing reference map remain.
+This dispatch's target captures removed, `rm -f /tmp/S1aL1-*.png /tmp/t0042-run.log`, verified
+`CAPTURES_REMOVED`.
+
+Left on the target deliberately, four SCMDraft backups its own open path wrote in
+`/home/howard/.wine-scmdraft/drive_c/Maps/`, `Scme205.tmp` 614561 B (foss-for-all open),
+`Scm933.tmp` 614552 B (tux), `Scmcc91.tmp` 614561 B (i-love-korea), `Scm71d3.tmp` 614562 B
+(live-demo-ice). Inverse `rm -f` each, left in place per rule r002 so the operator can see what
+one booth cycle costs the target disk, about 2.4 MB per cycle for six maps.
