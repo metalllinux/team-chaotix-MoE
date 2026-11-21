@@ -283,6 +283,7 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
 - [ ] Dispatch V1, `Tails`, SCMDraft 2's own map validation on each of the five saved maps. This DoD box has never run on any map, and dialog buttons do not respond to injected clicks, so drive it by keyboard navigation or record it as not achievable with the evidence.
 - [ ] Dispatch S1, `Tails`, consolidate the booth run script as a replayable live sequence and re-measure the live segment on the palette entry it actually lands on. SUPERSEDED 2026-11-21 22:05 by the `Dispatch S1` booth-loop bullet above, which folds this scope into it, the palette re-derivation and the no-save viewing steps included. Original facts follow. Two facts `M5` produced bind this dispatch, OpenSSH scp in SFTP mode does not expand a literal `$HOME` in the destination so every path in the script must be absolute, and if `M8` accepts `i-love-korea` the script opens that map for viewing too, with no save step. Brief, paste verbatim. "Read `## Status` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, the three decisions of 2026-11-21 08:40. Produce one replayable script, kept under `/tmp/opencode/t0042`, that on 192.168.1.99 launches SCMDraft 2 on the scratch map by its drive-qualified path `C:\Maps\live-demo-ice.scm`, re-derives the terrain palette click coordinates from a fresh capture rather than using any hardcoded coordinate, paints one band on the main canvas at 100 percent zoom, switches layers with Ctrl+T, Ctrl+U and Ctrl+D read out of the status bar, scrolls the canvas, performs the editor save chain `Ctrl+S, Enter, Enter, Enter`, kills and re-opens to prove persistence, and then opens each of the four accepted maps for viewing only with no save step. Acceptance, per-pixel WCAG at 3.0 or better measured by you between the before and after tone at the same canvas coordinate on the palette entry the segment actually selects, wall-clock timing per step, a step list an operator can perform on 2026-11-28 with each line carrying its inverse or teardown, and the four deliverable map hashes unchanged afterwards. Name every check that did not run, and write your `## Implementation` subsection and the DEMO-LOG entry as each step completes."
 - [ ] Dispatch D2, `Tails`, re-publish the booth repo now, ahead of the review chains and `P1`, per the `## Status` decision of 2026-11-21 21:50. `D0` published `maps/deliverable/i-love-korea.scm` at `82589b4205f5...`, which is the superseded single-row build, so the repo the operator is checking currently shows a rejected map as a deliverable. Publish the accepted two-line build at `16fe455d46fd...` at the plain name, carry `superseded-i-love-korea.scm` at `82589b4205f5...` and `superseded-i-love-korea-2line.scm` at `e7ad27b2f4e7c6d1...` under `maps/superseded/`, and state in `MANIFEST.md` that the last two hold content identical to the accepted build apart from the internal `STR` name so a reader does not read three builds as three designs. Move the `M7`-era artifacts `i-love-korea-mm.png` and `i-love-korea-booth64.png` out of the accepted set, record where they went, and use the `F2` re-cut provenance from `i-love-korea-2line_report.json` for the booth artifacts. Regenerate `MANIFEST.md` and `PUBLISH-STATUS.md`, re-apply every `D0` exclusion rule unchanged, and do not change the repo's visibility. Acceptance, a remote `git log` and `git ls-tree` read proving the files landed, the manifest cross-checked against the tree rather than against intent, and a named list of categories not copied. Original `D2` brief follows. `metalllinux/foss-for-all-booth-demonstration-scmdraft-2` holds the accepted map set rather than the interim one `D0` pushed. `D0` published `maps/deliverable/i-love-korea.scm` at `82589b4205f5...`, which is the shipped single-row build that `M9` supersedes, so if `M10` accepts the rebuild the repo must carry the accepted file at the plain name and the superseded build under its prefix, with `MANIFEST.md` and `PUBLISH-STATUS.md` regenerated and the same exclusion rules re-applied. Acceptance is the same shape as `D0`, a remote `git log` and `git ls-tree` read proving the files landed, a manifest cross-checked against the tree rather than against intent, and a named list of categories not copied.
+- [ ] Dispatch D3, `Tails`, publish the booth runner and its runbook into `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` after `S1` lands, because at the booth the team is pointed at that repo and reads it, so the runner, the runbook that tells an agent to start it with one command, the per-map SHA table, the measured cycle cost, and the honest editor-driven versus programmatic statement all have to be in the repo and not only under `/tmp/opencode/t0042`. Acceptance is the same shape as `D2`, a remote `git log` and `git ls-tree` read, a manifest cross-checked against the tree, and a named list of categories not copied.
 - [ ] Dispatch R1 to R5, review chain for TASK-0042, `Shadow`, `Omega`, `Big`, `Charmy`, `Flicky`, one dispatch each, then a `Tails` fix dispatch if any blocker comes back. `Omega` rules COPR `forecastwolf157/Wine-test`, Flatpak Wine from Flathub, the target's final repo set, and the 3389 listener. `Charmy` rules the Ar3sgice starcraft-tools mirror, which carries no licence file, and the archive.org Anthology ISO as game-data source. `Flicky` audits StormLib at the pinned commit, the shipped Rocky logo assets, the patched `ERA` used for Ice values, and the game-data posture.
 - [ ] Dispatch T1 to T5, review chain for TASK-0041, same five agents, one dispatch each. `Omega` also rules the three open hygiene items written in TASK-0041 `## Status`.
 - [ ] Dispatch G1 to G5, review chain for TASK-0043, same five agents, one dispatch each, and note for every reviewer that the gate gave a false PASS on 2026-11-20 at 54.3 percent while the real child request was 262242 tokens. Then a `Tails` fix dispatch, which should measure what a child actually inherits instead of extrapolating from a peak prompt window.
@@ -2594,6 +2595,51 @@ combo list was not opened and no typed zoom below 25 percent was tested, so the 
 proven. I did not re-run any builder script, did not re-derive WCAG contrast (`M10`'s worst pair 5.889 on the 25 percent canvas
 is carried, not re-measured here), did not re-cut or rename the superseded `M7` artifacts, and did not re-verify the panel's
 EDID geometry, which stays `B1`'s measurement.
+
+### Dispatch D2, re-publication of the booth repo with the accepted `i-love-korea` set (2026-11-21 22:43, `Tails`, controller-side only, no target contact)
+
+**Inputs and remote state, verified before any write.** The operator's correction landed mid-dispatch, the
+documentation repo was renamed. Measured: the new path `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2`
+answers `200` with `"id": 1455994123`, identical to the id `## Status` recorded for `foss-for-all-booth-demonstration-scmdraft-2`
+at `D0`, and the old path answers `301` with body `url = https://api.github.com/repositories/1455994123` when read without
+`-L`, so one repository under two names. Every API call and the clone remote use the new name, and both names are recorded in
+`MANIFEST.md` and `PUBLISH-STATUS.md`. Remote `refs/heads/main` at start, `3da0937`, `D0`'s commit. Token consumed through
+stdin `curl --config -`, value in no argv, file, log or commit.
+
+**Alternatives considered, staging.** Option A, hand-edit the published tree in place, move the named files, add the named
+files. Option B, re-run the `D0` classification over the controller tree with the deltas named as code. Chosen, Option B,
+because the brief demands every `D0` exclusion rule re-applied unchanged and a hand-edited tree cannot show that.
+`/tmp/opencode/t0042/d2_stage.py` imports `d0_stage.classify` unchanged, refuses to let a delta override a `D0` hard exclusion
+(`HARD_HOLDS`), and adds exactly five deltas, the two superseded `i-love-korea` builds into `maps/superseded/`, the four
+`M7`-era `i-love-korea` booth artifacts (mm, mm-2x, booth32, booth64, names unchanged) into `booth-artifacts/superseded/`,
+the `F2` re-cut and control set into `booth-artifacts/f2-recut/`, the two `F2` JSON reports into `gate-reports/`, and
+`i-love-korea-2line-thumbnail128.png` with the booth artifacts instead of the captures. The move set is four files not the
+brief's named two because `i-love-korea-booth32.png` and `i-love-korea-mm-2x.png` carry the same generation mtime (14:50) and
+the same crop origin as the two the brief names, leaving them in the accepted set while moving their siblings is the naming
+inconsistency this task has been bitten by twice. The `M7` gate report `gate-reports/i-love-korea_report.json` stays where
+`D0` put it, following the `superseded-maps23_report.json` precedent, and is labelled in `PUBLISH-STATUS.md` as the report of
+the superseded build.
+
+**Naming statement, written as measured, and a brief conflict named.** The `D2` brief says "state in `MANIFEST.md` that the
+last two hold content identical to the accepted build apart from the internal `STR` name". `F2` measured that this holds for
+`superseded-i-love-korea-2line.scm` only, its `MTXM` identical cell for cell, 20600 glyph tiles, the whole 6-byte size
+difference being the `STR` name-length field 19 against 13. `superseded-i-love-korea.scm` is the `M7` single-row design, a
+different map at 19666 glyph tiles. Publishing the brief's sentence verbatim would state something the containers disprove, so
+`PUBLISH-STATUS.md` carries the measured distinction, two designs not three, name-superseded against content-superseded, and
+the disagreement with the brief's compressed phrasing is named here rather than silently taken. `## Status` 21:50 supports
+this reading, the brief bullet restates it loosely.
+
+**Checks run.** `python3 /tmp/opencode/t0042/d2_stage.py`, landed 598 files 171354582 B, plan
+`/tmp/opencode/t0042/d2_stage_plan.tsv`. Six deliverable maps `sha256sum`-verified against the recorded values before
+staging, all byte-exact, `i-love-korea` at the accepted `16fe455d46fd...`. Holds, all `.chk` and `.scx` withheld unchanged
+(62 at `D0`, 68 now, the six new ones `i-love-korea.chk` rewritten by `M9`'s re-verify, `superseded-i-love-korea-2line.chk`,
+`m9-extracted.chk` and the three `F2` `x-*.chk`), credential `rdp-args` withheld, `ts-harvest/`, `StormLib/`, `m5-upstream/`,
+`__pycache__` (17), probe maps, `colorbase.bin`, compiled ELFs, ISOs absent, SCMDraft and Wine binaries exist on the target
+only.
+
+**Checks that did not run, named.** No target contact, target-side map sizes, mtimes and SHAs are not re-verified in this
+dispatch and remain `M9`'s claim, and the six target maps' byte-stability was last checked target-side by `B1` at 18:40. No
+re-adjudication of any legibility verdict, the repo carries them. No licence ruling, `R4` and `R5` are open.
 
 ---
 
