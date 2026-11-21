@@ -2931,6 +2931,31 @@ window for them. Phase B, one full six-map cycle at 300 s. Phase C, one full six
 150 s. Each phase's record lands in `DEMO-LOG.md` and here when the phase completes, not at the
 end of the dispatch.
 
+**Phase A result, 2026-11-22 07:51, rc 0, `DEMO-LOG` entry of the same time.** The three maps
+`S1a` never put on the target cycled at 300 s: rebuilds reproduced `447360ce8077`, `b9b056c27a67`,
+`c773a534a564` before transfer, target copies matched after transfer, drive-qualified opens,
+teardowns `NO_SCM_RUNNING` with loop copies `REMOVED`. Per-map totals 362.63, 361.94, 353.90 s;
+overhead 44.55, 43.89, 44.36 s, which now confirms `S1a`'s carried 44.06 s figure on all six maps
+rather than three. Zoom verified from pixels on all three, indicator 216 x 96 tiles, 7.931 x 7.854
+px per tile, single verification pass each. `tmp_cleanup` removed nine pre-existing backups
+(4326926 B) named in the record; headroom 65004978176 B avail before, 64998404096 B after, the
+6574080 B delta decomposing into 2458252 B of four new named `Scm*.tmp` residue and the 30 target
+captures. Display windows measured 318.08, 318.05, 309.54 s against the 300 s request; the 3 to 6
+percent overshoot is per-frame capture plus metrics cost inside the hold loop, recorded. Palette
+OCR re-derived 839/968 again, paint median WCAG 6.267.
+
+**Phase B result, 2026-11-22 08:33, rc 0, `DEMO-LOG` entry of the same time, report
+`/tmp/opencode/t0042/S1b300_cycle_report.json`.** First full six-map cycle run end to end. Per-map
+totals at 300 s: `foss-for-all` 355.97, `rocky-logo` 362.02, `rocky-with-heart` 361.95, `tux`
+361.94, `republic-of-korea` 353.87, `i-love-korea` 362.40 s; overheads 43.88 to 44.36 s; all six
+SHA gates PASS before transfer and re-matched on the target; all six teardowns `NO_SCM_RUNNING` and
+`REMOVED`; zoom verified from pixels on all six at 7.931 x 7.854 px per tile. Measured cycle cost
+2232.36 s (37 min 12 s), 0.58 percent above `S1a`'s projected 2219.5 s, so the projection is
+retired in favour of this measurement. Complete cycles fitting, computed from the measured cost:
+1 in one hour, 3 in two, 4 in three. Cycle steps removed the four phase-A residue files (2458252 B)
+named in the record; headroom 64997818368 B before, 64989118464 B after, 8699904 B consumed of
+which 4301926 B is the seven tmp backups the cycle's seven opens wrote.
+
 ---
 
 ## Review
