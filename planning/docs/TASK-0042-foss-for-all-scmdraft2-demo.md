@@ -2377,6 +2377,94 @@ traded, a single viewing launch was used for both view measurements to keep the 
 launch and one teardown, which means the thumbnail and canvas measurements come from the same capture and
 `i-love-korea`'s specific chrome (dock width, scrollbar) is what sets the 1713 px canvas width.
 
+### Dispatch M9, map 6 `i-love-korea` two-line rebuild (2026-11-21, `Tails`)
+
+Rebuild of the shipped `i-love-korea` as the two-line variant `M8` measured as passing, per the `## Status`
+decision of 2026-11-21 15:20, cleared to run by the `B1` booth gate of 2026-11-21 18:40. The builder does not
+declare the map legible, `M10` decides that. Record is written as each step completes.
+
+**Step 1, controller-side mask and build (complete 2026-11-21 19:05, DEMO-LOG 19:05, no target contact).**
+New function `rocky.i_love_korea_2line()` plus constants `_ILK2_*` added to `/tmp/opencode/t0042/rocky.py`;
+the M7 single-row `i_love_korea()` and its `MASKS` entry are byte-unchanged, so the superseded build still
+reproduces byte-for-byte from the same registry. Layout measured from the module, two lines, `S_X` 8 (every
+letter stroke 8 tiles), `S_Y` 16 (112-tile letter height per line), line 1 `I` then filled heart, line 2
+`KOREA`, ground margins 12, 12, 8, 8 (all at least 8), feature floor (minimum-dimension reading, both axes at
+least 10 tiles) holds for I, heart and KOREA, coverage 20600/65536 = 31.43 percent. Per-component bbox: I
+x53-76 y8-119 (24x112), heart x93-202 y11-116 (110x106), KOREA x12-243 y136-247 (232x112). Build with
+`build_ts.py silhouette ts-harvest/ref-era6.chk i-love-korea 192 64 64 i-love-korea-2line`, era 6, chk 614210 B,
+`MTXM`==`TILE` 65536, `ISOM` 265224 of 0x10, distinct values [64, 192].
+
+**Renaming the shipped build, inverse named.** `mv i-love-korea.scm superseded-i-love-korea.scm` and
+`mv i-love-korea.chk superseded-i-love-korea.chk` on the controller, applying the ratified `superseded-` scheme.
+Superseded build 614561 B at SHA-256 `82589b4205f5deb8ed123273f1c6b5262472806bb90373d6b267c8f27e2319a0`, unchanged
+by the rename. New deliverable 614561 B at SHA-256 `16fe455d46fd88671a98a79f3db65d934400ce0d4edd98f677313e6668d38ba9`.
+Controller rename inverse, `mv superseded-i-love-korea.scm i-love-korea.scm && mv superseded-i-love-korea.chk i-love-korea.chk`.
+
+Checks not run in step 1, target placement, real SCMDraft render, booth artifacts at the fit-to-line zoom, re-open
+identity, independent read. These land in the target step.
+
+**Step 2, target placement (complete 2026-11-21 19:28, DEMO-LOG 19:28-19:44).** `m9_target.py`. On the target,
+`mv i-love-korea.scm superseded-i-love-korea.scm` then scp the rebuild to `i-love-korea.scm`. Target rename inverse,
+`mv "$HOME/scmdraft-maps/i-love-korea/superseded-i-love-korea.scm" "$HOME/scmdraft-maps/i-love-korea/i-love-korea.scm"`.
+Superseded build 614561 B `82589b4205f5...` (mtime unchanged, not a git-tracked path), rebuild 614561 B `16fe455d46fd...`.
+Viewing launch only (pid 152909), no editor save, per the `## Status` deliverable-save prohibition. Captures
+`m9-open.png` (Zoom combo `100%`), `m9-zoom25.png` (Zoom combo walked to `25%`, the editor floor), `m9-jump.png`
+(overview-jump click (81,175), line 2 framed), `m9-reopen.png`. Kill and relaunch, then teardown `rm -f /tmp/m9-*.png`,
+`NO_SCM_RUNNING` verified. All five other deliverables byte-stable after the run.
+
+**Fit-to-line zoom, honest bound.** `B1` derived the fit-to-line zoom as about 21 percent (6.74 px/tile) for a 112-tile
+line; that is below this build's 25 percent zoom floor (8 px/tile), so the exact fit-to-line zoom is not reachable in the
+editor. The closest capturable main-canvas frame is the 25 percent floor frame `m9-zoom25.png`, which frames line 1
+`I` then heart. At 25 percent the viewport is 8 px/tile = 1.417 mm/tile and 94.25 tiles tall, so a 112-tile line overflows
+it by 17.75 tiles and no permitted zoom frames a whole line vertically. Grid-pitch at 25 percent was inconclusive (the
+design fills the sampled band); px/tile there is taken from the Zoom combo reading. This is recorded as a check that
+partly did not run, not smoothed into a passing measurement.
+
+**Step 3, four gate numbers measured from the map's own real render (complete 2026-11-21 19:44, `m9_measure.py`,
+report `/tmp/opencode/t0042/i-love-korea-2line_report.json`).**
+1, coverage 20600/65536 = 31.43 percent.
+2, WCAG on the real render 6.745, dominant pair ground (176,176,176) against glyph (36,40,56), worst pair also 6.745,
+   on both the located thumbnail body and the 25 percent main-canvas frame.
+3, booth artifacts, uniform single-step Lanczos at 0.5 and 0.25 of the body crop located at (18,112)-(146,240) (128x128),
+   saved `i-love-korea-2line-booth64.png` (64x64) and `i-love-korea-2line-booth32.png` (32x32).
+4, re-open identity, open vs reopen body crop differs 0 px over 16384 px at threshold 16, disk unchanged 614561 B
+   `16fe455d46fd...` mtime 2026-11-21 19:28:35.
+
+**Stroke, gap and height in tiles, for the 2x2 point-sample thumbnail (M8 fact).** Every letter stroke 8 tiles
+(measured thinnest ink run inside a letter window 8). Gaps, line 1 I to heart 16 tiles, line 2 letter gaps 8 tiles each,
+interline gap 16 tiles. Letter height 112 tiles per line. Heart bbox 110x106 tiles. Feature floor (both axes >= 10 tiles)
+holds for all seven shapes.
+
+**Viewport-indicator overlay check.** The body crop carries 74 non-map-tone pixels, dominant (255,255,255), contrast 2.169
+against ground, the same overlay `M8` measured at 2.169. All 74 land on ground and cover no glyph window, so booth64 and
+booth32 are chrome-free against the overlay, and the chrome-free claim is made only after that check, not asserted.
+
+**Per-letter ink retention at the 64 px artifact (real booth64).** All seven read, vertical coverage 0.929 to 1.0
+(I 60 px, heart 518, K 112, O 128, R 144, E 144, A 144). At the 128 px real thumbnail every shape is ink-vs-area 1.0. This
+is the measured contrast to the shipped build's `M8` 64 px failures on `I`, `O`, `E`. The builder does not declare either
+map legible, `M10` decides.
+
+**Alternatives considered.** Fit-to-line main-canvas frame, Option A, set zoom to the derived 21 percent, rejected,
+below the editor's 25 percent floor and not reachable. Option B, capture at the 25 percent floor and name the overflow,
+chosen, it is the closest capturable main-canvas frame and the overflow is stated. Ink retention, Option A, measure on a
+mask-Lanczos binary, computed but reported only as a cross-check (it is not a real SCMDraft render), Option B chosen,
+measure on the real booth64 thresholded by glyph tone, which already carries the editor's 2x2 point sample. Zoom control,
+the maps 2/3 record says the combo did not apply; this run's Down-arrow walk did apply (combo reads 25 percent), so the
+combo is drivable by keyboard and that fact travels to `S1`.
+
+**Checks that did not run, named.** Grid-pitch at 25 percent (design fills the sampled band). Blind or independent
+re-read (`M10`). Literal in-game StarCraft minimap (playability blocked, overview thumbnail proxy stands). SCMDraft 2 map
+validation dialog (button injection blocker). Tile elevation class for 64/192 (render-validated only). The exact 21 percent
+fit-to-line frame (below the editor floor).
+
+**Exact inverse.** Target rename inverse above. Target captures `rm -f /tmp/m9-*.png /tmp/t0042-run.log`, verified.
+SCMDraft viewing teardown `pkill -f 'ScmDraft 2'`, `pkill -f 'start.exe /exec'`, `NO_SCM_RUNNING` verified, no other
+process killed. Controller files `m9-open.png`, `m9-zoom25.png`, `m9-jump.png`, `m9-reopen.png`, `m9_target.py`,
+`m9_measure.py`, `m9-extracted.chk`, `i-love-korea-2line.scm`, `i-love-korea-2line.chk`, `i-love-korea-2line-thumbnail128.png`,
+`i-love-korea-2line-booth64.png`, `i-love-korea-2line-booth32.png`, `i-love-korea-2line_report.json`, inverse `rm -f` each.
+The full M9 build inverse on the target, `mv superseded-i-love-korea.scm i-love-korea.scm` (restores the shipped single-row
+build to the plain name and removes the rebuild), which is the inverse `M10` may use if it prefers the shipped build.
+
 ---
 
 ## Review

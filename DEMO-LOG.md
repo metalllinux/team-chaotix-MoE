@@ -1477,3 +1477,105 @@ Deliverables byte-stable after the viewing open, target `sha256sum` reproduces `
 `82589b4205f5...`, `foss-for-all` `e856f0e1...`, `rocky-logo` `447360ce...`, `rocky-with-heart`
 `b9b056c2...`, `tux` `79002eacd5d6...`, `republic-of-korea` `c773a534a564...`. No map changed, no map
 rebuilt.
+
+## 2026-11-21 19:05, Dispatch M9 step 1, controller-side two-line mask and build (`Tails`)
+
+Rebuilt the `i-love-korea` mask as the two-line variant per the `## Status` decision of 2026-11-21
+15:20 and the `B1` booth-geometry gate of 2026-11-21 18:40. No target contact in this step. New
+function `rocky.i_love_korea_2line()` and constants `_ILK2_*` added to `/tmp/opencode/t0042/rocky.py`;
+the M7 single-row `i_love_korea()` is byte-unchanged so the superseded build still reproduces.
+
+Layout, measured from the module (`python3 -c` bbox read): two lines, line 1 `I` (bbox x53-76 y8-119,
+24w x 112h) then a filled heart (bbox x93-202 y11-116, 110w x 106h), line 2 `KOREA` (bbox x12-243
+y136-247, 232w x 112h). `S_X` 8 so every letter stroke is 8 tiles, `S_Y` 16 so letter height is 112
+tiles per line. Ground margins 12, 12, 8, 8 (all >= 8). Feature floor (minimum-dimension reading, both
+axes >= 10 tiles) holds for I, heart and KOREA. Design coverage 20600/65536 = 31.43 percent.
+
+Build, `build_ts.py silhouette ts-harvest/ref-era6.chk /tmp/opencode/t0042/i-love-korea 192 64 64
+i-love-korea-2line`, era 6, chk 614210 B, MTXM==TILE 65536, ISOM 265224 of 0x10, distinct terrain
+values [64, 192]. New deliverable `/tmp/opencode/t0042/i-love-korea.scm` 614561 B at SHA-256
+`16fe455d46fd88671a98a79f3db65d934400ce0d4edd98f677313e6668d38ba9`.
+
+Renamed the shipped M7 single-row build to the `superseded-` prefix per the ratified three-name scheme
+and the brief ("keep the shipped single-row build on disk under the `superseded-` prefix").
+`mv i-love-korea.scm superseded-i-love-korea.scm` and `mv i-love-korea.chk superseded-i-love-korea.chk`;
+the superseded build is 614561 B at SHA-256 `82589b4205f5deb8ed123273f1c6b5262472806bb90373d6b267c8f27e2319a0`,
+unchanged by the rename. Inverse of the controller rename,
+`mv superseded-i-love-korea.scm i-love-korea.scm && mv superseded-i-love-korea.chk i-love-korea.chk`.
+
+Checks not run in this step, target placement, real SCMDraft render, booth artifacts, re-open identity.
+
+## 2026-11-21 19:28-19:44, Dispatch M9 steps 2-3, two-line rebuild placed on target, real renders measured (`Tails`)
+
+Placed the two-line `i-love-korea` rebuild on the target and measured its four gate numbers from
+its own real SCMDraft 2 renders. No editor save performed; the launch is the viewing launch
+`/tmp/t0042-run.sh` with an absolute path. Target `scmdraft2-map-creator` (192.168.1.99), kernel
+6.12.0-211.74.1.el10_2.x86_64.
+
+**Rename and placement.** On the target, `mv i-love-korea.scm superseded-i-love-korea.scm` then the new
+build scp'd to `i-love-korea.scm`. Superseded M7 single-row build 614561 B at SHA-256
+`82589b4205f5deb8ed123273f1c6b5262472806bb90373d6b267c8f27e2319a0`, mtime unchanged. New build 614561 B at
+SHA-256 `16fe455d46fd88671a98a79f3db65d934400ce0d4edd98f677313e6668d38ba9`. Target rename inverse,
+`mv "$HOME/scmdraft-maps/i-love-korea/superseded-i-love-korea.scm" "$HOME/scmdraft-maps/i-love-korea/i-love-korea.scm"`.
+
+**Launch and captures (pid 152909).** Profile dismissed with `rdp-input key 0x1C`. Captures `m9-open.png`
+(default zoom, Zoom combo reads `100%`), `m9-zoom25.png` (after opening the Zoom combo at (385,90) and walking
+it down with extended Down-arrow `keyx 0x50` x6 then Enter; the Zoom combo reads `25%` highlighted, so zoom
+applied, unlike the maps 2/3 attempts), `m9-jump.png` (overview-jump click (81,175) centring the viewport, line 2
+`KOREA` framed), `m9-reopen.png` (after kill and relaunch). Status bar reads `Ice World\Snow` in every frame.
+
+**Fit-to-line zoom, stated honestly.** B1 derived the fit-to-line zoom as about 21 percent (6.74 px/tile) for a
+112-tile line, which is below this build's 25 percent zoom floor (floor = 8 px/tile), so the exact fit-to-line
+zoom is not reachable in the editor. The closest capturable main-canvas frame is the 25 percent floor frame
+(`m9-zoom25.png`, line 1 `I` then heart framed). At 25 percent the main-canvas viewport is 8 px/tile = 1.417 mm/tile,
+754 px tall = 94.25 tiles; a 112-tile line exceeds it by 17.75 tiles, so a whole line does not fit vertically at any
+permitted zoom and the frame carries a partial line. Grid-line pitch on `m9-zoom25.png` did not isolate a clean
+ground band (the design fills the sampled region), so px/tile at 25 percent is taken from the Zoom combo reading
+(25 percent x 32 px) rather than a fresh grid measurement.
+
+**Gate numbers measured on this map's own real render (report `/tmp/opencode/t0042/i-love-korea-2line_report.json`).**
+Coverage 20600/65536 = 31.43 percent. Overview thumbnail body crop located at (18,112)-(146,240) 128x128 px
+(ground 11161 / glyph 5149 / non-tone 74 px), glyph share 31.43 percent matches mask coverage exactly. WCAG on the
+real thumbnail render 6.745 dominant pair ground (176,176,176) against glyph (36,40,56), worst pair also 6.745.
+WCAG on the main-canvas 25 percent frame 6.745 (glyph share 50.08 percent). Booth artifacts uniform single-step
+Lanczos of the located body crop at 0.5 (`i-love-korea-2line-booth64.png` 64x64) and 0.25
+(`i-love-korea-2line-booth32.png` 32x32). Re-open identity: open vs reopen body crop differs 0 px over 16384 px
+(threshold 16), disk 614561 B `16fe455d46fd...` mtime 2026-11-21 19:28:35 unchanged by viewing and re-open.
+
+**Stroke, gap and height in tiles (for the editor's 2x2 top-left point-sample thumbnail, M8 fact).** Every letter
+stroke is 8 tiles (thinnest measured ink run inside a letter window 8 tiles). Line-1 gap I to heart 16 tiles, line-2
+letter gaps 8 tiles each, interline gap 16 tiles. Letter height 112 tiles per line. Heart bbox 110x106 tiles, feature
+floor (both axes >= 10 tiles) holds for all seven shapes.
+
+**Viewport-indicator overlay check.** The body crop carries 74 non-map-tone pixels, dominant (255,255,255), contrast
+2.169 against ground (the same overlay M8 reported at 2.169). All 74 land on ground, none covers a glyph window, so
+this map's booth64/booth32 are chrome-free against the overlay; the artifact is not called chrome-free without this
+check.
+
+**Per-letter ink retention at the 64 px artifact (real booth64, thresholded glyph tone).** All seven read:
+I ink 60 px vertical coverage 1.0, heart 518 px 0.929, K 112 px 1.0, O 128 px 1.0, R 144 px 1.0, E 144 px 1.0,
+A 144 px 1.0. At the 128 px real thumbnail every shape reads at ink-vs-area 1.0. This is the measured contrast to the
+shipped build's `M8` 64 px failures on `I`, `O`, `E`; the builder does not declare either map legible, `M10` decides.
+
+**Angular subtence of an 8-tile stroke, derived from B1's mm/px, bounded band 1 / 1.5 / 2 m, not a venue fact.**
+At 25 percent (8 px/tile, 1.417 mm/tile) an 8-tile stroke is 64 px = 11.333 mm, 0.646 / 0.431 / 0.323 deg
+(38.8 / 25.8 / 19.4 arcmin). At 100 percent (32 px/tile) the same stroke is 256 px = 45.34 mm. In the overview
+thumbnail (0.5 px/tile) it is 4 px = 0.708 mm. In the 64 px booth artifact (0.25 px/tile) it is 2 px = 0.354 mm.
+
+**Checks not run, named.** No grid-pitch measurement at 25 percent zoom (the design fills the sampled band, px/tile
+taken from the combo reading). No blind human reader or independent agent re-read these artifacts, that is `M10`. No
+literal in-game StarCraft minimap render, the playability path is blocked on this target, the editor overview thumbnail
+is the whole-map real render. SCMDraft 2 map-format validation dialog not run, the dialog-button injection blocker
+stands. No per-tile elevation class established for the 64/192 pair, the pair is render-validated, not harvest-validated.
+The fit-to-line 21 percent zoom is below the editor floor and was not captured at that exact zoom.
+
+**Exact inverse and teardown.** SCMDraft opened for viewing only, no map saved; teardown `pkill -f 'ScmDraft 2'`,
+`pkill -f 'start.exe /exec'`, wineserver left (not killed beyond the SCMDraft kill), verified `NO_SCM_RUNNING`. Target
+captures removed `rm -f /tmp/m9-*.png /tmp/t0042-run.log`, verified `captures-removed`. Controller files this step
+created: `m9-open.png`, `m9-zoom25.png`, `m9-jump.png`, `m9-reopen.png`, `m9_target.py`, `m9_measure.py`,
+`m9-extracted.chk`, `i-love-korea-2line.scm`/`i-love-korea-2line.chk` (intermediate build),
+`i-love-korea-2line-thumbnail128.png`, `i-love-korea-2line-booth64.png`, `i-love-korea-2line-booth32.png`,
+`i-love-korea-2line_report.json`, inverse `rm -f` each. Target deliverables verified byte-stable after the run:
+`sha256sum` reproduces `i-love-korea` `16fe455d46fd...`, `foss-for-all` `e856f0e1...`, `rocky-logo` `447360ce...`,
+`rocky-with-heart` `b9b056c2...`, `tux` `79002eacd5d6...`, `republic-of-korea` `c773a534a564...`, and the superseded
+`superseded-i-love-korea.scm` `82589b4205f5...`.
