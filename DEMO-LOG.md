@@ -1884,3 +1884,33 @@ open, same size pattern `S1a` recorded for `Scm71d3.tmp`). Target captures `/tmp
 30 files, inverse `rm -f /tmp/S1bAL1-*.png` to be applied at the dispatch's final verification
 after the controller-side analysis. Inverse of the whole phase for the target: loop copies already
 removed at each teardown, captures removable, residue named above.
+
+## 2026-11-22 08:33 — Dispatch S1b phase B, one full six-map booth cycle at the 300 s default (`Tails`)
+
+Command `python3 /tmp/opencode/t0042/booth_loop.py --tag-prefix S1b300 --maps
+foss-for-all,rocky-logo,rocky-with-heart,tux,republic-of-korea,i-love-korea --loops 1
+--display-seconds 300`, rc 0, 88 run-log records, report `/tmp/opencode/t0042/S1b300_cycle_report.json`.
+First full six-map cycle ever run end to end. Per-map totals, build, transfer, open, teardown in
+seconds: `foss-for-all` 355.97 / 0.04 / 0.51 / 25.53 / 2.90; `rocky-logo` 362.02 / 0.04 / 0.53 /
+25.46 / 2.91; `rocky-with-heart` 361.95 / 0.10 / 0.53 / 25.46 / 2.89; `tux` 361.94 / 0.10 / 0.52 /
+25.48 / 2.90; `republic-of-korea` 353.87 / 0.56 / 0.52 / 25.84 / 2.90; `i-love-korea` 362.40 /
+0.06 / 0.50 / 25.86 / 2.89. Non-display overhead 43.88 to 44.36 s on every map. Every map
+reproduced its recorded SHA-256 from the committed mask code before transfer and matched it on the
+target after; every teardown answered `NO_SCM_RUNNING` with the loop copy `REMOVED`; no save step
+touched any map. Zoom verified from pixels on all six, indicator 216 x 96 tiles at 7.931 x 7.854 px
+per tile. Display windows measured 309.54 to 318.07 s against the 300 s request.
+
+Cycle cost, measured: 2232.36 s = 37 min 12 s (maps 2158.15 s, scratch paint 72.96 s, cycle steps
+1.25 s), against `S1a`'s projected 2219.5 s, a 0.58 percent deviation, which retires the projection
+in favour of the measurement. Complete cycles that fit, computed from this measured cost: 1 in one
+hour, 3 in two hours, 4 in three hours.
+
+Cycle steps: `tmp_cleanup` 0.75 s removed the four phase-A residue files named in the previous
+entry (2458252 B), `remaining 0`. Disk headroom before 64997818368 B avail and `C:\Maps\` at
+102928 B; after 64989118464 B avail and `C:\Maps\` at 4404854 B. The 8699904 B consumed is the
+seven `Scm*.tmp` backups the cycle's opens wrote (4301926 B) plus this phase's target captures in
+`/tmp/S1b300L1-*.png`. Palette re-derived from a fresh capture at setup, `ocr-tsv-label-rows`,
+839 and 968. Paint median WCAG 6.267 over 42581 sampled changed pixels. Scratch map restored to
+12502 B `f00d1f60521c...` at teardown. Inverse for the phase: loop copies removed per teardown,
+captures removable with `rm -f /tmp/S1b300L1-*.png` at final verification, residue named, scratch
+restored.
