@@ -1288,3 +1288,54 @@ Named coastal anchors, 5x5 tile window (plus or minus 5 km) around each anchor, 
 **Measured glyph metrics.** Glyph height 238 tiles, thinnest letter stroke 5 tiles, letter bar thickness 34 tiles, heart 70w x 68h narrowest run 2 tiles, separator gaps 5 tiles, margins 8/8/9/9. 4x survival measured three ways, all 7 survive on the shipped mask at Lanczos 4x, all 7 carry glyph pixels on 117 to 118 of 119 rows in the real 128 px overview, at the real booth64 4 of 7 pass the stated criterion (K, R, A on 59 of 60 rows, heart 16 of 18) and 3 of 7 (I, O, E) have their single-cell 5-tile strokes render as mid-tone pixels on most of their extent, present as faded strokes, measured not asserted. The builder declares no legibility verdict, `M8` decides.
 
 **Inverse for this step.** `rm -f /tmp/opencode/t0042/m7-extracted.chk /tmp/opencode/t0042/m7_measure_output.txt /tmp/opencode/t0042/i-love-korea_report.json /tmp/opencode/t0042/i-love-korea-mm*.png /tmp/opencode/t0042/i-love-korea-booth*.png /tmp/opencode/t0042/m7-read-*.png /tmp/opencode/t0042/m7_measure.py`. No target state changed in this step.
+
+## 2026-11-21 17:50 — Dispatch D0 step 1, interim booth record staged on the controller (`Tails`)
+
+**Step.** Controller-side only, no target contact. Staged the publishable record under
+`/tmp/opencode/t0042/publish/`, a scratch path, not a git-tracked path of the team repo.
+`python3 /tmp/opencode/t0042/d0_stage.py` walked `/tmp/opencode/t0042` (1849 files, 269593596 B),
+classified every file, copied the included categories, and wrote the full landed and withheld plan to
+`/tmp/opencode/t0042/d0_stage_plan.tsv`. Landed 572 files, 169663874 B, in nine categories:
+`maps/deliverable` 6 `.scm`, `maps/superseded` 2, `code` 81 (Python, the team's own C sources, shell
+drivers), `gate-reports` 9 `.json`, `booth-artifacts` 65, `captures` 166 editor captures,
+`calibration` 13, `live-segment` 214 (209 captures, 4 replayable command lists, 3 live-segment maps),
+`montages` 10, `notes` 6. Largest single landed file 1591825 B.
+
+**The six maps re-verified before any copy.** `sha256sum` on the controller copies reproduces every
+recorded value byte for byte, `foss-for-all` `e856f0e1d62ec8f7...`, `rocky-logo` `447360ce8077e542...`,
+`rocky-with-heart` `b9b056c27a678515...`, `tux` `79002eacd5d673c5...`, `republic-of-korea`
+`c773a534a564d4b3...`, `i-love-korea` `82589b4205f5deb8...`. The two superseded builds landed beside
+them at their ratified prefixed names, `superseded-foss-for-all-jungle.scm` `051fc1392257ec07...` and
+`superseded-republic-of-korea-110m.scm` `50e55299dd86fafb...`, because `DEMO-LOG.md` and the planning
+docs name those files and a reader checking the record should be able to open them.
+
+**Withheld, 1294 files, with a category on each.** shipped StarCraft data 4 (`base-map.scx`,
+`maps/rc.scm`, `maps/bn.scm`, and `live-seed.scm`, which `sha256sum` proves byte-identical to
+`maps/rc.scm`, so it is the shipped map (2)River Crossing.scm rather than this team's authorship),
+harvested reference CHKs 170 under `ts-harvest/`, CHK and SCX intermediates 62, probe and calibration
+maps 38, StormLib 905, the Natural Earth upstream dataset 5, imported upstream code 3, compiled ELF
+binaries 4, build logs and bulk probe captures 66, `__pycache__` 15, raw PPM desktop sanity captures 1,
+scratch notes 4, one undocumented intermediate binary 1, and one credential 1. No ISO and no container
+image exists anywhere under `/tmp/opencode/t0042`, `find . -maxdepth 2 \( -iname '*.iso' -o -iname
+'*.img' \)` returns nothing, so that excluded category is withheld vacuously rather than by removal.
+
+**Credential found in the working directory, recorded and not published.** `grep -rl 's5Tf...'` over
+the whole working directory returns exactly one file, `/tmp/opencode/t0042/rdp-args`, a scratch argument
+file for the team's own RDP input injector holding the target's RDP credential in plaintext. Its value
+does not appear in this log, in any file that landed, or in any commit. `git log --all -S` on the value
+returns zero commits in the team repo, so nothing was ever committed; the file is a live credential on
+the controller and the rotation step belongs to the operator. It is withheld from the publish by
+explicit rule, and `grep -rl` for the value over `/tmp/opencode/t0042/publish` returns nothing. The
+dispatch briefs read credentials from `~/AI/secrets` at run time through stdin or a file argument, and
+`grep -rin` over the landed code shows only path references such as
+`SSH_PASS = os.path.expanduser("~/AI/secrets/scm_draft_pass.md")`, never a value.
+
+**Checks that did not run, named.** No target contact in this step, so no target-side hash or mtime was
+re-verified here; the six maps' target copies were last verified by `M7` at 2026-11-21 14:28. The
+booth repo has not been written yet in this step. Whether any landed capture carries the
+viewport-indicator overlay `Shadow` found at 8 glyph positions is not re-checked by this dispatch, it is
+carried forward as `M8` recorded it.
+
+**Inverse for this step.** `rm -rf /tmp/opencode/t0042/publish /tmp/opencode/t0042/d0_stage.py
+/tmp/opencode/t0042/d0_classify.py /tmp/opencode/t0042/d0_stage_plan.tsv`. Nothing outside those paths
+was created or changed, and no target state was touched.

@@ -2113,6 +2113,78 @@ Gate 4 re-open, 614561 B mtime `2026-11-21 14:28:42` SHA `82589b4205f5...` uncha
 
 **Recommendation for `Robotnik` and `M8`.** `M8` reads `i-love-korea-mm.png`, `i-love-korea-booth64.png`, `i-love-korea-booth32.png`, `m7-open.png`, `m7-jump.png`, `m7-reopen.png` and `i-love-korea_report.json`, with its own coverage and contrast numbers attached, and decides whether an unaided viewer reads `I`, a heart, and `KOREA` at the 128 px overview render and at 64 px. The measurement this dispatch hands to that decision, if `M8` rejects on stroke fade, the numbers point at the 5-versus-6-tile stroke trade, a rebuild at S_X 6 with a deliberately small heart, or fewer elements per row, and the width budget arithmetic in this section bounds what any single-row layout can hold. The map is not declared blocked and is not declared legible. `S1` note, the title bar shows the full map path in this dispatch's captures, third capture set agreeing with `M5` against `M4`.
 
+### Dispatch D0, interim publication of the booth record to the documentation repo (2026-11-21 17:50, `Tails`)
+
+Runs ahead of `B1` on the operator instruction recorded at `## Status` 2026-11-21 16:20. Controller-side
+only, no target contact. DEMO-LOG 2026-11-21 17:50.
+
+**Alternatives considered, staging scope.** Option A, copy `/tmp/opencode/t0042` wholesale and delete
+the excluded names afterwards. Option B, classify every file in the working directory into an include
+category or a named withheld category before any copy. Chosen, Option B, because the brief requires a
+reason on every withheld category, and a withheld category that was never a candidate cannot be reported
+honestly as withheld. Option A also risks a shipped-map copy reaching the commit through a name this
+dispatch had not enumerated. Option C, curate a small hand-picked subset. Rejected, the operator is
+checking the repo against the record, and a hand-picked subset makes every omission a judgement the
+record does not explain. Mechanism, `d0_stage.py` walks the directory, applies an ordered rule set,
+copies included files into `/tmp/opencode/t0042/publish/<category>/`, and writes both lists to
+`/tmp/opencode/t0042/d0_stage_plan.tsv`, so MANIFEST and PUBLISH-STATUS are generated from the same
+run that did the copying rather than transcribed.
+
+**Alternatives considered, layout.** Option A, mirror the controller scratch layout. Option B, name the
+directories after the categories the brief names. Chosen, Option B, `maps/deliverable`, `maps/superseded`,
+`code`, `gate-reports`, `booth-artifacts`, `captures`, `calibration`, `live-segment/{maps,commands,captures}`,
+`montages`, `notes`, `planning`, because the brief's include list is a list of categories and the operator
+reads the repo by eye.
+
+**Six maps re-verified before the copy, `sha256sum` on the controller copies.** `foss-for-all`
+`e856f0e1d62ec8f7ecfccf8f0d5f08aee0d5798ef972ea9fee996bbf3bfd3eb0`, `rocky-logo`
+`447360ce8077e54293bf37857402860fdb6b918eb335ca95426c7d2abc656e83`, `rocky-with-heart`
+`b9b056c27a67851508dae01493ccd92ee4df4d70846f2ab8b9cb635fe141f0d8`, `tux`
+`79002eacd5d673c531d6e2e417dddb6c00b02d9a9b9577fab7d43373f682bca4`, `republic-of-korea`
+`c773a534a564d4b3bd13bb9eede10838daa1729784a693f28e6185e779c40976`, `i-love-korea`
+`82589b4205f5deb8ed123273f1c6b5262472806bb90373d6b267c8f27e2319a0`. Every one matches its recorded
+value. `republic-of-korea` matches the `M5` rebuild value `c773a534a564...`, not the superseded 110 m
+`50e55299dd86...`, which landed beside it under its ratified prefixed name.
+
+**Also landed, stated plainly rather than silently.** The two superseded builds at their ratified
+prefixed names, the three live-segment maps (`live-demo-ice.scm` the programmatic seed, its
+`live-demo-ice-after.scm` painted pair, and `l5c-saved.scm` the editor-saved proof that closed the era 6
+save blocker in `L5`), the four replayable command lists, the calibration render set, and the montages.
+Reason, `DEMO-LOG.md` and the planning docs cite these files by name and a reader checking the record
+should be able to open what the record cites. Reason against, they are not in the brief's include list;
+they are named in PUBLISH-STATUS so nothing arrives unexplained.
+
+**Security finding, recorded here because `## Security` is not mine to write, and the conflict is named.**
+`grep -rl` for the target RDP credential value over `/tmp/opencode/t0042` returns exactly one file,
+`/tmp/opencode/t0042/rdp-args`, a 79 B scratch argument file for the team's own RDP input injector that
+holds the target's RDP password in plaintext. AGENTS.md section 4 says a secret found already written
+somewhere goes to `## Security` with a rotation step in `## Status`; rule 2 forbids me editing those
+sections, so the finding is recorded here and `Robotnik` should carry it into `## Security` and `## Status`
+at the next dispatch. Facts for that carry. The value appears in no commit, `git log --all -S` on the
+value returns zero commits. The value appears in no landed file, `grep -rl` for it over
+`/tmp/opencode/t0042/publish` returns nothing. The value appears nowhere in this doc or in DEMO-LOG. The
+file is a live credential on the controller, rotation is the operator's action, and `rm -f
+/tmp/opencode/t0042/rdp-args` is not the fix because the target still has the credential in use for RDP.
+Related, the landed code references credential paths only, `SSH_PASS =
+os.path.expanduser("~/AI/secrets/scm_draft_pass.md")` at `drive_l4.py:11`, `l5_c.py:16`, `m5_target.py:20`,
+`probe_stage1.py:8`, and the shell drivers use `sshpass -f <path>` rather than a value in argv.
+
+**Checks run.** `python3 /tmp/opencode/t0042/d0_stage.py` (walk 1849 files 269593596 B, landed 572 files
+169663874 B), `sha256sum` on the six maps and on every landed file, `find publish -type f -printf` for the
+size census (largest landed file 1591825 B, `live-segment/captures/live-probe.png`, no file anywhere near
+GitHub's limits), `find . -maxdepth 2 \( -iname '*.iso' -o -iname '*.img' \)` returns nothing, `grep -rl`
+for the credential value over the source tree and over `publish`, `grep -rin` for credential-shaped
+identifiers over the landed code, `file` on every candidate binary so ELF build artifacts are withheld by
+content rather than by name.
+
+**Checks that did not run, named.** No target contact, so no target-side re-verification of the six maps
+in this dispatch, `M7` last verified them on the target at 2026-11-21 14:28. No re-check of whether
+individual landed captures carry the viewport-indicator overlay `M8` found at 8 glyph positions, that
+finding travels with the captures rather than being re-adjudicated here. No visual read of the 166 editor
+captures by this dispatch, they land as the record's evidence, not as evidence this dispatch re-read. No
+licence ruling on the landed captures, which are downscaled renders of Blizzard tileset tones, that is
+`R4` and `R5`.
+
 ---
 
 ## Review
