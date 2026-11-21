@@ -13,6 +13,8 @@
 
 ## Status
 
+**Queue ownership, written before the first dispatch in this session (2026-11-22, `Robotnik` session `ses_dffdc1f07ffewFDnixBYrSRFYw`).** This session owns the TASK-0042, TASK-0041 and TASK-0043 queues taken from the 2026-11-22 00:15 handoff. Dispatch `S1b` runs as this session's first dispatch, child `ses_dffd5c5bbffeyUIjyE0b72ccgc`. Gate run before it, `scripts/dispatch-gate --session ses_dffdc1f07ffewFDnixBYrSRFYw`, answers `PASS`, exit 0, peak 72451 over 9 calls, worst jump 15349, dispatcher projection 87800, child projection 140480 of 262144, 53.6 percent. Any other `Robotnik` session reading this doc is not the queue owner and must not dispatch it, which is the recurrence this record exists to prevent.
+
 **S1a builds the booth loop runner and measures what a cycle actually costs, and it proves the loop can self-verify (2026-11-22 00:15, `Robotnik` session `ses_e02cb72dbffeRUE9SOHAZEtldT`).** `Tails`'s pass is at `## Implementation` (Dispatch S1a), team repo commits `a9e1e52` and `c8de918`, DEMO-LOG 2026-11-21 23:20 through 2026-11-22 00:02, selftest green at 61 checks on both pushes. The runner is `/tmp/opencode/t0042/booth_loop.py`, one command per cycle, `--maps`, `--loops`, `--display-seconds` defaulting to 300, each step appended to `s1a-run-log.jsonl` with its own inverse at the moment it completes. **The number that decides the booth schedule, measured rather than projected from it.** Per-map cycle cost at a 45 second display window, `foss-for-all` 100.03 s, `tux` 104.46 s, `i-love-korea` 104.94 s, scratch painting 72.56 s, a three-map partial cycle at 381.99 s, with non-display overhead of 44.06 s per map, launch wait plus the zoom walk. Projected six-map cycle at the 300 second default is 2219.5 s, 36 minutes 59 seconds per loop. Booth duration is not recorded anywhere in this task, so cycle counts stay formulas on an unrecorded input, and a three-hour booth is a little under five loops on that projection. **The property that makes the loop defensible rather than a performance.** All six maps reproduce their recorded SHA-256 from the committed mask code before transfer, so every iteration proves itself against the record, and no editor save touched any map, deliverable or scratch, which is what keeps those hashes meaningful. **Two findings that change how the booth is operated.** The Zoom combo reads `100 percent` on a launch whose canvas measures 8.00 px per tile, so the combo is not a booth readout and the runner must verify zoom from pixels, which it does. And `L4`'s palette rows were mis-mapped, Rocky Snow is at y 839 and High Outpost at y 968, derived twice, from a fresh target capture and from `l4-palette.png`, with the click reading back `Ice World\High Outpost`. That contradicts `L5`'s recorded conclusion that the palette tree is unstable across launches. Both records stand and the disagreement is named, because a booth script that re-derives coordinates at setup is robust to either being right. **Cost I had not accounted for, now named, and it is a target-disk item.** The editor leaves four `Scm*.tmp` backups per six-map cycle, about 2.4 MB per cycle, so a six-hour booth accumulates roughly 200 MB, and target disk headroom was not measured. `S1b` adds the cleanup step. **Decision, recorded rather than asked.** `S1b` runs the three unmeasured maps, one full six-map cycle at 300 seconds, and one cycle at 150 seconds, and it runs from a fresh `Robotnik` session rather than from this one, because a 37 minute cycle is the longest single run this task has attempted and this session is at the ceiling the dispatch gate exists to keep a dispatcher off.
 
  **D2 republishes the booth record with the accepted map set, verified from the remote (2026-11-21 23:05, `Robotnik` session `ses_e02cb72dbffeRUE9SOHAZEtldT`).** `Tails`'s pass is at `## Implementation` (Dispatch D2), booth repo commit `39f2119`, team repo commits `ba5af6b` and `cd66aca`, DEMO-LOG 22:43 and 22:47. My own read of the remote, 606 blobs, 172506692 B, `maps/deliverable/i-love-korea.scm` at 614561 B which is the accepted two-line build, and both superseded builds present at 614561 and 614567 B. **`Tails` corrected my brief and the correction is the record.** My `D2` bullet said the two superseded `i-love-korea` builds hold content identical to the accepted one apart from the internal map name, and `F2`'s container decode disproves that for the `M7` single-row build, 19666 glyph tiles against 20600, which is a different design. The `-2line` file is the name-superseded duplicate, the plain-prefixed file is the rejected `M7` design, and the manifest carries the measured version rather than my phrasing. Two designs, not three, and that is now written where a reader will find it. `M7`-era superseded artifacts moved as a set of four rather than the two I named, with the extension recorded. Exclusion rules were re-applied by importing `D0`'s classifier unchanged so a delta cannot override a hard exclusion, and the categories not copied are listed by count. Checks it named as not run, no target contact so the target-side map hashes remain `M9`'s claim, no map-validation dialog, no licence ruling.
@@ -2887,6 +2889,47 @@ cycle so a six-hour booth does not accumulate 200 MB of editor backups. `D3` sho
 `booth_loop.py`, the run log and this cost table into the booth repo, and the runbook's one command
 is `python3 /tmp/opencode/t0042/booth_loop.py --maps foss-for-all,rocky-logo,rocky-with-heart,
 tux,republic-of-korea,i-love-korea --loops <N> --display-seconds 300`.
+
+### Dispatch S1b, completing the booth loop: three new maps, a full six-map cycle at 300 s and one at 150 s, tmp cleanup and disk headroom (2026-11-22, `Tails`, fresh child session)
+
+**Pre-dispatch target state, verified rather than assumed.** `pgrep -af "ScmDraft[ ]2"` answers
+`NO_SCM_RUNNING`; `ls -l /home/howard/.wine-scmdraft/drive_c/Maps/` shows the `live-demo-ice.scm`
+restore at 12502 B, the pre-existing reference map, and nine `Scm*.tmp` editor backups: the four
+`S1a` left named in `DEMO-LOG` 2026-11-22 00:02 plus five earlier ones (`Scm2518.tmp` 614562 B,
+`Scm6aac.tmp` 614562 B, `Scm7251.tmp` 12502 B, `Scm86f3.tmp` 12502 B, `Scm9194.tmp` 614552 B) from
+`L5` and earlier passes. `df -B1 / | tail -1` reads 75056865280 size, 10051878912 used,
+65004986368 avail, 14 percent. `du -sb` of `C:\Maps\` reads 4429854 B. Six deliverables
+re-verified at their recorded SHA-256 with unchanged mtimes via `python3 booth_loop.py
+--stability` at 2026-11-22, before any S1b target write.
+
+**Runner changes (`/tmp/opencode/t0042/booth_loop.py`, compile-checked `python3 -m
+py_compile`).** Four extensions, all keeping the `S1a` properties (deterministic rebuild, SHA
+gate before transfer, absolute paths, drive-qualified open, no editor save anywhere, zoom
+verified from the capture indicator and the run census rather than the combo, palette rows
+re-derived per cycle from a fresh capture inside `run_paint`, every step logged with its inverse
+at completion).
+1. `cleanup_tmp(tag)`, `tmp_listing()`: per-cycle `C:\Maps\Scm*.tmp` cleanup, listing every
+   removed file with its byte size in the log record. Placed at cycle **start**. Chosen over
+   cycle-end cleanup: a cycle then bounds its own residue (about 2.4 MB for six maps), the
+   multi-hour accumulation the `S1a` recommendation named is prevented, and the final cycle's
+   residue stays on the target named-but-present, which is rule r002 and the acceptance wording
+   "clean apart from the named `Scm*.tmp` residue". The inverse of a deletion cannot restore the
+   deleted bytes, so the record names each removed file and states the deletion is permanent.
+2. `disk_headroom(tag, when)`: `df -B1 /` plus `du -sb` of `C:\Maps\`, logged before and after
+   every cycle, read-only.
+3. `--tag-prefix`: separable phases in one run log (`S1bA`, `S1b300`, `S1b150`) so per-map and
+   per-cycle numbers never merge across windows.
+4. `summary(tag_prefix)`: adds a `cycles` block with per-cycle cost (six map totals + scratch
+   paint + cycle steps) and `cycles_fit_1h/2h/3h` computed by integer division from the measured
+   cost, and writes `s1b<phase>_cycle_report.json` per phase instead of overwriting the `S1a`
+   report.
+
+**Run plan, in the order the brief gives it.** Phase A `--tag-prefix S1bA --maps
+rocky-logo,rocky-with-heart,republic-of-korea --display-seconds 300 --loops 1`, the three maps
+`S1a` never put on the target, at the runner's 300 s default since the brief names no other
+window for them. Phase B, one full six-map cycle at 300 s. Phase C, one full six-map cycle at
+150 s. Each phase's record lands in `DEMO-LOG.md` and here when the phase completes, not at the
+end of the dispatch.
 
 ---
 
