@@ -1339,3 +1339,81 @@ carried forward as `M8` recorded it.
 **Inverse for this step.** `rm -rf /tmp/opencode/t0042/publish /tmp/opencode/t0042/d0_stage.py
 /tmp/opencode/t0042/d0_classify.py /tmp/opencode/t0042/d0_stage_plan.tsv`. Nothing outside those paths
 was created or changed, and no target state was touched.
+
+## 2026-11-21 18:07 — Dispatch D0 step 2, interim booth record published to the documentation repo (`Tails`)
+
+**Step.** Controller-side only, no target contact. Cloned the booth repo with
+`GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git clone https://github.com/metalllinux/foss-for-all-booth-demonstration-scmdraft-2.git /tmp/opencode/t0042/booth-repo`,
+which returned exactly the recorded `Initial commit` `7e0d58d`, `LICENSE` 1063 B and `README.md` 129 B,
+so the clone matched the `## Status` verification of 2026-11-21 16:20. Copied the staged tree in, added
+`DEMO-LOG.md` and the three planning docs from the team repo at commit `2b29d7e`, generated `MANIFEST.md`
+and `PUBLISH-STATUS.md` from the tree as written by `python3 /tmp/opencode/t0042/d0_report.py`, committed
+`3da0937162a5f00ba76078f0a82142910b8c7f32`, and pushed with
+`GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, which answered `7e0d58d..3da0937 main -> main`.
+No credential appears in any argv, commit message, log line or file written by this step. The token was
+supplied only through the askpass helper, which reads it from `~/AI/secrets/token.md` at run time.
+
+**Verified on the remote after the push, not assumed.** `git ls-remote` answers
+`3da0937162a5f00ba76078f0a82142910b8c7f32 refs/heads/main`. A fresh clone of the pushed repo
+(`/tmp/opencode/t0042/booth-verify`) holds 580 files, `git ls-tree -r HEAD` count, and `sha256sum` in that
+fresh clone reproduces all six deliverable maps at their recorded values, `foss-for-all` `e856f0e1...`,
+`rocky-logo` `447360ce...`, `rocky-with-heart` `b9b056c2...`, `tux` `79002eacd5d6...`, `republic-of-korea`
+`c773a534a564...`, `i-love-korea` `82589b4205f5...`. `README.md` `e278208f88b9...` and `LICENSE`
+`5c620b9317b6...` are byte-unchanged and `git diff --stat 7e0d58d HEAD -- README.md LICENSE` is empty, so
+the existing prose and the licence file were not rewritten. `git log` on the remote clone shows the two
+commits, `3da0937` on top of `7e0d58d`.
+
+**Visibility unchanged, checked rather than assumed.** The REST call, token supplied through a stdin
+`curl --config` so it is in no argv and no file, answers `"id": 1455994123`, `"private": true`,
+`"visibility": "private"`, `"default_branch": "main"`, `"pushed_at": "2026-11-21T09:07:30Z"`. An
+unauthenticated probe of the same path still answers `404`. The same response reports `"size": 1` KiB
+against a 150 MiB push, which is GitHub's lagging cached field rather than evidence about the push, and it
+is recorded as such because `git ls-remote` and the fresh clone both return the pushed commit.
+
+**Manifest cross-checked against git itself.** A script re-read `MANIFEST.md`, re-hashed every listed file
+in the working tree, and compared the path set against `git ls-tree -r HEAD`. Result, 579 rows, 579 unique
+paths, zero hash or size mismatches, zero paths in the tree that the manifest omits, zero paths the manifest
+lists that are not in the tree. The only file the manifest does not list is `MANIFEST.md` itself, stated in
+its header, because a file cannot hold its own hash.
+
+**Categories published.** The six deliverable maps, the two superseded builds, the code (81 files, the
+team's own Python, C and shell), 9 gate reports, 65 booth artifacts, 166 editor captures, 13 calibration
+renders, the live segment (3 maps, 4 replayable command lists, 207 captures), 10 montages, 6 measurement
+transcripts, the three planning docs, `DEMO-LOG.md`, `MANIFEST.md`, `PUBLISH-STATUS.md`.
+
+**Categories not copied, named in full.** shipped StarCraft map data, 4 files, `base-map.scx`, `maps/rc.scm`,
+`maps/bn.scm` and `live-seed.scm`, the last proven by `sha256sum` to be byte-identical to the shipped map
+`(2)River Crossing.scm`. Harvested reference CHKs under `ts-harvest/`, 170 files. CHK and SCX intermediates,
+62 files. Probe and calibration maps, 38 files. StormLib upstream library, 905 files. The Natural Earth
+upstream GeoJSON dataset, 5 files. Imported upstream code, `starcraft_mpq_io.py` and the `richchk` fragments,
+3 files. Compiled ELF binaries the team built from the C sources that landed, `chkdump`, `mkmpq`,
+`rdp-input`, `rdp-shot`, 4 files. Build, launch and error logs and bulk per-row tileset probe captures, 66
+files. `__pycache__`, 15 files. Raw PPM desktop sanity capture, 1 file. Scratch notes and partial hash
+lists, 4 files. `colorbase.bin`, 1 file, provenance unrecoverable. The credential scratch file `rdp-args`,
+1 file. Three categories the brief excluded that had nothing on the controller to exclude, any ISO or
+disk image, zero files, SCMDraft or Wine binaries and prefixes, zero files, they exist on the target only,
+and game data, MPQ archives and unit or sprite assets, zero files. Full reasons are in `MANIFEST.md` and
+`PUBLISH-STATUS.md` in the booth repo.
+
+**Credential finding, carried forward for the operator.** The plaintext target RDP credential sits in
+`/tmp/opencode/t0042/rdp-args`, a 79 B scratch argument file for the team's own RDP input injector. It is
+in no commit, `git log --all -S` on the value returns zero commits, in no landed file, `grep -rl` for the
+value over the booth clone returns nothing, and in no document in either repository. It was withheld by an
+explicit rule rather than by luck. The rotation decision is the operator's, and deleting the scratch file
+would not rotate the credential itself. `Robotnik` should carry this into `## Security` and `## Status`,
+which this agent does not write.
+
+**Checks that did not run, named.** No target contact, so the six maps' copies on the target were not
+re-hashed in this dispatch, they were last verified on the target by `M7` at 2026-11-21 14:28. No visual
+read of the 166 editor captures published here. No licence ruling on the published captures, which are
+downscaled renders of Blizzard tileset tones, that belongs to `R4` and `R5`. No re-check of which published
+captures carry the viewport-indicator overlay `M8` measured at 8 glyph positions. SCMDraft 2's own
+map-validation dialog, still run on no map in this task.
+
+**Inverse for this step.** The booth repo has no revert path short of a revert commit, and this task does
+not force-push, so the inverse is `git revert 3da0937` pushed to `main`, which leaves `7e0d58d` as the tip
+content. On the controller, `rm -rf /tmp/opencode/t0042/publish /tmp/opencode/t0042/booth-repo
+/tmp/opencode/t0042/booth-verify /tmp/opencode/t0042/d0_stage.py /tmp/opencode/t0042/d0_classify.py
+/tmp/opencode/t0042/d0_reasons.py /tmp/opencode/t0042/d0_report.py /tmp/opencode/t0042/d0_stage_plan.tsv`.
+No target state was touched, no visibility setting was changed, no repo, package or registry change was
+made on any machine.

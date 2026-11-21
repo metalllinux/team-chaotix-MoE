@@ -2185,6 +2185,66 @@ captures by this dispatch, they land as the record's evidence, not as evidence t
 licence ruling on the landed captures, which are downscaled renders of Blizzard tileset tones, that is
 `R4` and `R5`.
 
+**Push result, verified on the remote rather than reported from the push command.** Clone of the booth repo
+returned exactly the recorded `Initial commit` `7e0d58d` with `LICENSE` 1063 B and `README.md` 129 B, so the
+starting state matched `## Status`. Commit `3da0937162a5f00ba76078f0a82142910b8c7f32`, pushed with
+`GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, answered `7e0d58d..3da0937 main -> main`.
+`git ls-remote` then answers `3da0937162a5f00ba76078f0a82142910b8c7f32 refs/heads/main`, and a fresh clone of
+the pushed repo at `/tmp/opencode/t0042/booth-verify` holds 580 files per `git ls-tree -r HEAD`, its `git log`
+shows `3da0937` on top of `7e0d58d`, and `sha256sum` **in that fresh remote clone** reproduces all six maps at
+their recorded values. `README.md` `e278208f88b9...` and `LICENSE` `5c620b9317b6...` are byte-unchanged and
+`git diff --stat 7e0d58d HEAD -- README.md LICENSE` is empty, so `D1`'s brief is intact and the licence file
+was not touched. Visibility unchanged, the REST call answers `"private": true`, `"visibility": "private"`,
+`"id": 1455994123`, `"pushed_at": "2026-11-21T09:07:30Z"`, and the unauthenticated probe still answers `404`.
+That response also reports `"size": 1` KiB against a 150 MiB push, recorded as GitHub's lagging cached field
+and not as evidence about the push, because `git ls-remote` and the fresh clone both return the pushed commit.
+
+**Manifest cross-checked against git, not trusted from its own generator.** A script re-read `MANIFEST.md`,
+re-hashed every listed file, and compared the path set to `git ls-tree -r HEAD`. 579 rows, 579 unique paths,
+zero size or hash mismatches, zero tree paths the manifest omits, zero listed paths absent from the tree.
+`MANIFEST.md` is the one file it does not list, stated in its own header.
+
+**Categories copied.** six deliverable maps, two superseded builds, code 81 files, 9 gate reports, 65 booth
+artifacts, 166 editor captures, 13 calibration renders, live segment 3 maps and 4 command lists and 207
+captures, 10 montages, 6 transcripts, 3 planning docs, `DEMO-LOG.md`, `MANIFEST.md`, `PUBLISH-STATUS.md`.
+
+**Categories `D0` did not copy, named in full with the reason each.** shipped StarCraft map data 4
+(`base-map.scx`, `maps/rc.scm`, `maps/bn.scm`, `live-seed.scm`, the last byte-identical to the shipped
+`(2)River Crossing.scm`), harvested reference CHKs under `ts-harvest/` 170, CHK and SCX intermediates 62,
+probe and calibration maps 38, StormLib upstream library 905, the Natural Earth upstream GeoJSON dataset 5,
+imported upstream code 3 (`starcraft_mpq_io.py`, `richchk_README.md`, `richchk_pyproject.toml`), compiled ELF
+binaries 4 (`chkdump`, `mkmpq`, `rdp-input`, `rdp-shot`, sources landed), build and launch logs plus bulk
+tileset probe captures 66, `__pycache__` 15, raw PPM desktop capture 1, scratch notes 4, `colorbase.bin` 1,
+the credential scratch file `rdp-args` 1, ISOs and disk images 0 with nothing on the controller to withhold,
+SCMDraft or Wine binaries and prefixes 0 because they exist on the target only, and game data, MPQ archives
+and unit or sprite assets 0. Full reasons land in `MANIFEST.md` and `PUBLISH-STATUS.md`.
+
+**Changes table.** Booth repo `metalllinux/foss-for-all-booth-demonstration-scmdraft-2`, one commit
+`3da0937`, 578 files added, 170600939 B listed, `README.md` and `LICENSE` untouched, visibility unchanged.
+Team repo, this doc's `## Implementation` and `DEMO-LOG.md`, DEMO-LOG 2026-11-21 17:50 and 18:10, commit
+`2b29d7e` for step 1 and the following commit for step 2. Controller, new files `/tmp/opencode/t0042/d0_stage.py`,
+`d0_classify.py`, `d0_reasons.py`, `d0_report.py`, `d0_stage_plan.tsv`, and the trees `/tmp/opencode/t0042/publish`,
+`/tmp/opencode/t0042/booth-repo`, `/tmp/opencode/t0042/booth-verify`, all outside git-tracked paths, inverse
+`rm -rf` each. No target state touched, no visibility change, no package, repo or registry change anywhere, no
+credential in any argv, commit message or landed file.
+
+**Competing priorities.** Completeness against repository weight, 170 MB of captures and artifacts published
+rather than a curated 20 MB subset, chosen because the operator is checking the repo against the record and a
+curated subset makes every omission an unexplained judgement; traded against clone time for `Vector` and the
+review chain. Literal brief scope against record traceability, the superseded builds, the live-segment maps,
+the calibration renders and the montages are not named in the brief's include list and were published anyway,
+traded against a reader finding files the brief did not predict, mitigated by naming every one of them in
+`PUBLISH-STATUS.md`. Restraint on the excluded categories against convenience, every `.chk` withheld including
+the team's own, chosen because the brief's rule cannot be applied selectively without a judgement this dispatch
+is not entitled to make.
+
+**Recommendation for `Robotnik`.** `D1` rewrites `README.md` prose and extends `MANIFEST.md`, that is its
+recorded job. `R4` and `R5` should read the published set as what a public repository would contain, because
+the licence question is now concrete rather than hypothetical: the captures are downscaled Blizzard tileset
+tone renders, `code/` contains the MIT StormLib consumer `chkdump.c` and the unruled `richchk` fragments are
+withheld, and the Korea mask's Natural Earth derivation is documented in `planning/`. The `rdp-args` credential
+finding above needs a `## Security` entry and a rotation line in `## Status`, which only `Robotnik` may write.
+
 ---
 
 ## Review
