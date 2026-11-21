@@ -1847,3 +1847,40 @@ Left on the target deliberately, four SCMDraft backups its own open path wrote i
 `Scm933.tmp` 614552 B (tux), `Scmcc91.tmp` 614561 B (i-love-korea), `Scm71d3.tmp` 614562 B
 (live-demo-ice). Inverse `rm -f` each, left in place per rule r002 so the operator can see what
 one booth cycle costs the target disk, about 2.4 MB per cycle for six maps.
+
+## 2026-11-22 07:51 — Dispatch S1b phase A, the three new maps on the target at a 300 s window (`Tails`)
+
+Command `python3 /tmp/opencode/t0042/booth_loop.py --tag-prefix S1bA --maps
+rocky-logo,rocky-with-heart,republic-of-korea --loops 1 --display-seconds 300`, rc 0, 51 log
+records appended to `/tmp/opencode/t0042/s1a-run-log.jsonl`. First run of the two new cycle
+steps. `tmp_cleanup` 0.76 s, `find /home/howard/.wine-scmdraft/drive_c/Maps -maxdepth 1 -name
+"Scm*.tmp"` listed and `rm -f` removed nine backups, 4326926 B freed, all named in the log record
+(`Scm2518 Scm6aac Scm71d3 Scm7251 Scm86f3 Scm9194 Scm933 Scmcc91 Scme205`), `remaining 0`;
+inverse recorded as permanent deletion, the editor recreates one per open. `disk_headroom_before`
+`df -B1 /` avail 65004978176 B, `du -sb C:\Maps\` 102928 B; `disk_headroom_after` avail
+64998404096 B, `C:\Maps\` 2561180 B, consumed 6574080 B of which 2458252 B is the four new
+`Scm*.tmp` residue and the rest this dispatch's 30 target captures in `/tmp/S1bAL1-*.png`.
+
+Per map, each rebuilt by `build_ts.py` from the committed mask code, each reproducing its
+recorded SHA-256 before transfer and matching it again on the target after scp to the absolute
+path `/home/howard/.wine-scmdraft/drive_c/Maps/<name>.scm`, each opened by its drive-qualified
+`C:\Maps\<name>.scm` path, no save step on any map. Build 0.09, 0.10, 0.60 s; transfer 0.52,
+0.51, 0.51 s; open 25.97, 25.47, 25.85 s with the title bar carrying the `C:\Maps` path; teardown
+2.90, 2.89, 2.91 s each answering `NO_SCM_RUNNING` and `REMOVED` for the loop copy. Totals at the
+300 s window, `rocky-logo` 362.63 s, `rocky-with-heart` 361.94 s, `republic-of-korea` 353.90 s;
+non-display overhead 44.55, 43.89, 44.36 s against `S1a`'s 44.06 s carried figure. Zoom verified
+from pixels on every map, viewport indicator 216 x 96 tiles, 7.931 x 7.854 px per tile, first
+verification pass, not from the Zoom combo. Display windows measured 318.08 s (6 frames), 318.05 s
+(6 frames), 309.54 s (3 frames) against the 300 s request, the overshoot is per-frame capture plus
+metrics cost inside the hold loop and is recorded rather than smoothed. Palette re-derived from a
+fresh capture at setup, method `ocr-tsv-label-rows`, Rocky Snow 839 and High Outpost 968, the
+`S1a` corrected rows, not the `L4` hardcoded fallback. Paint segment on the scratch map, median
+WCAG 6.267 over 42581 changed sampled pixels against the 3.0 gate, scratch map restored at
+teardown, `NO_SCM_RUNNING`.
+
+Residue after phase A, named: `Scmd702.tmp` 614559 B (rocky-logo open), `Scm5f7f.tmp` 614565 B
+(rocky-with-heart), `Scme782.tmp` 614566 B (republic-of-korea), `Scm52ee.tmp` 614562 B (scratch
+open, same size pattern `S1a` recorded for `Scm71d3.tmp`). Target captures `/tmp/S1bAL1-*.png`
+30 files, inverse `rm -f /tmp/S1bAL1-*.png` to be applied at the dispatch's final verification
+after the controller-side analysis. Inverse of the whole phase for the target: loop copies already
+removed at each teardown, captures removable, residue named above.
