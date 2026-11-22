@@ -3492,7 +3492,7 @@ rule r002, and the count discrepancy is surfaced rather than resolved silently.
 |---|---|---|
 | 0, baseline | PASS | `DEMO-LOG` 17:52, Flatpak Wine 11.0 present, six deliverables at recorded SHAs, no processes, `/dev/uinput` present, `sudo -n` passwordless |
 | 1, uinput device creation | PASS | `sudo -n /tmp/p1_uinput --probe` prints `uinput protocol version 5` and `created p1-kbd`, `p1-pen`, `p1-touch`, `done rc=0 devices=3`, destroyed before exit |
-| 2, events reach a normal GNOME window | PASS for keyboard and for a relative mouse, FAIL for the two absolute pointer devices | `DEMO-LOG` 18:16. `key ENTER` dismissed the profile dialog (`p1-mech2.png`). `rmove` homing opened the GNOME Activities overview (`p1-mech7.png`, read by me). The `p1-pen` device produced a zero-pixel difference between `p1-mech3.png` and `p1-mech4.png` and left the status-bar coordinate field empty |
+| 2, events reach a normal GNOME window | PASS for keyboard and for a relative mouse, FAIL for the pen-tablet absolute device, touchscreen device not tested (the binary that understood its verbs was built after the pointer proof had already passed and after the game-launch bound was reached) | `DEMO-LOG` 18:16. `key ENTER` dismissed the profile dialog (`p1-mech2.png`). `rmove` homing opened the GNOME Activities overview (`p1-mech7.png`, read by me). The `p1-pen` device produced a zero-pixel difference between `p1-mech3.png` and `p1-mech4.png` and left the status-bar coordinate field empty |
 | 3, StarCraft game window rendering a loaded map | FAIL, the game never reached a window | `DEMO-LOG` 18:32. Two launches, both exit within seconds, `pgrep` empty at 12 s and 37 s, `p1-sc1.png` shows the plain desktop, the game's own `Errors/howard160101.ERR` records `INFO: CreateWindowEx` at 18:32:48 and 18:35:10, Wine logs `err:system:lock_display_devices Failed to read display config.` |
 
 **Verdict on DoD option (b).** Option (b) is **not achieved**, and it is closed as not testable in this pass
@@ -3531,7 +3531,11 @@ C helper using the documented API works. Recorded so a later dispatch does not r
 helper also needs a 1500 to 2000 ms settle after `UI_DEV_CREATE` before its first event, proven by the failed
 no-settle attempt (`p1-mech1.png`, profile dialog still open) and the successful settle-delayed one
 (`p1-mech2.png`, editor open). Device classes: `BTN_TOOL_PEN` plus `ABS_X`/`ABS_Y` produced nothing observable;
-`EV_REL` `REL_X`/`REL_Y` with `BTN_LEFT` works. Consequence for any future injected-pointer work on this target,
+`EV_REL` `REL_X`/`REL_Y` with `BTN_LEFT` works. Two captures `p1-mech5.png` and `p1-mech6.png` carry no
+injected effect at all, because that run used the previous binary, which did not yet understand the `rmove` and
+`mtap` verbs (a `gcc` error on `BTN_TOOL_DOUBLET` versus the header's `BTN_TOOL_DOUBLETAP` left the old binary
+deployed, and the run reported `no device created`); their 64646-pixel difference against `p1-mech4.png` is the
+animation and clock effect described above, and they are named here so a reviewer does not read them as results. Consequence for any future injected-pointer work on this target,
 use relative motion, and note that a clamped large negative `rmove` parks the pointer in the top-left GNOME hot
 corner and opens the Activities overview, which is useful as a mechanism proof and hazardous during a booth run.
 
