@@ -1914,3 +1914,40 @@ seven `Scm*.tmp` backups the cycle's opens wrote (4301926 B) plus this phase's t
 12502 B `f00d1f60521c...` at teardown. Inverse for the phase: loop copies removed per teardown,
 captures removable with `rm -f /tmp/S1b300L1-*.png` at final verification, residue named, scratch
 restored.
+
+## 2026-11-22 08:57 — Dispatch S1b phase C, one full six-map cycle at the 150 s window (`Tails`)
+
+Command `python3 /tmp/opencode/t0042/booth_loop.py --tag-prefix S1b150 --maps
+foss-for-all,rocky-logo,rocky-with-heart,tux,republic-of-korea,i-love-korea --loops 1
+--display-seconds 150`, rc 0, 88 run-log records, report `/tmp/opencode/t0042/S1b150_cycle_report.json`.
+Per-map totals at 150 s: `foss-for-all` 204.96, `rocky-logo` 212.49, `rocky-with-heart` 211.92,
+`tux` 211.98, `republic-of-korea` 203.93, `i-love-korea` 212.46 s; overheads unchanged at 43.86 to
+44.46 s; display windows measured 159.57 to 168.06 s against the 150 s request. All six SHA gates
+PASS before transfer and re-matched on the target, all six teardowns `NO_SCM_RUNNING` and `REMOVED`,
+zoom verified from pixels on all six, palette re-derived `ocr-tsv-label-rows` 839 and 968, paint
+median WCAG 6.267. Measured cycle cost 1331.99 s = 22 min 12 s; complete cycles that fit from this
+cost: 2 in one hour, 5 in two, 8 in three. `tmp_cleanup` 0.74 s removed the seven phase-B residue
+files named in the phase B entry (4301926 B), `remaining 0`; headroom 64989360128 B before,
+64979861504 B after. The shorter window costs 44.7 percent of cycle time against 50 percent of the
+display time, because the 44 s per-map overhead does not shrink, which is the number the booth
+schedule turns on.
+
+## 2026-11-22 09:05 — Dispatch S1b final verification, target left clean apart from named residue (`Tails`)
+
+Six deliverables re-read on the target after all three phases, all at their recorded SHA-256 with
+unchanged mtimes: `foss-for-all` `e856f0e1d62e` 614561 B 2026-11-20 06:03:19, `rocky-logo`
+`447360ce8077` 614559 B 08:17:08, `rocky-with-heart` `b9b056c27a67` 614565 B 08:17:09, `tux`
+`79002eacd5d6` 614552 B 2026-11-20 20:33:23, `republic-of-korea` `c773a534a564` 614566 B
+2026-11-21 10:49:37, `i-love-korea` `16fe455d46fd` 614561 B 19:28:35. `pgrep -af "ScmDraft[ ]2"`
+answers `NO_SCM_RUNNING`. This dispatch's target captures removed, `rm -f /tmp/S1bAL1-*.png
+/tmp/S1b300L1-*.png /tmp/S1b150L1-*.png /tmp/t0042-run.log`, verified `CAPTURES_REMOVED`. Loop
+copies in `C:\Maps\` absent, `live-demo-ice.scm` restored at 12502 B. Residue present and named,
+the seven `Scm*.tmp` backups the final cycle's seven opens wrote: `Scm159d.tmp` 614561 B
+(foss-for-all), `Scm3681.tmp` 614559 B (rocky-logo), `Scm74a4.tmp` 614565 B (rocky-with-heart),
+`Scmb0b2.tmp` 614552 B (tux), `Scmeeb3.tmp` 614566 B (republic-of-korea), `Scmf78.tmp` 614561 B
+(i-love-korea), `Scm4e21.tmp` 614562 B (scratch open), 4301926 B total, left in place per rule
+r002, inverse `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/Scm*.tmp`. Final `df -B1 /` reads
+avail 64999227392 B against 65004978176 B at dispatch start, 5750784 B net consumed of which the
+4301926 B residue is named; the remaining 1448858 B is not attributed to a named file, candidates
+are the seven launches' Wine prefix writes and scp temp files, recorded as unattributed rather than
+guessed.
