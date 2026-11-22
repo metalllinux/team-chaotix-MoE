@@ -343,6 +343,36 @@ per-upstream ref audit for the Natural Earth Korea mask, the archive.org Antholo
 Ar3sgice starcraft-tools mirror. Those are `Charmy`'s `F5` dispatch and the carried `R4`, `T4`, `G4`
 scope, not the roster change. No contact with `192.168.1.99` in this pass.
 
+**Step 9. Commit and push, verified from the remote.**
+
+| Item | Value |
+|---|---|
+| Commit | `ef061472eea129b1b4307daf9fcf872603975430`, one commit, GPG-signed, `git log --show-signature` reports `Good signature from "Team Chaotix <howard.a.vanderwal@protonmail.com>" [ultimate]` using EDDSA key `D553FBE4B47020B2033E9594F9261D151316FD60` |
+| Contents | 18 files, 590 insertions, 162 deletions, including the 81-line deletion of the retired agent file |
+| Pre-push gate | the `scripts/hooks/pre-push` hook ran `tests/selftest.sh` on the push, `SELFTEST: 86 checks passed` |
+| Push | `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, `1cf0bc6..ef06147 main -> main`, exit 0 |
+| Remote check | `GIT_ASKPASS=... git ls-remote origin refs/heads/main` returned `ef061472eea129b1b4307daf9fcf872603975430`, equal to local `git rev-parse HEAD`. Verified from the remote, not from the push report |
+| Not committed | `planning/TASKS.md`, `planning/docs/TASK-0041-remote-visual-control.md`, `planning/docs/TASK-0042-*`, `planning/docs/TASK-0043-*` were being edited concurrently by the dispatching `Robotnik` session and are left dirty in the working tree for that session |
+
+**Corrected sweep numbers, measured after the commit.** The `157 to 120` pair in the Checks run table
+was measured before this doc was tracked. Post-commit, `git grep -rin -i flicky | wc -l` is 169, and
+`git grep -rin -i flicky -- .opencode AGENTS.md README.md planning/templates tests .github team scripts`
+is 0. Breakdown: 157 inside `planning/docs/*` (47 of them in this doc's own record), 5 in
+`planning/TASKS.md` index rows, 4 in `DEMO-LOG.md`, 1 in `planning/HANDOFF-TASK-0038.md`, 2 in
+`continue-prompt-task0038-port-fix.md` and `continue-prompt-task0038-icon-parity.md`. The DoD's
+forbidden paths are at zero, the accepted history band is 162, the unclassified band is 7 and is
+listed in the accepted-residue paragraph above for `Shadow` to rule on.
+
+**Open for the next agents in this doc.** `Charmy` has not run the gate for this task in
+`## License (Charmy)`; the DoD box naming that record is `Charmy`'s `F5`, not mine, and the gate
+outcome for this repo at `ef06147` is `PASS`, exit 0, from the run recorded in Checks run. `Vector`
+owns any README wording beyond the mechanical roster removal, in particular the README key-pattern
+bullet at `README.md:51` that still calls Charmy read-only on code; Charmy now runs the gate while
+still writing only its own section, and that sentence needs Vector's edit. `Knuckles` owns the branch
+and PR framing; this work is on `main` directly because the dispatch brief said to push `main`.
+
+`VERDICT` is not mine to record.
+
 ---
 
 ## Review
