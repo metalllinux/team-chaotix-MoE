@@ -1972,3 +1972,23 @@ touched: `~/AI/secrets/scm_draft_pass.md` is still mode 644 (`## Status` records
 action), `rdp-args` still exists on the controller and is withheld by the classifier. Inverse, no
 target state was touched and no repo state changed by this step; the probe script lands under
 `/tmp/opencode/t0042` outside git-tracked paths, `rm -f /tmp/opencode/t0042/d3_api.py` removes it.
+
+## 2026-11-22 09:55 — Dispatch D3 step 2, booth runbook authored and the D3 staging run (`Tails`, controller-side only, no target contact)
+
+The runbook `BOOTH-RUNBOOK.md` was authored at `/tmp/opencode/t0042` from the runner as it stands
+after `S1b` and from the measured cycle reports, and every number in it was re-checked against the
+step log before publication, frame counts 4, 6, 6, 6, 3 and 6 from the `S1b300L1` frame records,
+`tmp_cleanup` 0.74 to 0.76 s, the paint contrast census 42581 changed pixels sampled at median WCAG
+6.267 with minimum pair 1.2 identical across all three phases, and the six map sizes 614552 to
+614566 B from `sha256sum`. Staging ran as `python3 /tmp/opencode/t0042/d3_stage.py`, `D0`'s classifier
+imported unchanged, `D2`'s five deltas imported unchanged, three named `D3` deltas, landed 778 files
+197210938 B, plan `/tmp/opencode/t0042/d3_stage_plan.tsv`. The three `D3` deltas, `s1a-run-log.jsonl`
+lands in `booth-loop/`, `BOOTH-RUNBOOK.md` lands at the repository root outside the classify walk,
+and the scratch directories `s1a-build/` and `s1a-rebuild/` are outside the walk because their
+`.scm` files carry the deliverable basenames and would have copied byte-identical duplicates into
+`maps/deliverable/`. A credential scan compared every landing file's bytes against the four values
+in `~/AI/secrets/` read at run time and printed only the count, zero hits. Withheld categories hold
+at the `D2` figures for every hard category, `.chk` and `.scx` intermediates 68, harvested reference
+CHKs 170, upstream library 905, upstream dataset 5, probe maps 38, credential 1, compiled binaries 4.
+Inverse, `/tmp/opencode/t0042/publish/` and `d3_stage_plan.tsv` are regenerable from the scripts,
+`rm -rf` removes them, no target state was touched.
