@@ -3007,6 +3007,71 @@ foss-for-all,rocky-logo,rocky-with-heart,tux,republic-of-korea,i-love-korea --lo
 --display-seconds 300` sustains 1 cycle per 37 min 12 s, 3 cycles in two hours, 4 in three; at 150 s
 it sustains 2, 5, 8. `D3` should publish this runner, the run log and this table.
 
+### Dispatch D3, publishing the booth runner, its runbook, and the measured cycle record (2026-11-22, `Tails`, controller-side and repo-side only, no target contact)
+
+**Remote state verified before any write.** Through `/tmp/opencode/t0042/d3_api.py`, a GET-only probe
+that reads the token from `~/AI/secrets/token.md` inside the process at run time, so no credential
+value appears in argv, a file, a log or a commit.
+`metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` answers `id 1455994123`,
+`private true`, `visibility private`, default branch `main`, `refs/heads/main = 39f2119`, `pushed_at
+2026-11-21T13:47:17Z`. The new name is used in every API call and in the clone remote. The six
+controller deliverables were re-verified with `sha256sum` against the recorded values before staging,
+all six byte-exact. The `D2` clone `/tmp/opencode/t0042/booth-repo` was at `39f2119` with a clean
+working tree.
+
+**Alternatives considered, staging.** Option A, hand-edit the published tree, add the runner, the
+run log, the reports and the runbook by name. Option B, re-run `D0`'s classification over the
+controller tree with `D2`'s deltas imported unchanged and the `D3` deltas named as code. Chosen,
+Option B, the same reason `D2` chose it, the brief demands every `D0` and `D2` exclusion rule
+re-applied unchanged, a hand-edited tree cannot show that, and a full re-stage reports zero
+accidental survivors. `/tmp/opencode/t0042/d3_stage.py` imports `d0_stage.classify` through
+`d2_stage.classify`, both unchanged, and refuses to let a delta override a `D0` hard hold.
+
+**The three `D3` deltas, named.** 1, `s1a-run-log.jsonl` lands in `booth-loop/`. Under `D0` and `D2`
+rules its name fell to the `transient-note` catch-all, the same catch-all class from which `D2`
+promoted the superseded `i-love-korea` builds, and it is not a hard hold. 2, `BOOTH-RUNBOOK.md`,
+10472 B, lands at the repository root, staged outside the classify walk on a `ROOT` plan line and
+copied into the clone at assembly exactly as `DEMO-LOG.md`, `LICENSE`, `README.md` and the three
+planning docs are, listed in `MANIFEST.md` like every other file. 3, a walk-scope exclusion, the
+scratch directories `s1a-build/` and `s1a-rebuild/` are outside the walk, their 12 `.chk` files held
+by the hard `chk-or-scx-intermediate` rule anyway and their 12 `.scm` files carrying the deliverable
+basenames, so under the unchanged rule they would have copied byte-identical duplicates of the six
+published maps into `maps/deliverable/`. Each rebuild byte-matches its published map at the recorded
+SHA-256, re-verified before this staging, so the exclusion loses no content. The clone exclusion list
+grows by `booth-verify-d3`.
+
+**A scan `D0` and `D2` stated and `D3` makes mechanical.** `D0`'s header states "no file whose bytes
+contain a credential value", and neither `d0_stage.py` nor `d2_stage.py` ran a scan enforcing it.
+`d3_stage.py` reads the four secret values from `~/AI/secrets/` at run time, compares each landing
+file's bytes against all four before any copy, prints only how many values were compared, and aborts
+naming the file on a hit. 778 landing files scanned, zero hits, the secret values themselves printed
+nowhere. That is a new check in this dispatch, named as such rather than presented as inherited.
+
+**Staging result.** `python3 /tmp/opencode/t0042/d3_stage.py`, landed 778 files 197210938 B, plan
+`/tmp/opencode/t0042/d3_stage_plan.tsv`, 778 `LAND`, 1294 `HOLD`, 1 `ROOT` lines. Withheld categories
+hold at the `D2` figures for every hard category, `chk-or-scx-intermediate` 68,
+`harvested-reference-chks` 170, `upstream-library` 905, `upstream-dataset` 5, `probe-map` 38,
+`build-log-or-probe` 66, `compiled-binary` 4, `shipped-starcraft-data` 4, `upstream-code` 3,
+`credential` 1, `raw-desktop-capture` 1, `undocumented-binary` 1. Two counts moved, both explained,
+`build-artifact` 20 against 17, three new `__pycache__` entries, and `transient-note` 9 against 4,
+the additions being the three stage-plan TSVs and the three runner console `.out` files, while
+`.output`, one of `D2`'s four, no longer exists on the controller.
+
+**What the runbook claims, and where each claim's evidence lives.** Every number in
+`BOOTH-RUNBOOK.md` was re-derived from the published evidence before publication rather than copied
+from prose, frame counts 4, 6, 6, 6, 3 and 6 from the `S1b300L1` frame records in the run log,
+`tmp_cleanup` 0.74 to 0.76 s, headroom 0.25 s, paint census 42581 changed pixels sampled at median
+WCAG 6.267 with minimum pair 1.2 identical across all three phases, cycle costs 2232.36 s and
+1331.99 s and the 1/3/4 and 2/5/8 cycle counts from `S1b300_cycle_report.json` and
+`S1b150_cycle_report.json`, the six SHA-256 values and byte sizes from `sha256sum` on the controller
+maps. The runbook states the honest environment limit, the published runner cannot run from the
+repository alone because its build step needs `ts-harvest/ref-era6.chk`, a harvested Blizzard CHK
+withheld by the hard exclusion rule, and the target password, withheld as a credential, so the repo
+is the record and the controller directory is the runnable environment.
+
+*(Verification against the remote, the manifest cross-check, and the categories-not-copied list
+follow below once the push has happened, written when they complete rather than predicted here.)*
+
 ---
 
 ## Review
