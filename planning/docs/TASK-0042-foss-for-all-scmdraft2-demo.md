@@ -3072,6 +3072,94 @@ is the record and the controller directory is the runnable environment.
 *(Verification against the remote, the manifest cross-check, and the categories-not-copied list
 follow below once the push has happened, written when they complete rather than predicted here.)*
 
+**Push result, verified on the remote rather than reported from the push command.** Booth repo commit
+`f0255bd752b3e5f4a39f24111b82d8ccb6e28ee1` on top of `39f2119`, push answered
+`39f2119..f0255bd  main -> main` against the new-name remote. `git ls-remote` answers the same hash at
+`refs/heads/main`. A fresh clone at `/tmp/opencode/t0042/booth-verify-d3` shows `f0255bd` on `39f2119`
+on `3da0937` on `7e0d58d` in `git log`, and `git ls-tree -r HEAD` holds 787 paths, captures 341,
+live-segment 214, code 94, booth-artifacts 73, gate-reports 16, booth-loop 1, calibration 13,
+montages 10, maps 10, notes 6, planning 3, plus six root documents including `BOOTH-RUNBOOK.md`.
+`sha256sum` **in that fresh remote clone** reproduces all six deliverables at their recorded values
+with `i-love-korea` at the accepted `16fe455d46fd...`, and the four superseded builds at `82589b42...`,
+`e7ad27b2...`, `051fc139...` and `50e55299...` at theirs. `git diff --name-status 39f2119 HEAD` is 181
+`A` and 4 `M`, the four modified files being `DEMO-LOG.md`, `MANIFEST.md`, `PUBLISH-STATUS.md` and
+`planning/TASK-0042-foss-for-all-scmdraft2-demo.md`, with zero deletions and zero renames, so no
+previously published map, artifact, capture or report was replaced or moved. `git diff --stat
+39f2119 HEAD -- LICENSE README.md` is empty, so `D1`'s brief target and the licence file are intact.
+Tree totals, 606 to 787 paths, 172506692 to 198477040 blob bytes. Manifest cross-check
+`python3 /tmp/opencode/t0042/d2_verify.py .` in the fresh clone, the `D2` cross-checker reused
+unchanged because its check is shape rather than dispatch-specific, 786 rows, 786 unique paths,
+787 tree paths, 0 omitted by manifest, 0 listed but absent from the tree, 0 size or hash mismatches,
+PASS, the one tree path the manifest does not list being `MANIFEST.md` itself. API after the push
+answers `"private": true`, `"visibility": "private"`, `"id": 1455994123`,
+`"pushed_at": "2026-11-22T00:46:01Z"`, visibility unchanged.
+
+**New landing counts, from the tree rather than from intent.** 181 additions, `code/` 90 to 94, the
+runner plus `d3_api.py`, `d3_stage.py` and `d3_report.py` themselves, `gate-reports/` 12 to 16, the
+four cycle reports, `booth-loop/` 0 to 1, the 279-record step log, `captures/` 170 to 341, 165
+booth-loop frames named by phase tag (`S1aL1-` 31, `S1bAL1-` 30, `S1b300L1-` 52, `S1b150L1-` 52) plus
+six runner scratch crops the unchanged capture rule admitted, `_palette_ocr.png`, `_status.png`,
+`_title.png`, `_zc.png`, `_t_m9-open.png`, `_t_m9-zoom25.png`, named here because a reader who
+wonders what they are should not have to guess, they are crops the runner's palette-derivation and
+title-bar steps write per cycle. Root 4 to 6 with `BOOTH-RUNBOOK.md` listed and `PUBLISH-STATUS.md`
+regenerated.
+
+**Categories `D3` did not copy, named in full.** `D0`'s withholding re-applied unchanged by the
+imported ruleset, chk-or-scx-intermediate 68 (unchanged from `D2`, and the 24 `.chk` and `.scm`
+files inside `s1a-build/` and `s1a-rebuild/` are outside the walk by the named `D3` walk-scope delta
+so they are in no category count), harvested-reference-chks 170, upstream-library 905,
+upstream-dataset 5, probe-map 38, build-log-or-probe 66, compiled-binary 4, build-artifact 20 (was
+17, three new `__pycache__` entries), shipped-starcraft-data 4, upstream-code 3, transient-note 9
+(was 4, the three stage-plan TSVs and the three runner console `.out` files added, `.output` no
+longer exists on the controller), credential 1 (`rdp-args`, still present on the controller, still
+withheld, still an open operator rotation item), raw-desktop-capture 1, undocumented-binary 1,
+iso-or-image 0, scmdraft-or-wine-binary-or-prefix 0, game-data-mpq-unit-sprite-assets 0,
+booth-geometry-captures 0, shadow-independent-read-scripts-and-reading-aids 0.
+
+**Changes table.** Booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2`
+(id `1455994123`), one commit `f0255bd` on `39f2119`, 606 to 787 paths, 181 added and 4 modified, no
+deletions, no renames, visibility unchanged. Team repo, this `## Implementation` subsection and
+DEMO-LOG entries 09:40, 09:55 and 10:05, commits `8e75aac`, `d26ef2b`, `5f9947d` and the completion
+commit, selftest green at 61 checks on each push. Controller, new files `/tmp/opencode/t0042/d3_api.py`,
+`d3_stage.py`, `d3_report.py`, `BOOTH-RUNBOOK.md`, `d3_stage_plan.tsv`, the rebuilt `/tmp/opencode/t0042/publish/`
+and the new clone `/tmp/opencode/t0042/booth-verify-d3`, all outside git-tracked paths, inverse
+`rm -f` each and `rm -rf publish booth-verify-d3`, recorded in DEMO-LOG. No target state touched, no
+visibility change, no credential in any argv, commit message or landed file.
+
+**Deviation recorded, commit signing.** Every commit before this dispatch in both repositories is
+GPG-signed by the Team Chaotix key, verified with `git log --show-signature`, `39f2119` and `3da0937`
+in the booth repo and `fbf3f6b`, `bcafb8f` and `2b31a23` in the team repo, and `commit.gpgsign` is
+`true` globally. My first three team commits in this dispatch, `8e75aac`, `d26ef2b` and `5f9947d`,
+were made with `-c commit.gpgsign=false` because I carried the wrong assumption about the local
+convention, and they are pushed. The booth commit `f0255bd` was amended to carry the signature before
+it was pushed, and it verifies Good, and the completion commit of this dispatch is signed. I am not
+rewriting the three pushed team commits, force-pushing rewritten history into a branch other sessions
+read is the larger risk, so the gap is recorded here rather than erased, and it belongs to `Shadow`
+and `Omega` as a record-integrity finding: unsigned commits in a chain that is otherwise signed break
+the property the signing was set up to give.
+
+**Checks that did not run, named.** No target contact in this dispatch, so the target-side map sizes,
+mtimes and hashes are not re-verified here and remain `S1b`'s claim as recorded at DEMO-LOG
+2026-11-22 09:05. The published runner was not executed from the published clone, it cannot be, its
+build step needs the withheld `ts-harvest/ref-era6.chk` and the withheld target password, so what is
+proven is that the runner in the repo is byte-identical to the runner that produced the measured
+cycles (`83aa26849e9e...`, the same file `S1b` ran) and not that it runs from a bare clone. No
+independent agent has read the 165 booth-loop captures, that belongs to the review chain. No licence
+ruling, `R4` and `R5` remain open, and this dispatch published no upstream code or dataset. The
+credential scan compared four secret values rather than every credential the operator holds, named
+as a bound. `V1`'s map-validation dialog has still never run on any map. No run of
+`scripts/dispatch-gate` by me, that is the dispatcher's step. Loop-to-loop drift remains unmeasured,
+this dispatch published the measurement rather than extending it.
+
+**Competing priorities.** Rule traceability against a smaller diff, chosen full re-stage with the
+rules imported unchanged, traded against a rebuilt 197 MB tree for what is additive content.
+Recording the signing gap against erasing it, chosen recording, traded against a visibly inconsistent
+commit chain in the team repo. Publishing the run log against leaving it as a controller artifact,
+chosen publishing, traded against 87906 B of machine-readable target paths and hashes living in a
+private repo, acceptable while the repo is private and named in `PUBLISH-STATUS.md`. Keeping the
+catch-all-held `.out` console files withheld against publishing them alongside the JSONL log, chosen
+withholding, the JSONL log supersedes them and it is the file the summary tools read.
+
 ---
 
 ## Review

@@ -1992,3 +1992,26 @@ at the `D2` figures for every hard category, `.chk` and `.scx` intermediates 68,
 CHKs 170, upstream library 905, upstream dataset 5, probe maps 38, credential 1, compiled binaries 4.
 Inverse, `/tmp/opencode/t0042/publish/` and `d3_stage_plan.tsv` are regenerable from the scripts,
 `rm -rf` removes them, no target state was touched.
+
+## 2026-11-22 10:05 — Dispatch D3 step 3, booth repo push and remote verification (`Tails`, controller-side only, no target contact)
+
+Booth repo commit `f0255bd752b3e5f4a39f24111b82d8ccb6e28ee1` pushed onto `39f2119`, push answered
+`39f2119..f0255bd main -> main` against `metalllinux/rocky-linux-foss-for-all-2026-demonstration-
+scmdraft-2`, and `git ls-remote` reads the same hash at `refs/heads/main`. Verified from a fresh
+clone at `/tmp/opencode/t0042/booth-verify-d3` rather than from the push output, `git log` shows the
+four-commit chain, `git ls-tree -r HEAD` holds 787 paths against 606 at `D2`, `git diff
+--name-status 39f2119 HEAD` is 181 added and 4 modified with zero deletions and zero renames, the
+modified set being `DEMO-LOG.md`, `MANIFEST.md`, `PUBLISH-STATUS.md` and the TASK-0042 planning doc,
+`sha256sum` in the clone reproduces all six deliverables at recorded values and the four superseded
+builds at theirs, and `git diff --stat` for `LICENSE` and `README.md` between the two commits is
+empty. Manifest cross-check with `d2_verify.py` in the clone, 786 rows against 787 tree paths, 0
+omitted, 0 absent, 0 mismatches, PASS. API after the push answers `private true`, `visibility
+private`, `id 1455994123`, visibility unchanged. Deviation recorded rather than erased, my three
+earlier team commits in this dispatch were made with `commit.gpgsign=false` against a chain that is
+signed throughout, the booth commit was amended to carry the signature before pushing, and the
+rewriting of pushed history was declined, full account in `## Implementation`. Checks not run, no
+target contact, the published runner was not executed from a bare clone because its build step needs
+the withheld reference CHK and the withheld password, no independent read of the 165 booth-loop
+captures, no licence ruling. Inverse, the booth commit is a normal fast-forward on `main`, removing
+it would need a force-push and none was performed or is proposed, `/tmp/opencode/t0042/booth-verify-d3`
+removes with `rm -rf`.
