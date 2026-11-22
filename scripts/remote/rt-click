@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# rt-click -- pointer motion, click and drag on the target's session through the
+# RDP pointer channel.
+#
+# Mechanism proven in TASK-0041 item 7: PTR_FLAGS_MOVE plus button press and
+# release sent through the RDP protocol and injected by gnome-remote-desktop at
+# the mutter compositor level, so it reaches Wine and XWayland windows too.
+# Coordinates are the target's desktop pixels, 0..65535.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-click --host <ip> (--click <x> <y> | --move <x> <y> | --drag <x1> <y1> <x2> <y2> ...)
+                [--pointer minimal|input] [--dry-run]
+
+--click moves the pointer then presses and releases the left button.
+--drag holds the button while moving through every waypoint, the terrain-painting
+action proven against SCMDraft 2.
+--pointer minimal runs the single-shot rdp-pointer tool instead of rdp-input.
+EOF
+  rt_common_options
+}
+
+# Coordinates are validated before they reach the C tool, which would otherwise
+# silently truncate an out-of-range value to 16 bits.
+rt_coord() {
+  local v="$1" what="$2"
+  case "$v" in
+    ''|*[!0-9]*) rt_die "$what must be a non-negative integer, got '$v'" ;;
+  esac
+  [ "$v" -le 65535 ] || rt_die "$what out of range 0..65535, got $v"
+  printf '%s' "$v"
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+ACTION=""
+COORDS=()
+TOOL="input"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --click)
+      [ "$#" -ge 3 ] || rt_die "--click needs x and y"
+      ACTION="click"; COORDS+=("$(rt_coord "$2" x)" "$(rt_coord "$3" y)"); shift 3 ;;
+    --move)
+      [ "$#" -ge 3 ] || rt_die "--move needs x and y"
+      ACTION="move"; COORDS+=("$(rt_coord "$2" x)" "$(rt_coord "$3" y)"); shift 3 ;;
+    --drag)
+      shift
+      ACTION="drag"
+      while [ "$#" -gt 0 ]; do COORDS+=("$(rt_coord "$1" coordinate)"); shift; done
+      [ "${#COORDS[@]}" -ge 4 ] || rt_die "--drag needs at least two waypoints"
+      ;;
+    --pointer)
+      [ "$#" -ge 2 ] || rt_die "--pointer needs minimal or input"
+      case "$2" in minimal) TOOL="minimal" ;; input) TOOL="input" ;; *) rt_die "--pointer is minimal or input" ;; esac
+      shift 2 ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+[ -n "$ACTION" ] || rt_die "one of --click, --move or --drag is required (see --help)"
+
+if [ "$TOOL" = "minimal" ]; then
+  [ "$ACTION" = "click" ] || [ "$ACTION" = "move" ] || rt_die "--pointer minimal supports --click and --move only"
+  BIN="$(rt_tool_bin rdp-pointer "$RT_RDPOINTER")"
+  cmd=("$BIN" - "${COORDS[0]}" "${COORDS[1]}" "$ACTION")
+else
+  BIN="$(rt_tool_bin rdp-input "$RT_RDINPUT")"
+  cmd=("$BIN" - "$ACTION" "${COORDS[@]}")
+fi
+
+if [ "$RT_DRY" -eq 1 ]; then
+  if [ "$TOOL" = "minimal" ]; then
+    printf 'would run: %s <mode-600 temp args file> %s %s %s\n' "$BIN" "${COORDS[0]}" "${COORDS[1]}" "$ACTION"
+  else
+    printf 'would run: <rdp argument lines on stdin> | %s\n' "${cmd[*]}"
+  fi
+  rt_note "dry run, no connection made and no credential read"
+  exit 0
+fi
+
+rt_require_host
+if [ "$TOOL" = "minimal" ]; then
+  # rdp-pointer takes the argument lines from a file; build one under umask 077
+  # and remove it on exit. The credential lives only in that mode-600 file for
+  # the lifetime of the command.
+  ARGS_FILE="$(mktemp "${TMPDIR:-/tmp}/rt-args.XXXXXX")"
+  chmod 600 "$ARGS_FILE"
+  trap 'rm -f "$ARGS_FILE"' EXIT INT TERM
+  rt_rdp_args "$RT_HOST" > "$ARGS_FILE"
+  if ! out="$("$BIN" "$ARGS_FILE" "${COORDS[0]}" "${COORDS[1]}" "$ACTION" 2>&1)"; then
+    rt_die "pointer action failed against ${RT_HOST}: ${out}"
+  fi
+else
+  if ! out="$(rt_rdp_args "$RT_HOST" | "${cmd[@]}" 2>&1)"; then
+    rt_die "pointer action failed against ${RT_HOST}: ${out}"
+  fi
+fi
+rt_note "$out"

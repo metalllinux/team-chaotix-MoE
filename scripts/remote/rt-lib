@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# rt-lib -- shared plumbing for the scripts/remote remote visual-control tools.
+#
+# Sourced by rt-shot, rt-ocr, rt-type, rt-key, rt-click, rt-status and
+# rt-uinput. Not meant to be run on its own.
+#
+# Credentials rule carried by every tool in this directory: a credential is
+# read from a file under ~/AI/secrets at run time only. It is never echoed,
+# never placed in argv (so never in `ps` or shell history), never committed,
+# never written into a planning doc or a log. The RDP path feeds the argument
+# lines through a pipe into the tool's stdin, so no credential file is created
+# by these scripts either.
+
+set +x                                   # never trace: a trace line would print commands
+umask 077                                # anything a tool does create is owner-only
+
+# --- configuration, every value overridable by the caller --------------------
+RT_SSH_USER="${RT_SSH_USER:-howard}"                       # target login user
+RT_SSH_PASS_FILE="${RT_SSH_PASS_FILE:-$HOME/AI/secrets/scm_draft_pass.md}"
+RT_RDP_PASS_FILE="${RT_RDP_PASS_FILE:-$HOME/AI/secrets/scm_draft_rdp_pass.md}"
+RT_BUILD_DIR="${RT_BUILD_DIR:-$HOME/.cache/team-chaotix/remote-build}"
+RT_RDINPUT="${RT_RDINPUT:-${RT_BUILD_DIR}/rdp-input}"      # built by scripts/remote/rt-build
+RT_RDPOINTER="${RT_RDPOINTER:-${RT_BUILD_DIR}/rdp-pointer}"
+RT_TARGET_TMP="${RT_TARGET_TMP:-/tmp}"                     # target-side scratch directory
+RT_TARGET_UID="${RT_TARGET_UID:-1000}"                     # target session owner, verified by rt-status
+RT_SCREENSHOT_BIN="${RT_SCREENSHOT_BIN:-/usr/bin/gnome-screenshot-tool}"  # shipped by gnome-shell 49
+RT_RDP_W="${RT_RDP_W:-1920}"                               # desktop geometry advertised to the server
+RT_RDP_H="${RT_RDP_H:-1080}"
+RT_SSH_OPTS=(-o StrictHostKeyChecking=no -o ConnectTimeout=10)
+
+RT_DRY=0                                                   # 1 when --dry-run was given
+RT_HOST="${RT_HOST:-}"                                     # target host, empty until parsed
+RT_ARGV=()                                                 # tool-specific arguments survive here
+
+# --- small helpers ------------------------------------------------------------
+rt_die()  { printf 'rt: error: %s\n' "$*" >&2; exit 1; }
+rt_note() { printf 'rt: %s\n' "$*"; }
+rt_have() { command -v "$1" >/dev/null 2>&1; }
+
+# Shared option block, printed by every tool's --help.
+rt_common_options() {
+  cat <<'EOF'
+
+Shared options
+  --host <ip|name>      target host. Required for every real run.
+  --user <name>         target ssh user (default howard, or $RT_SSH_USER).
+  --ssh-pass-file <p>   path to the ssh credential file (default ~/AI/secrets/scm_draft_pass.md).
+  --rdp-pass-file <p>   path to the RDP credential file (default ~/AI/secrets/scm_draft_rdp_pass.md).
+  --dry-run             print the exact commands and exit 0. No network, no target, no credential read.
+  -h, --help            this text.
+EOF
+}
+
+# Consumes the shared flags, keeps everything else in RT_ARGV.
+rt_parse_common() {
+  RT_ARGV=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --host)          [ "$#" -ge 2 ] || rt_die "--host needs a value"; RT_HOST="$2"; shift 2 ;;
+      --user)          [ "$#" -ge 2 ] || rt_die "--user needs a value"; RT_SSH_USER="$2"; shift 2 ;;
+      --ssh-pass-file) [ "$#" -ge 2 ] || rt_die "--ssh-pass-file needs a path"; RT_SSH_PASS_FILE="$2"; shift 2 ;;
+      --rdp-pass-file) [ "$#" -ge 2 ] || rt_die "--rdp-pass-file needs a path"; RT_RDP_PASS_FILE="$2"; shift 2 ;;
+      --dry-run)       RT_DRY=1; shift ;;
+      --)              shift; while [ "$#" -gt 0 ]; do RT_ARGV+=("$1"); shift; done ;;
+      *)               RT_ARGV+=("$1"); shift ;;
+    esac
+  done
+}
+
+# A host is required for a real run. A dry run may print a placeholder instead.
+rt_host_or_placeholder() {
+  if [ -n "$RT_HOST" ]; then printf '%s' "$RT_HOST"; else printf '<host>'; fi
+}
+
+rt_require_host() {
+  if [ "$RT_DRY" -eq 1 ]; then return 0; fi
+  [ -n "$RT_HOST" ] || rt_die "--host is required for a real run"
+}
+
+# Warn, do not fail, when a credential file is readable by more than its owner.
+# The known state of ~/AI/secrets/scm_draft_pass.md on the controller is 644;
+# that is recorded as an open hygiene item for the review chain rather than
+# silently fixed here.
+rt_secret_mode_warn() {
+  local f="$1"
+  local mode
+  mode="$(stat -c '%a' "$f" 2>/dev/null || echo unknown)"
+  if [ "$mode" != "600" ] && [ "$mode" != "400" ]; then
+    rt_note "warning: $f is mode $mode, AGENTS.md section 4 requires 600"
+  fi
+}
+
+rt_require_secret_file() {
+  local f="$1"
+  [ -f "$f" ] || rt_die "credential file not found: $f"
+  rt_secret_mode_warn "$f"
+}
+
+# --- ssh and scp wrappers -----------------------------------------------------
+# The credential reaches sshpass through -f <file>, never through argv.
+rt_ssh() {
+  local host="$1"; shift
+  local cmd="$*"
+  if [ "$RT_DRY" -eq 1 ]; then
+    printf 'would run: sshpass -f %s ssh %s %s@%s %s\n' \
+      "$RT_SSH_PASS_FILE" "${RT_SSH_OPTS[*]}" "$RT_SSH_USER" "$(rt_host_or_placeholder)" "$cmd"
+    return 0
+  fi
+  rt_require_host
+  rt_require_secret_file "$RT_SSH_PASS_FILE"
+  sshpass -f "$RT_SSH_PASS_FILE" ssh "${RT_SSH_OPTS[@]}" "${RT_SSH_USER}@${RT_HOST}" "$cmd"
+}
+
+# Copy one file from the target to a local path.
+rt_fetch() {
+  local host="$1" remote="$2" local_path="$3"
+  if [ "$RT_DRY" -eq 1 ]; then
+    printf 'would run: sshpass -f %s scp %s %s@%s:%s %s\n' \
+      "$RT_SSH_PASS_FILE" "${RT_SSH_OPTS[*]}" "$RT_SSH_USER" "$(rt_host_or_placeholder)" "$remote" "$local_path"
+    return 0
+  fi
+  rt_require_host
+  rt_require_secret_file "$RT_SSH_PASS_FILE"
+  sshpass -f "$RT_SSH_PASS_FILE" scp "${RT_SSH_OPTS[@]}" "${RT_SSH_USER}@${RT_HOST}:${remote}" "$local_path"
+}
+
+# Copy one local file to the target.
+rt_send() {
+  local host="$1" local_path="$2" remote="$3"
+  if [ "$RT_DRY" -eq 1 ]; then
+    printf 'would run: sshpass -f %s scp %s %s %s@%s:%s\n' \
+      "$RT_SSH_PASS_FILE" "${RT_SSH_OPTS[*]}" "$local_path" "$RT_SSH_USER" "$(rt_host_or_placeholder)" "$remote"
+    return 0
+  fi
+  rt_require_host
+  rt_require_secret_file "$RT_SSH_PASS_FILE"
+  sshpass -f "$RT_SSH_PASS_FILE" scp "${RT_SSH_OPTS[@]}" "$local_path" "${RT_SSH_USER}@${RT_HOST}:${remote}"
+}
+
+# Environment that reaches the target's live graphical session over plain ssh.
+# Verified on 192.168.1.99: the ssh environment carries no WAYLAND_DISPLAY and
+# no DISPLAY, so the user D-Bus bus has to be named explicitly.
+rt_session_env() {
+  printf 'XDG_RUNTIME_DIR=/run/user/%s DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/bus' \
+    "$RT_TARGET_UID" "$RT_TARGET_UID"
+}
+
+# --- rdp argument lines -------------------------------------------------------
+# One argument per line in the xfreerdp form the team's own C tools read.
+# The password line is produced by reading the secret file at run time and is
+# piped into the tool's stdin: no credential file, no credential in argv.
+rt_rdp_args() {
+  local host="$1"
+  if [ "$RT_DRY" -eq 1 ]; then
+    printf '/v:%s\n/u:%s\n/p:<from %s>\n/cert:ignore\n/w:%s\n/h:%s\n+disp\n' \
+      "$(rt_host_or_placeholder)" "$RT_SSH_USER" "$RT_RDP_PASS_FILE" "$RT_RDP_W" "$RT_RDP_H"
+    return 0
+  fi
+  rt_require_host
+  rt_require_secret_file "$RT_RDP_PASS_FILE"
+  printf '/v:%s\n/u:%s\n/p:%s\n/cert:ignore\n/w:%s\n/h:%s\n+disp\n' \
+    "$host" "$RT_SSH_USER" "$(head -n 1 "$RT_RDP_PASS_FILE")" "$RT_RDP_W" "$RT_RDP_H"
+}
+
+# Resolve a built C tool, with an actionable message when it has not been built.
+rt_tool_bin() {
+  local name="$1" path="$2"
+  [ -x "$path" ] && { printf '%s' "$path"; return 0; }
+  rt_die "$name not built yet. Run scripts/remote/rt-build first (expected at $path)."
+}

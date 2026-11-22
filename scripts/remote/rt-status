@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# rt-status -- read-only report of what the remote visual loop can currently do
+# on a target. Writes nothing on the target.
+#
+# Answers the questions an agent asks before a visual loop: is the target
+# reachable, is there a live graphical session, is the screenshot tool present,
+# is the RDP listener up, is /dev/uinput available for the kernel-level path.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-status --host <ip> [--dry-run]
+
+Every probe is read-only. Output names each probe and its result.
+EOF
+  rt_common_options
+}
+
+# One shell line per probe, run in a single ssh round-trip. Each probe prints
+# its own label, so a missing tool reads as a label with a value rather than a
+# silent gap.
+rt_probe_script() {
+  cat <<'EOF'
+echo "hostname=$(hostname)";
+echo "kernel=$(uname -r)";
+echo "shell_type=$(loginctl show-session "$(loginctl list-sessions --no-legend | awk 'NR==1{print $1}')" -p Type --value 2>/dev/null || echo unknown)";
+echo "screenshot_tool=$(command -v gnome-screenshot-tool || echo ABSENT)";
+echo "session_bus=$(test -S /run/user/1000/bus && echo present || echo ABSENT)";
+echo "grdctl=$(command -v grdctl || echo ABSENT)";
+echo "rdp_listener=$(ss -tln 2>/dev/null | grep -c ':3389 ')";
+echo "uinput=$(ls /dev/uinput 2>/dev/null || echo ABSENT)";
+echo "uinput_mode=$(stat -c '%a %U %G' /dev/uinput 2>/dev/null || echo unknown)";
+echo "sudo_n=$(sudo -n true 2>/dev/null && echo passwordless || echo needs-password)";
+echo "editor_running=$(pgrep -af 'ScmDraft[ ]2|Star[C]raft.exe' | wc -l)";
+EOF
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+[ "$#" -eq 0 ] || rt_die "unexpected argument: $1 (see --help)"
+
+PROBE="$(rt_probe_script | tr '\n' ' ')"
+
+if [ "$RT_DRY" -eq 1 ]; then
+  rt_ssh "$RT_HOST" "$PROBE"
+  rt_note "dry run, no target contact and no credential read"
+  exit 0
+fi
+
+rt_require_host
+if ! out="$(rt_ssh "$RT_HOST" "$PROBE" 2>&1)"; then
+  rt_die "status probe failed against ${RT_HOST}: ${out}"
+fi
+printf '%s\n' "$out"
+if rt_have xfreerdp; then
+  rt_note "controller has xfreerdp ($(xfreerdp --version 2>/dev/null | head -1 || printf 'version unknown'))"
+else
+  rt_note "controller has no xfreerdp; the packaged rdp-input path is unaffected"
+fi

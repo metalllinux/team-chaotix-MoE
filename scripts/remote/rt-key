@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+# rt-key -- inject raw RDP scancode key events, including modifier chords.
+#
+# Scancodes are AT set 1 make codes. Hold and release are separate events, so a
+# chord is keydown(modifier) + key(letter) + keyup(modifier). This is the path
+# TASK-0042 proved against SCMDraft 2 for Ctrl+T, Ctrl+U, Ctrl+D and Ctrl+S.
+# The extended-key variants carry the keys that only exist in the extended set,
+# Super (0x5B) and the arrow cluster.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-key --host <ip> [--key <name|0xNN>] [--keyx <0xNN>] [--down <name>] [--up <name>]
+             [--chord <mod+key>] [--events "<rdp-input event list>"] [--dry-run]
+
+Named keys: enter esc tab space backspace ctrl alt shift super meta win a-z 0-9
+up down left right home end pgup pgdn del ins.
+A chord is one modifier and one key, for example --chord ctrl+t or --chord super+a.
+--events passes a raw event list straight to the rdp-input tool.
+EOF
+  rt_common_options
+}
+
+# Resolve a key name to "<scancode> <extended>" in AT set 1 make codes.
+rt_scancode() {
+  local k="${1,,}"
+  case "$k" in
+    enter|return)  printf '0x1C 0' ;;
+    esc)           printf '0x01 0' ;;
+    tab)           printf '0x0F 0' ;;
+    space)         printf '0x39 0' ;;
+    backspace)     printf '0x0E 0' ;;
+    ctrl|lctrl)    printf '0x1D 0' ;;
+    rctrl)         printf '0x1D 1' ;;
+    alt|lalt)      printf '0x38 0' ;;
+    ralt)          printf '0x38 1' ;;
+    shift|lshift)  printf '0x2A 0' ;;
+    rshift)        printf '0x36 0' ;;
+    super|meta|win|lwin) printf '0x5B 1' ;;
+    caps)          printf '0x3A 0' ;;
+    up)            printf '0x48 1' ;;
+    down)          printf '0x50 1' ;;
+    left)          printf '0x4B 1' ;;
+    right)         printf '0x4D 1' ;;
+    home)          printf '0x47 1' ;;
+    end)           printf '0x4F 1' ;;
+    pgup)          printf '0x49 1' ;;
+    pgdn)          printf '0x51 1' ;;
+    del)           printf '0x53 1' ;;
+    ins)           printf '0x52 1' ;;
+    a) printf '0x1E 0' ;; b) printf '0x30 0' ;; c) printf '0x2E 0' ;; d) printf '0x20 0' ;;
+    e) printf '0x12 0' ;; f) printf '0x21 0' ;; g) printf '0x22 0' ;; h) printf '0x23 0' ;;
+    i) printf '0x17 0' ;; j) printf '0x24 0' ;; k) printf '0x25 0' ;; l) printf '0x26 0' ;;
+    m) printf '0x32 0' ;; n) printf '0x31 0' ;; o) printf '0x18 0' ;; p) printf '0x19 0' ;;
+    q) printf '0x10 0' ;; r) printf '0x13 0' ;; s) printf '0x1F 0' ;; t) printf '0x14 0' ;;
+    u) printf '0x16 0' ;; v) printf '0x2F 0' ;; w) printf '0x11 0' ;; x) printf '0x2D 0' ;;
+    y) printf '0x15 0' ;; z) printf '0x2C 0' ;;
+    1) printf '0x02 0' ;; 2) printf '0x03 0' ;; 3) printf '0x04 0' ;; 4) printf '0x05 0' ;;
+    5) printf '0x06 0' ;; 6) printf '0x07 0' ;; 7) printf '0x08 0' ;; 8) printf '0x09 0' ;;
+    9) printf '0x0A 0' ;; 0) printf '0x0B 0' ;;
+    0x*) printf '%s 0' "$k" ;;                       # a raw hex code passes through
+    *) rt_die "unknown key name: $1 (see --help)" ;;
+  esac
+}
+
+# Hold a modifier: the extended set needs its own verb.
+rt_modifier_event() {
+  local name="$1" verb="$2" code ext
+  read -r code ext <<<"$(rt_scancode "$name")"
+  if [ "$ext" = "1" ]; then
+    printf '%sx %s' "$verb" "$code"
+  else
+    printf '%s %s' "$verb" "$code"
+  fi
+}
+
+# Append one modifier event to EVENTS as two separate array entries, because
+# the C tool reads one event verb and one argument per argv slot.
+RT_SPLIT=()
+rt_push_mod() {
+  local spec
+  spec="$(rt_modifier_event "$1" "$2")"
+  read -r -a RT_SPLIT <<<"$spec"
+  EVENTS+=("${RT_SPLIT[@]}")
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+EVENTS=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --key)
+      [ "$#" -ge 2 ] || rt_die "--key needs a name or code"
+      code_ext="$(rt_scancode "$2")"
+      read -r code ext <<<"$code_ext"
+      if [ "$ext" = "1" ]; then EVENTS+=(keyx "$code"); else EVENTS+=(key "$code"); fi
+      shift 2 ;;
+    --keyx)
+      [ "$#" -ge 2 ] || rt_die "--keyx needs a code"
+      EVENTS+=(keyx "$2"); shift 2 ;;
+    --down)
+      [ "$#" -ge 2 ] || rt_die "--down needs a name or code"
+      rt_push_mod "$2" keydown; shift 2 ;;
+    --up)
+      [ "$#" -ge 2 ] || rt_die "--up needs a name or code"
+      rt_push_mod "$2" keyup; shift 2 ;;
+    --chord)
+      [ "$#" -ge 2 ] || rt_die "--chord needs the form mod+key"
+      spec="$2"
+      mods="${spec%+*}"; final="${spec##*+}"
+      [ "$mods" != "$spec" ] || rt_die "--chord needs the form mod+key, for example ctrl+t"
+      IFS='+' read -r -a parts <<<"$mods"
+      for m in "${parts[@]}"; do rt_push_mod "$m" keydown; done
+      read -r code ext <<<"$(rt_scancode "$final")"
+      if [ "$ext" = "1" ]; then EVENTS+=(keyx "$code"); else EVENTS+=(key "$code"); fi
+      # release in reverse order, the same way a hand lets go
+      for (( i=${#parts[@]}-1; i>=0; i-- )); do rt_push_mod "${parts[$i]}" keyup; done
+      shift 2 ;;
+    --events)
+      [ "$#" -ge 2 ] || rt_die "--events needs a quoted event list"
+      # shellcheck disable=SC2206
+      EVENTS+=($2); shift 2 ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+[ "${#EVENTS[@]}" -gt 0 ] || rt_die "no key event given (see --help)"
+
+BIN="$(rt_tool_bin rdp-input "$RT_RDINPUT")"
+
+if [ "$RT_DRY" -eq 1 ]; then
+  printf 'would run: <rdp argument lines on stdin> | %s - %s\n' "$BIN" "${EVENTS[*]}"
+  rt_note "dry run, no connection made and no credential read"
+  exit 0
+fi
+
+rt_require_host
+if ! out="$(rt_rdp_args "$RT_HOST" | "$BIN" - "${EVENTS[@]}" 2>&1)"; then
+  rt_die "key injection failed against ${RT_HOST}: ${out}"
+fi
+rt_note "$out"

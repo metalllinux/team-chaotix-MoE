@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# rt-build -- build step for the three C tools behind scripts/remote.
+#
+# Builds into $RT_BUILD_DIR (default ~/.cache/team-chaotix/remote-build), never
+# into a git-tracked path: no third-party or compiled binary is committed.
+#
+#   rdp-input        scripts/rdp-input.c          links libfreerdp3 + libfreerdp-client3
+#   rdp-pointer      scripts/rdp-pointer.c        links libfreerdp3 + libfreerdp-client3
+#   rt-uinput-inject scripts/remote/uinput-inject.c  links nothing, kernel UAPI headers only
+#
+# Licence record for the FreeRDP-linked tools: scripts/remote/NOTICE. Both C
+# sources carry their own header. The libraries are not vendored, they are
+# linked from the distro packages, so nothing of FreeRDP's source is distributed
+# by this repository.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RT_ROOT="$(cd "${RT_DIR}/.." && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-build [--out <dir>] [--clean] [--dry-run]
+
+Needs gcc and pkg-config with the freerdp-client3 package (freerdp-devel on
+Rocky Linux, already in the enabled appstream repo). The uinput injector needs
+gcc only.
+EOF
+  rt_common_options
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+CLEAN=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --out)  [ "$#" -ge 2 ] || rt_die "--out needs a directory"; RT_BUILD_DIR="$2"; shift 2 ;;
+    --clean) CLEAN=1; shift ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+
+FREERDP_CFLAGS='$(pkg-config --cflags --libs freerdp-client3)'
+BUILD_TARGETS=(
+  "rdp-input:${RT_ROOT}/rdp-input.c:pkg-config"
+  "rdp-pointer:${RT_ROOT}/rdp-pointer.c:pkg-config"
+  "rt-uinput-inject:${RT_DIR}/uinput-inject.c:plain"
+)
+
+if [ "$RT_DRY" -eq 1 ]; then
+  for spec in "${BUILD_TARGETS[@]}"; do
+    name="${spec%%:*}"; rest="${spec#*:}"; src="${rest%%:*}"; kind="${rest##*:}"
+    if [ "$kind" = "pkg-config" ]; then
+      printf 'would run: gcc -O2 -Wall -o %s/%s %s %s\n' "$RT_BUILD_DIR" "$name" "$src" "$FREERDP_CFLAGS"
+    else
+      printf 'would run: gcc -O2 -Wall -o %s/%s %s\n' "$RT_BUILD_DIR" "$name" "$src"
+    fi
+  done
+  rt_note "dry run, nothing was compiled"
+  exit 0
+fi
+
+rt_have gcc || rt_die "gcc is not installed on the controller"
+for spec in "${BUILD_TARGETS[@]}"; do
+  kind="${spec##*:}"
+  if [ "$kind" = "pkg-config" ] && ! pkg-config --exists freerdp-client3; then
+    rt_die "pkg-config cannot find freerdp-client3. Install freerdp-devel from the enabled repos."
+  fi
+done
+
+if [ "$CLEAN" -eq 1 ]; then
+  rm -rf "$RT_BUILD_DIR"
+  rt_note "removed ${RT_BUILD_DIR}"
+fi
+mkdir -p "$RT_BUILD_DIR"
+
+built=0
+for spec in "${BUILD_TARGETS[@]}"; do
+  name="${spec%%:*}"; rest="${spec#*:}"; src="${rest%%:*}"; kind="${rest##*:}"
+  [ -f "$src" ] || rt_die "source not found: $src"
+  if [ "$kind" = "pkg-config" ]; then
+    # shellcheck disable=SC2046   # pkg-config output is deliberately word-split
+    gcc -O2 -Wall -o "${RT_BUILD_DIR}/${name}" "$src" $(pkg-config --cflags --libs freerdp-client3) \
+      || rt_die "build failed for ${name} from ${src}"
+  else
+    gcc -O2 -Wall -o "${RT_BUILD_DIR}/${name}" "$src" || rt_die "build failed for ${name} from ${src}"
+  fi
+  built=$((built+1))
+  rt_note "built ${RT_BUILD_DIR}/${name}"
+done
+
+rt_note "${built} tools built into ${RT_BUILD_DIR}"
+if rpm -q freerdp-libs >/dev/null 2>&1; then
+  rt_note "linked FreeRDP: $(rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs)"
+else
+  rt_note "freerdp-libs is not installed as an RPM on this controller; check scripts/remote/NOTICE before trusting the licence record"
+fi

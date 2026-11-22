@@ -1,0 +1,48 @@
+NOTICE -- licence record for the scripts/remote remote visual-control tooling.
+
+This record is referenced by scripts/remote/rt-build. It covers the C tools
+that rt-build compiles. Reviewed in full by Charmy (TASK-0041 items 9 to 11)
+and by the licence gate (scripts/licence-check, CI Licence Check workflow).
+
+--- The team's own sources -----------------------------------------------
+
+scripts/rdp-input.c, scripts/rdp-pointer.c, scripts/remote/uinput-inject.c
+and the shell tools in scripts/remote/ are team-authored, Apache-2.0, under
+the repository root licence (LICENSE at repo root). Each C file carries its
+own licence header. No part of these tools is copied from upstream sources;
+they call public FreeRDP 3 client APIs written by the team.
+
+--- What the RDP tools link against --------------------------------------
+
+rdp-input and rdp-pointer link against libfreerdp3 and libfreerdp-client3.
+Nothing of FreeRDP's source is vendored, compiled in, or distributed by this
+repository. The build links dynamically from distro packages installed by the
+operator. The binaries rt-build produces land in $RT_BUILD_DIR (default
+~/.cache/team-chaotix/remote-build) and are never committed.
+
+Verified package identity on the controller, 2026-11-22, command
+`rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs`:
+
+  freerdp-libs-3.32.2-1.el10_2
+    licence=Apache-2.0 AND HPND AND LGPL-2.1-or-later
+            AND LicenseRef-Fedora-Public-Domain AND OFL-1.1
+
+Upstream FreeRDP (https://github.com/FreeRDP/FreeRDP) is dual-licensed
+Apache-2.0 or GPL-2.0+. The team's tools take the Apache-2.0 option, which
+matches the repository licence and the licence headers in both C files. The
+LGPL-2.1+ and HPND terms inside the distro package are satisfied by dynamic
+linking against the unmodified distro library, which is what gcc does here.
+No FreeRDP source is modified, so no GPL derivative is created.
+
+--- What the uinput injector links against --------------------------------
+
+rt-uinput-inject compiles against kernel UAPI headers only (uinput.h,
+input.h, unistd.h and friends). Linux kernel UAPI headers are distributed
+under a copyleft-left exception for userspace programs: they do not infect
+the program's licence. The injector links no userspace library beyond libc.
+
+--- Third-party data -------------------------------------------------------
+
+None. No game data, no reference CHK file, no harvested asset is stored in
+any git-tracked path under scripts/remote/. Evidence directories for captures
+live outside the repository.

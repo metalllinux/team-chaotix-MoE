@@ -47,7 +47,7 @@ jobs:
         run: |
           OUT="$(bash tests/selftest.sh)"
           COUNT="$(printf '%s\n' "$OUT" | grep -Eo '[0-9]+ checks passed' | grep -o '^[0-9]' || true)"
-          MIN=40
+          MIN=70
           if [ -z "${COUNT}" ] || [ "${COUNT}" -lt "${MIN}" ]; then
             echo "::error::selftest reported ${COUNT:-no} checks; expected at least ${MIN}"
             exit 1

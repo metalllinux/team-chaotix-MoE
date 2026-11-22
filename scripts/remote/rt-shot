@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# rt-shot -- capture the live GNOME Wayland session of a remote Rocky target and
+# land the PNG on the controller, outside git.
+#
+# The capture command is the one proven to be accepted by gnome-shell 49:
+# /usr/bin/gnome-screenshot-tool -f <file>, run with the target user's session
+# bus named. A raw gdbus call to org.gnome.Shell.Screenshot is denied
+# (AccessDenied) from any caller that is not the recognised org.gnome.Screenshot
+# client, verified on 192.168.1.99 and recorded in TASK-0042 DEMO-LOG
+# 2026-11-20 01:40-02:10.
+#
+# The tool writes exactly one file on the target, under $RT_TARGET_TMP, and
+# removes it after fetching it back. Pass --keep-target-copy to leave it.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-shot --host <ip> [--out <dir>] [--name <file.png>] [--keep-target-copy] [--dry-run]
+
+Captures one full-screen PNG of the target's live session and fetches it back.
+Default output directory is the current directory. Default name is
+rt-shot-<timestamp>.png. Output belongs under an evidence directory outside git.
+EOF
+  rt_common_options
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+# rt_parse_common consumed the shared flags and left the tool-specific ones in
+# RT_ARGV; make those the positional parameters this loop reads.
+set -- "${RT_ARGV[@]}"
+OUT_DIR="$PWD"
+NAME="rt-shot-$(date +%Y%m%d-%H%M%S).png"
+KEEP_TARGET_COPY=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --out)   [ "$#" -ge 2 ] || rt_die "--out needs a directory"; OUT_DIR="$2"; shift 2 ;;
+    --name)  [ "$#" -ge 2 ] || rt_die "--name needs a file name"; NAME="$2"; shift 2 ;;
+    --keep-target-copy) KEEP_TARGET_COPY=1; shift ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+
+TARGET_PATH="${RT_TARGET_TMP}/${NAME}"
+
+# Step 1, capture on the target.
+shot_cmd="$(rt_session_env) ${RT_SCREENSHOT_BIN} -f ${TARGET_PATH}"
+if [ "$RT_DRY" -eq 1 ]; then
+  rt_ssh "$RT_HOST" "$shot_cmd"
+  rt_fetch "$RT_HOST" "$TARGET_PATH" "${OUT_DIR}/${NAME}"
+  if [ "$KEEP_TARGET_COPY" -eq 0 ]; then rt_ssh "$RT_HOST" "rm -f ${TARGET_PATH}"; fi
+  rt_note "dry run, nothing was sent and no credential was read"
+  exit 0
+fi
+
+rt_require_host
+if ! out="$(rt_ssh "$RT_HOST" "$shot_cmd" 2>&1)"; then
+  rt_die "capture failed on ${RT_HOST}: ${out}"
+fi
+
+# Step 2, fetch the PNG back.
+mkdir -p "$OUT_DIR"
+if ! out="$(rt_fetch "$RT_HOST" "$TARGET_PATH" "${OUT_DIR}/${NAME}" 2>&1)"; then
+  rt_die "fetch failed from ${TARGET_PATH}: ${out}"
+fi
+
+# Step 3, the inverse: remove the target-side scratch file.
+if [ "$KEEP_TARGET_COPY" -eq 0 ]; then
+  rt_ssh "$RT_HOST" "rm -f ${TARGET_PATH}" || rt_note "warning: target-side cleanup failed for ${TARGET_PATH}"
+fi
+
+SIZE="$(stat -c '%s' "${OUT_DIR}/${NAME}" 2>/dev/null || echo 0)"
+rt_note "captured ${OUT_DIR}/${NAME} (${SIZE} bytes)"
+if rt_have file; then file "${OUT_DIR}/${NAME}"; fi
+if [ "$SIZE" -lt 50000 ]; then
+  rt_note "warning: PNG is under 50 KB, read it before trusting it as evidence"
+fi

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# rt-ocr -- turn a captured PNG into text with tesseract, on the controller.
+#
+# No target contact at all. This is the "read what the screen says" half of the
+# visual loop, and it is the layer the item-6 keyboard proof was confirmed by
+# (tesseract returned the injected marker string from the screenshot).
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-ocr <image.png> [--lang <code>] [--grep <word>] [--dry-run]
+
+Reads text out of a local PNG. --grep prints only the lines containing <word>,
+which is how a marker string is verified. Language default is eng; the language
+pack must be installed (tesseract-langpack-eng).
+EOF
+  rt_common_options
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+IMAGE=""
+LANG_CODE="eng"
+GREP_WORD=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --lang) [ "$#" -ge 2 ] || rt_die "--lang needs a language code"; LANG_CODE="$2"; shift 2 ;;
+    --grep) [ "$#" -ge 2 ] || rt_die "--grep needs a word"; GREP_WORD="$2"; shift 2 ;;
+    *) [ -z "$IMAGE" ] || rt_die "more than one image given"; IMAGE="$1"; shift ;;
+  esac
+done
+[ -n "$IMAGE" ] || rt_die "an image path is required (see --help)"
+
+cmd=(tesseract "$IMAGE" - -l "$LANG_CODE")
+if [ "$RT_DRY" -eq 1 ]; then
+  printf 'would run: %s' "${cmd[*]}"
+  if [ -n "$GREP_WORD" ]; then printf ' | grep -- %s' "$GREP_WORD"; fi
+  printf '\n'
+  rt_note "dry run, no target and no credential involved"
+  exit 0
+fi
+
+rt_have tesseract || rt_die "tesseract is not installed on the controller"
+[ -f "$IMAGE" ] || rt_die "image not found: $IMAGE"
+
+if [ -n "$GREP_WORD" ]; then
+  "${cmd[@]}" 2>/dev/null | grep -- "$GREP_WORD" || rt_die "marker '$GREP_WORD' not found in OCR output of $IMAGE"
+else
+  "${cmd[@]}"
+fi

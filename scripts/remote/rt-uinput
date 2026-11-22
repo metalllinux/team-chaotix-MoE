@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# rt-uinput -- drive the target-side kernel-level /dev/uinput injector.
+#
+# This is the second input path, below gnome-remote-desktop: events enter at the
+# kernel input layer rather than through the RDP virtual device. Proven on
+# 192.168.1.99 in TASK-0042 dispatch P1, where a uinput keyboard dismissed the
+# SCMDraft 2 profile dialog and a uinput relative mouse moved the real GNOME
+# pointer.
+#
+# Three facts that this wrapper carries because the dispatch proved them:
+#   1. The target has no compiler, so the binary is built on the controller and
+#      copied. rt-build does that.
+#   2. Events emitted in the same millisecond as UI_DEV_CREATE are dropped. The
+#      helper sleeps 1800 ms after creation before its first event.
+#   3. Relative motion works. The pen-tablet absolute device produced a
+#      zero-pixel difference on this target, so the command file should use
+#      rmove and rclick, not mv and click.
+#
+# The target needs root for /dev/uinput. On this target `sudo -n` is
+# passwordless; no credential is read or sent. Both files this tool places on
+# the target are removed again unless --keep-target-copy is given.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+RT_UINPUT_BIN="${RT_UINPUT_BIN:-${RT_BUILD_DIR}/rt-uinput-inject}"
+
+usage() {
+  cat <<'EOF'
+usage: rt-uinput --host <ip> (--probe | --script <command file>) [--res <WxH>]
+                 [--keep-target-copy] [--dry-run]
+
+--probe creates and destroys each device class without injecting anything.
+--script replays a local command file on the target. Command file verbs:
+  key <name> | down <name> | up <name> | rmove <dx> <dy> | rclick <button>
+  mv <x> <y> | click <x> <y> | tap <x> <y> | drag <x1> <y1> <x2> <y2> [steps]
+  wait <ms>
+The rmove and rclick verbs are the proven ones on this target. The absolute
+verbs are kept for other machines and are recorded as unproven here.
+EOF
+  rt_common_options
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+MODE=""
+SCRIPT=""
+RES=""
+KEEP=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --probe)  MODE="probe"; shift ;;
+    --script) [ "$#" -ge 2 ] || rt_die "--script needs a local command file"; MODE="script"; SCRIPT="$2"; shift 2 ;;
+    --res)    [ "$#" -ge 2 ] || rt_die "--res needs WxH"; RES="$2"; shift 2 ;;
+    --keep-target-copy) KEEP=1; shift ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+[ -n "$MODE" ] || rt_die "--probe or --script is required (see --help)"
+
+BIN="$(rt_tool_bin rt-uinput-inject "$RT_UINPUT_BIN")"
+if [ "$MODE" = "script" ]; then
+  [ -f "$SCRIPT" ] || rt_die "command file not found: $SCRIPT"
+fi
+
+TAG="$(date +%s)"
+REMOTE_BIN="${RT_TARGET_TMP}/rt-uinput-inject-${TAG}"
+REMOTE_SCRIPT=""
+if [ -n "$SCRIPT" ]; then
+  REMOTE_SCRIPT="${RT_TARGET_TMP}/rt-uinput-cmds-${TAG}"
+fi
+
+run_cmd="sudo -n ${REMOTE_BIN}"
+if [ "$MODE" = "probe" ]; then
+  run_cmd="${run_cmd} --probe"
+else
+  run_cmd="${run_cmd} --script ${REMOTE_SCRIPT}"
+  if [ -n "$RES" ]; then run_cmd="${run_cmd} --res ${RES}"; fi
+fi
+
+if [ "$RT_DRY" -eq 1 ]; then
+  rt_send "$RT_HOST" "$BIN" "$REMOTE_BIN"
+  if [ -n "$SCRIPT" ]; then rt_send "$RT_HOST" "$SCRIPT" "$REMOTE_SCRIPT"; fi
+  printf 'would run: sshpass -f %s ssh %s %s@%s %s\n' \
+    "$RT_SSH_PASS_FILE" "${RT_SSH_OPTS[*]}" "$RT_SSH_USER" "$(rt_host_or_placeholder)" "$run_cmd"
+  if [ "$KEEP" -eq 0 ]; then
+    rt_ssh "$RT_HOST" "rm -f ${REMOTE_BIN} ${REMOTE_SCRIPT}"
+  fi
+  rt_note "dry run, nothing was sent and no credential was read"
+  exit 0
+fi
+
+rt_require_host
+if ! out="$(rt_send "$RT_HOST" "$BIN" "$REMOTE_BIN" 2>&1)"; then
+  rt_die "could not copy the injector to ${RT_HOST}: ${out}"
+fi
+if [ -n "$SCRIPT" ]; then
+  if ! out="$(rt_send "$RT_HOST" "$SCRIPT" "$REMOTE_SCRIPT" 2>&1)"; then
+    rt_die "could not copy the command file to ${RT_HOST}: ${out}"
+  fi
+fi
+
+rc=0
+if ! out="$(rt_ssh "$RT_HOST" "$run_cmd" 2>&1)"; then rc=1; fi
+printf '%s\n' "$out"
+
+# The inverse runs even when the injection itself failed, so the target never
+# keeps a binary it did not have before.
+if [ "$KEEP" -eq 0 ]; then
+  rt_ssh "$RT_HOST" "rm -f ${REMOTE_BIN} ${REMOTE_SCRIPT}" || rt_note "warning: target-side cleanup failed"
+fi
+
+[ "$rc" -eq 0 ] || rt_die "injection failed against ${RT_HOST} (see the output above)"
+rt_note "uinput injection completed against ${RT_HOST}"

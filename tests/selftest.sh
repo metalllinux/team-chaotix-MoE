@@ -136,4 +136,110 @@ else
   note "agentgateway binary absent, gateway selftest skipped"
 fi
 
+# --- remote visual-control tooling (TASK-0041 items 9 to 11) --------------
+# All asserts here run with the target offline: no target contact, no
+# credential read. Dry runs only print the commands the real run would use,
+# with a <host> placeholder in place of any host.
+RT="scripts/remote"
+RT_TOOLS=(rt-shot rt-ocr rt-type rt-key rt-click rt-status rt-uinput rt-build)
+
+# The packaged inventory: every helper plus the shared lib, the licence
+# record referenced by rt-build, and the target-side injector source.
+for f in "${RT_TOOLS[@]}" rt-lib NOTICE uinput-inject.c; do
+  [ -f "$RT/$f" ] || fail "scripts/remote/$f missing"
+done
+PASS
+note "scripts/remote inventory OK"
+
+# Every callable tool is executable (git keeps the mode bit).
+for f in "${RT_TOOLS[@]}"; do
+  [ -x "$RT/$f" ] || fail "scripts/remote/$f is not executable"
+done
+PASS
+note "scripts/remote executable bits OK"
+
+# Every tool documents the shared options, including --dry-run, on --help.
+# Output is captured first: under pipefail a grep -q that exits early would
+# otherwise kill the tool with SIGPIPE and read as a failure.
+for f in "${RT_TOOLS[@]}"; do
+  rt_help="$("$RT/$f" --help)"
+  printf '%s\n' "$rt_help" | grep -q -- '--dry-run' || fail "scripts/remote/$f --help lacks --dry-run"
+  PASS
+done
+note "scripts/remote --help OK"
+
+# Dry runs exit 0, name no real host, and state that no credential was read.
+RT_TMP="$(mktemp -d)"
+trap 'rm -rf "$RT_TMP"' EXIT
+for probe in "rt-shot --dry-run" "rt-status --dry-run"; do
+  out="$($RT/$probe 2>&1)" || fail "dry run failed: $probe"
+  grep -q '<host>' <<< "$out" || fail "dry run of $probe used a real host instead of the placeholder"
+  PASS
+done
+# rt-ocr never contacts a target, so its dry run only has to confirm that.
+out="$($RT/rt-ocr --dry-run "$RT_TMP/absent.png" 2>&1)" || fail "dry run failed: rt-ocr"
+grep -qi 'dry run' <<< "$out" || fail "rt-ocr dry run did not confirm it touched nothing"
+PASS
+note "scripts/remote dry runs OK (target offline)"
+
+# The capture path must wrap the tool proven accepted by gnome-shell 49,
+# not a raw gdbus call (TASK-0042 DEMO-LOG 2026-11-20 01:40-02:10).
+grep -q 'gnome-screenshot-tool' "$RT/rt-lib" || fail "rt-lib no longer defaults to gnome-screenshot-tool"
+PASS
+
+# The uinput wrapper carries the proven settle fact: events emitted in the
+# same millisecond as UI_DEV_CREATE are dropped (TASK-0042 dispatch P1).
+grep -Eq 'UI_DEV_CREATE|1800' "$RT/uinput-inject.c" \
+  || fail "uinput-inject.c lost the UI_DEV_CREATE settle handling"
+PASS
+
+# The real build compiles the three C tools offline into a scratch dir.
+# Guarded like shellcheck above: skipped when the toolchain is absent.
+if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/null; then
+  RT_BUILD_DIR="$RT_TMP" "$RT/rt-build" > /dev/null || fail "scripts/remote/rt-build failed"
+  for bin in rdp-input rdp-pointer rt-uinput-inject; do
+    [ -x "$RT_TMP/$bin" ] || fail "rt-build did not produce $bin"
+  done
+  PASS
+  note "scripts/remote build OK (offline compile, scratch dir)"
+  # Input-tool dry runs resolve their binaries through RT_BUILD_DIR.
+  for probe in \
+    "rt-type --dry-run --text CHAOTIX41" \
+    "rt-key --dry-run --chord ctrl+t" \
+    "rt-click --dry-run --click 960 14" \
+    "rt-uinput --dry-run --probe"; do
+    out="$(RT_BUILD_DIR="$RT_TMP" $RT/$probe 2>&1)" || fail "dry run failed: $probe"
+    grep -qi 'dry run' <<< "$out" || fail "dry run of $probe did not confirm it touched nothing"
+    PASS
+  done
+  note "scripts/remote input-tool dry runs OK"
+else
+  note "gcc or freerdp-client3 absent, remote build asserts skipped"
+fi
+
+# Credential leak scan: the target SSH password must not appear anywhere in
+# the checkout. The secret is read from ~/AI/secrets at run time as a grep
+# pattern only; its content is never printed. Blank lines are stripped so an
+# empty pattern cannot match everything. Skipped when the file is absent.
+if [ -f "${HOME}/AI/secrets/scm_draft_pass.md" ]; then
+  if grep -RIF --exclude-dir=.git -f <(grep -v '^[[:space:]]*$' "${HOME}/AI/secrets/scm_draft_pass.md") . >/dev/null 2>&1; then
+    fail "target credential found in repository contents (AGENTS.md section 4)"
+  fi
+  PASS
+  note "credential leak scan OK"
+else
+  note "scm_draft_pass.md absent, credential leak scan skipped"
+fi
+
+# The remote-desktop skill page exists where opencode discovers project
+# skills (.opencode/skills, verified 2026-11-22 with
+# `opencode api get '/api/skill?location[directory]=<cwd>'`, which lists
+# the remote-desktop id for this project) and it carries the secrets rule.
+SK=".opencode/skills/remote-desktop/SKILL.md"
+[ -f "$SK" ] || fail "remote-desktop skill page missing at $SK"
+grep -q 'never echoed' "$SK" || fail "remote-desktop skill lost the secrets rule wording"
+grep -q 'scripts/remote' "$SK" || fail "remote-desktop skill lost the tooling reference"
+PASS
+note "remote-desktop skill OK"
+
 printf 'SELFTEST: %s checks passed\n' "${CHECKS}"

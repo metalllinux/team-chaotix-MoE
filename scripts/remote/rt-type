@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# rt-type -- inject text into the target's live session as Unicode keyboard
+# events through the RDP input channel.
+#
+# Mechanism proven in TASK-0041 item 6: one Unicode keyboard event pair per
+# character, delivered at the mutter compositor level, reaching every
+# application in the session including Wine and XWayland clients. The same
+# event class the xfreerdp /kbd:pipe: path sends.
+#
+# This path carries code points, not chords. For Ctrl, Alt, Shift and Super
+# combinations use rt-key, which sends raw RDP scancodes with hold and release.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-type --host <ip> --text <string> [--dry-run]
+
+Types one string into whatever currently has keyboard focus on the target.
+Enter, Tab, Escape, Backspace and Space arrive as their code points, so text
+input is fully covered. Modifier chords are not: use rt-key for those.
+EOF
+  rt_common_options
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+TEXT=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --text) [ "$#" -ge 2 ] || rt_die "--text needs a value"; TEXT="$2"; shift 2 ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+[ -n "$TEXT" ] || rt_die "--text is required (see --help)"
+
+BIN="$(rt_tool_bin rdp-input "$RT_RDINPUT")"
+
+if [ "$RT_DRY" -eq 1 ]; then
+  printf 'would run: <rdp argument lines on stdin> | %s - type %s\n' "$BIN" "$TEXT"
+  rt_note "dry run, no connection made and no credential read"
+  exit 0
+fi
+
+rt_require_host
+if ! out="$(rt_rdp_args "$RT_HOST" | "$BIN" - type "$TEXT" 2>&1)"; then
+  rt_die "type failed against ${RT_HOST}: ${out}"
+fi
+rt_note "$out"
