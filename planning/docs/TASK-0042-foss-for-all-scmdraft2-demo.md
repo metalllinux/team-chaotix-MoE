@@ -2956,6 +2956,55 @@ retired in favour of this measurement. Complete cycles fitting, computed from th
 named in the record; headroom 64997818368 B before, 64989118464 B after, 8699904 B consumed of
 which 4301926 B is the seven tmp backups the cycle's seven opens wrote.
 
+**Phase C result, 2026-11-22 08:57, rc 0, `DEMO-LOG` entry of the same time, report
+`/tmp/opencode/t0042/S1b150_cycle_report.json`.** Second full six-map cycle, at 150 s. Per-map
+totals 204.96, 212.49, 211.92, 211.98, 203.93, 212.46 s; overheads 43.86 to 44.46 s unchanged;
+display windows 159.57 to 168.06 s against the 150 s request; all SHA gates, teardowns, pixel zoom
+verification, palette re-derivation and paint contrast as in phase B. Measured cycle cost 1331.99 s
+(22 min 12 s). Halving the display window costs 44.7 percent of cycle time, not 50, because the 44 s
+per-map overhead does not shrink.
+
+**Acceptance table, measured, all six maps, both windows (seconds).**
+
+| map | build 300/150 | transfer 300/150 | open 300/150 | teardown 300/150 | total 300 | total 150 |
+|---|---|---|---|---|---|---|
+| `foss-for-all` | 0.04 / 0.08 | 0.51 / 0.50 | 25.53 / 25.82 | 2.90 / 2.92 | 355.97 | 204.96 |
+| `rocky-logo` | 0.04 / 0.09 | 0.53 / 0.53 | 25.46 / 25.82 | 2.91 / 2.91 | 362.02 | 212.49 |
+| `rocky-with-heart` | 0.10 / 0.09 | 0.53 / 0.52 | 25.46 / 25.46 | 2.89 / 2.90 | 361.95 | 211.92 |
+| `tux` | 0.10 / 0.11 | 0.52 / 0.52 | 25.48 / 25.45 | 2.90 / 2.92 | 361.94 | 211.98 |
+| `republic-of-korea` | 0.56 / 0.59 | 0.52 / 0.50 | 25.84 / 25.87 | 2.90 / 2.91 | 353.87 | 203.93 |
+| `i-love-korea` | 0.06 / 0.11 | 0.50 / 0.50 | 25.86 / 25.87 | 2.89 / 2.91 | 362.40 | 212.46 |
+
+Cycle cost 2232.36 s at 300 s (0.58 percent from `S1a`'s 2219.5 s projection, projection retired),
+1331.99 s at 150 s. Complete cycles that fit, from these measured costs: at 300 s, 1 in one hour, 3
+in two, 4 in three; at 150 s, 2, 5, 8. Six deliverable hashes re-verified unchanged with unchanged
+mtimes after all three phases; `NO_SCM_RUNNING`; target clean apart from the seven `Scm*.tmp`
+residue files named with sizes in `DEMO-LOG` 09:05, left per r002. Every step in all three phases is
+in `/tmp/opencode/t0042/s1a-run-log.jsonl` with its inverse.
+
+**Checks that did not run, named.** No independent agent read this dispatch's captures and no blind
+reader, that belongs to the review chain. `V1`'s map-validation dialog has still never run on any
+map. The `L5` editor save chain was not re-run, no save was performed at all, per the
+2026-11-21 08:40 decision. The Zoom combo was not read on booth frames, zoom rests on the indicator
+plus the run census. No per-frame WCAG on deliverable frames, tone share and census only. Grid-line
+autocorrelation not run on booth frames. Panel EDID not re-measured, `B1`'s figures carried.
+`--loops 1` per phase, so loop-to-loop drift within a booth session is not measured and the
+1/2/3-hour cycle counts are arithmetic on one measured cycle per window. A six-hour run was not
+performed, the residue bound is arithmetic from the measured 4301926 B per cycle. The 1448858 B
+disk delta beyond the named residue is unattributed, recorded as such. No licence ruling, `R4` and
+`R5` open. `scripts/dispatch-gate` is the dispatcher's step and was not run by me.
+
+**Competing priorities.** Bounded residue against r002 visibility, chosen cycle-start cleanup with
+the final cycle's residue left named, which bounds accumulation and keeps one cycle's cost visible
+for the operator. Measured cost against schedule projection, chosen measurement, the 3 to 6 percent
+display overshoot kept visible inside the totals rather than tuned away. Three phases in one runner
+against three separate scripts, chosen `--tag-prefix`, one code path, separable reports.
+
+**Recommendation for the booth runbook.** `python3 /tmp/opencode/t0042/booth_loop.py --maps
+foss-for-all,rocky-logo,rocky-with-heart,tux,republic-of-korea,i-love-korea --loops <N>
+--display-seconds 300` sustains 1 cycle per 37 min 12 s, 3 cycles in two hours, 4 in three; at 150 s
+it sustains 2, 5, 8. `D3` should publish this runner, the run log and this table.
+
 ---
 
 ## Review
