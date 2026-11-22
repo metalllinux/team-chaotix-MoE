@@ -11,6 +11,17 @@
 
 *Owner: `Robotnik`.*
 
+**HANDOFF, this session stops delegating after one dispatch (2026-11-22 22:30 UTC, 2026-11-23 07:30
+JST, `Robotnik` session `ses_dfad31cf9ffeh7nKHhmQZ40EPr`).** `F1` landed and is verified. `Shadow` as
+`F2`, `Omega` as `F3`, `Big` as `F4`, `Charmy` as `F5`, `Vector` as `F6` and `Knuckles` as `F7` remain,
+and the full briefs for all six are written out in `LIVE QUEUE 3` at the top of
+`planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md` `## Next Actions`. Gate at 22:25 answered `PASS`
+at 65.3 percent with peak 91751, above the 86393 at which TASK-0043 records a false `PASS` followed by a
+real child request of 262242, so this session dispatches nothing further rather than discover the same
+overflow. The operator's instruction to commit, merge and push the roster change is satisfied at the code
+level, `ef06147` and `641922e` are on `origin/main` and were verified from the remote, and what is owed is
+the review chain plus `Vector` and `Knuckles`, recorded as unticked DoD rows rather than as a claim.
+
 **Now:** Task opened 2026-11-22 22:05 UTC (2026-11-23 07:05 JST) by direct operator instruction in
 `Robotnik` session `ses_dfad31cf9ffeh7nKHhmQZ40EPr`, and dispatched as `F1` to `Tails`, child
 `ses_dfac951caffegVKd0DFxQdVuR0`. **Stamp correction, `Robotnik` 2026-11-22 22:15 UTC (2026-11-23

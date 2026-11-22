@@ -11,6 +11,8 @@
 
 ## Status
 
+**Roster note, `Robotnik` 2026-11-22 22:05 UTC (2026-11-23 07:05 JST).** The fifth reviewer `Flicky` was retired by operator instruction under TASK-0044, and `Charmy` is now the team's single licence owner holding the audit and the machine gate. The `T1` to `T5` chain for this task is now four dispatches, `Shadow`, `Omega`, `Big`, `Charmy`, and `T4` carries the audit scope written in TASK-0044 `## Next Actions`. Do not dispatch `T5`. See `planning/docs/TASK-0044-flicky-into-charmy.md`.
+
 **Now:** Gate PASSED. Eyes, OCR, keyboard hands, and mouse hands are proven on the live target. Items 1, 2, 3, 12, 4, 5, 6, 7 complete. Chosen keyboard input path is `xfreerdp /kbd:pipe:<fifo>` with `/args-from:file:` for the credential and `/cert:ignore`. Chosen mouse input path is a custom C client (`rdp-pointer`) using `libfreerdp3` with `freerdp_client_context_new` for full channel initialization; click at (960, 14) opened the GNOME 49 calendar/notification dropdown, confirmed by before/after screenshot pair. Item 8 (AT-SPI fallback) not needed. Remaining: items 9 to 11 packaging, then the review chain.
 
 **Open technical limit (load-bearing for TASK-0042).** The keyboard pipe carries Unicode code points and control characters only. Modifier chords (Super+letter, Ctrl+C) are not covered by that mechanism. Mouse pointer motion and click ARE covered: the `rdp-pointer` tool sends `PTR_FLAGS_MOVE` and button press/release events directly through the RDP protocol at the mutter compositor level, reaching all applications including Wine/XWayland clients. Map editing in SCMDraft 2 needs clicks; item 7 proves they work. Modifier chords remain an open packaging question for item 9.
