@@ -2015,3 +2015,55 @@ the withheld reference CHK and the withheld password, no independent read of the
 captures, no licence ruling. Inverse, the booth commit is a normal fast-forward on `main`, removing
 it would need a force-push and none was performed or is proposed, `/tmp/opencode/t0042/booth-verify-d3`
 removes with `rm -rf`.
+
+## 2026-11-22 10:45 — Dispatch S1c step 1, the published no-rebuild mode built and published, verified from a fresh remote clone (`Tails`, controller-side and repo-side, one read-only target read)
+
+The gap `D3` named is closed in code. `booth_loop.py` now has two map-acquisition modes.
+`--source rebuild` is the default and is what every measured cycle ran in, it rebuilds each map from
+the committed mask code through `build_ts.py` against `ts-harvest/ref-era6.chk`. `--source published`
+skips the rebuild, reads each map read-only from `<clone>/maps/deliverable/<name>.scm`, and drives the
+same open, display, painting-segment and teardown sequence with no save. The runner grew
+`preflight_published`, which hashes all six published maps and the published paint seed against the
+recorded SHA-256 values and names what a clone carries and what it does not, `preflight_target_run_script`,
+which compares the launch script on the target against the clone's `code/t0042-run-dos.sh`, installs the
+published copy only if the target has none and refuses to overwrite one that differs, a
+`published_source` step in place of `build`, a named refusal in rebuild mode when the reference CHK is
+absent, a seed-source switch in `run_paint`, a `mode` field in every log record, and a path model where
+`HERE` is the script's own directory and `CHAOTIX_T0042_WORK` and `CHAOTIX_T0042_INJECTOR` separate
+scratch from injector so a clone run writes nothing into the clone. Compile checked with
+`python3 -W error::SyntaxWarning -m py_compile booth_loop.py`, clean.
+
+Two tests before any publish, both against the local clone at `f0255bd` with `CHAOTIX_T0042_WORK`
+pointed at `/tmp/opencode/t0042/s1c-test` so the published step log is untouched. Test 1,
+`preflight_published` over all six maps answers PASS, `maps_checked 6`, and records the lists
+`clone_carries` and `clone_does_not_carry`. Test 2, `run_map` in rebuild mode from the clone copy logs
+`build FAIL` with `reason=rebuild mode needs the withheld reference CHK, which the published repository
+does not carry; run --source published from a clone instead`, returns False, and makes no target
+contact. Test 2 is the concrete demonstration of the `D3` gap rather than a restatement of it.
+
+Booth repo commit `dd86b46e9cc43937b05ccbfadefa29fe4e5d2e48`, signed Good, pushed `f0255bd..dd86b46`,
+carrying `code/booth_loop.py` 36458 to 47217 B and `BOOTH-RUNBOOK.md` 10472 to 14259 B with the mode
+documentation, and `MANIFEST.md` rows recomputed by `/tmp/opencode/t0042/s1c_manifest.py`, 786 rows,
+17 groups, 198390282 bytes listed, 2 rows updated and 784 rows unchanged. Credential scan reused from
+`D3`, `d3_stage.credential_scan`, 4 secret values read at run time against 5 changed files, zero hits,
+values printed nowhere.
+
+Verified from a fresh clone of the pushed repository at `/tmp/opencode/t0042/booth-clone-s1c` rather
+than from the push output, `git log` shows `dd86b46` on `f0255bd`, `git ls-tree -r HEAD` holds 787
+paths, `sha256sum` in the clone reproduces all six deliverables at their recorded values, the clone's
+`code/booth_loop.py` is byte-identical to `/tmp/opencode/t0042/booth_loop.py` at
+`38c46709c491...`, `live-segment/maps/live-demo-ice.scm` reproduces `8f338a3cea24...` which is the seed
+the painting segment needs, `python3 /tmp/opencode/t0042/d2_verify.py .` answers 786 rows against 787
+tree paths, 0 omitted, 0 absent, 0 mismatches, PASS, and the clone working tree is clean.
+
+Inverse, `/tmp/opencode/t0042/booth-clone-s1c` and `/tmp/opencode/t0042/s1c-test` remove with
+`rm -rf`, `/tmp/opencode/t0042/s1c_manifest.py` with `rm -f`, the booth commit is a normal
+fast-forward on `main` and removing it would need a force-push, which is not performed and not
+proposed. Pre-dispatch target state read read-only before any of this, through
+`sshpass -f ~/AI/secrets/scm_draft_pass.md ssh howard@192.168.1.99` with `pgrep`, `ls -l`, `sha256sum`,
+`df -B1` and `du -sb`, `NO_SCM_RUNNING`, `C:\Maps\live-demo-ice.scm` at 12502 B `f00d1f60521c...`,
+seven `Scm*.tmp` backups left by `S1b` totalling 4301926 B, `/tmp/t0042-run-dos.sh` at
+`a85bba3c89f1...`, `df -B1 /` avail 65000390656 B, `du -sb C:\Maps` 4404854 B. No target file was
+written by this step, and `preflight_target_run_script` has not run yet, it runs at the start of the
+clone run. Checks not run at this point, the measured six-map cycle in published mode, which is the
+next step, no independent read of the captures this dispatch will produce, no licence ruling.

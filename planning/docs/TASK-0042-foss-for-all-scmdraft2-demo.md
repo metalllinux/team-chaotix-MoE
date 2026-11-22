@@ -3163,6 +3163,81 @@ private repo, acceptable while the repo is private and named in `PUBLISH-STATUS.
 catch-all-held `.out` console files withheld against publishing them alongside the JSONL log, chosen
 withholding, the JSONL log supersedes them and it is the file the summary tools read.
 
+### Dispatch S1c, the published no-rebuild mode, the loop made runnable from a bare clone (2026-11-22, `Tails`, fresh child session)
+
+**Alternatives considered, the mode boundary.** Option A, a second runner script for the
+clone case. Option B, a `--source {rebuild,published}` switch inside the existing runner, chosen.
+Reason, the display window, zoom-from-pixels verification, palette re-derivation, painting segment,
+`Scm*.tmp` cleanup, headroom reads, teardown and the cycle summary are the measured properties the
+acceptance requires to be identical between the modes, and a fork lets all of them drift from the
+`S1a`/`S1b` code path, which is the exact failure a booth script cannot afford. Option C, publish
+`ts-harvest/ref-era6.chk` so that rebuild mode runs from a clone, rejected, it is a harvested plaintext
+extract of a shipped Blizzard map held by `D0`'s hard `harvested-reference-chks` exclusion, and the
+brief states it stays withheld.
+
+**Alternatives considered, what published mode reads from the clone.** Option, the already published
+six `maps/deliverable/*.scm` plus the already published flat Ice World paint seed
+`live-segment/maps/live-demo-ice.scm` at 614562 B `8f338a3cea24...`, chosen, nothing new needed
+publishing. Option, publish the seed, unnecessary, `D0` already published it. Option, run the painting
+segment on whatever scratch map is resident on the target (`f00d1f60521c...`, 12502 B, the `L5`
+editor-saved file), rejected, its before-state is not the flat seed the recorded before and after
+contrast pair was measured against, so the paint contrast gate would be measured on an unknown tone
+pair.
+
+**Path model.** `HERE` becomes the script's own directory, which is `/tmp/opencode/t0042` on the
+controller and `<clone>/code` in a clone, and the mask imports that the frame planner needs resolve from
+there, which is where the repository publishes `code/rocky.py` and `code/glyph.py`. Two new
+machine-local roots, `CHAOTIX_T0042_WORK` for captures, OCR crops, the run log and the cycle reports,
+and `CHAOTIX_T0042_INJECTOR` for `rdp-input` and `rdp-args`, both defaulting to `/tmp/opencode/t0042`,
+so the controller defaults reproduce the `S1a`/`S1b` layout byte for byte and a clone run writes
+nothing into the clone it runs from.
+
+**Runner changes, `/tmp/opencode/t0042/booth_loop.py`, compile-checked `python3 -W
+error::SyntaxWarning -m py_compile`, clean, 827 to 1006 lines.**
+1. `preflight_published(names)`, controller-side only and before any target contact, hashes every
+   published map the cycle will show and the published paint seed against the recorded SHA-256 values,
+   checks the injector binary and args file and the target password file exist, checks the clone carries
+   the mask code, and on failure prints one named line per problem and returns rc 4 with no target
+   contact. On success the log record carries `clone_carries` and `clone_does_not_carry` lists.
+2. `preflight_target_run_script()`, compares `/tmp/t0042-run-dos.sh` on the target against the clone's
+   `code/t0042-run-dos.sh`, installs the published copy only when the target has none, logs `INSTALLED`
+   with `rm -f` as its inverse, and refuses rather than overwriting a target script that differs.
+3. `run_map` step 1 splits, `published_source` reads the clone copy read-only (log names the source
+   path and byte size, inverse states nothing was written), `build` keeps the rebuild path and now
+   checks the reference CHK exists first, logging a named `FAIL` that points at `--source published`
+   when it does not.
+4. `sha_verify_controller`, `transfer`, `open`, zoom, `display_window`, `teardown` are untouched code
+   paths in both modes, which is the point of the switch.
+5. `run_paint` takes the seed from the clone in published mode, verified against the same
+   `SCRATCH_SEED_SHA` constant, and the transfer record now names its source path.
+6. Every log record carries `mode`, `rebuild` or `published`, so the published step log cannot be read
+   as if every cycle rebuilt.
+7. `summary()` reports the acquisition step name per map and a `modes_recorded` list per cycle, and
+   writes cycle reports to `WORK_DIR`.
+
+**Two tests before any publish, run against the local clone at `f0255bd` with `CHAOTIX_T0042_WORK`
+aimed at `/tmp/opencode/t0042/s1c-test` so the published step log is not touched.** Test 1,
+`preflight_published` over all six maps, PASS, `maps_checked 6`. Test 2, `run_map` in rebuild mode from
+the clone copy, logs `build FAIL` with `reason=rebuild mode needs the withheld reference CHK, which the
+published repository does not carry; run --source published from a clone instead` and returns without
+target contact. Test 2 is the `D3` gap demonstrated rather than described, and it is the named
+behaviour a reader who clones the repo and runs the rebuild command will see.
+
+**Booth repo publish step 1.** Commit `dd86b46e9cc43937b05ccbfadefa29fe4e5d2e48`, signature Good,
+pushed `f0255bd..dd86b46`, three files, `code/booth_loop.py` 36458 to 47217 B, `BOOTH-RUNBOOK.md`
+10472 to 14259 B, `MANIFEST.md` recomputed by the new `/tmp/opencode/t0042/s1c_manifest.py` (786 rows,
+17 groups, 198390282 bytes listed, 2 rows updated, 784 rows byte-identical to the `D3` values, refuses
+rather than guessing on any row-without-file or path-without-row). The runbook now documents both modes
+by name, states that rebuild mode needs the withheld reference CHK and therefore runs only from a
+working tree that holds it, states that published mode is the mode a clone can run, and lists the four
+things neither mode gets from the repository, the injector binary, `rdp-args`, the target password file,
+and Python 3 with Pillow and tesseract. Credential scan reuses `D3`'s `d3_stage.credential_scan`, 4
+values against 5 changed files, zero hits. **Verified from a fresh clone of the pushed repository**,
+`/tmp/opencode/t0042/booth-clone-s1c`, `git log` `dd86b46` on `f0255bd`, 787 tree paths, six
+deliverables at recorded SHA-256, clone runner byte-identical to the controller runner at
+`38c46709c491...`, scratch seed at `8f338a3cea24...`, `d2_verify.py` 786 rows against 787 paths with
+0 omitted, 0 absent, 0 mismatches, PASS, clone working tree clean.
+
 ---
 
 ## Review
