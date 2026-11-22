@@ -13,6 +13,8 @@
 
 ## Status
 
+**Queue ownership, and a decision on the `V1` target residue (2026-11-22 13:10, `Robotnik` session `ses_dfdaa06eefferNzAk2YhIGeHWa`).** This session takes the live handoff at doc:300 and owns the remaining queue in this order, `P1`, TASK-0041 items 9 to 11, `R1` to `R5`, `T1` to `T5`, `G1` to `G5` plus the TASK-0043 gate fix, `D1`, `K1`, `E1`. Gate before the first dispatch, `scripts/dispatch-gate --session ses_dfdaa06eefferNzAk2YhIGeHWa`, answers `PASS`, exit 0, peak 60277 over 6 calls, worst jump 23843, dispatcher projection 84120, child projection 134592 of 262144, 51.3 percent. **No competing dispatcher exists.** A read-only `sqlite3` query against `~/.local/share/opencode/opencode.db` for `session_v2` rows where `agent='robotnik'` ordered by `time_updated` shows this session as the newest, with `ses_dffdc1f07ffewFDnixBYrSRFYw` idle since the handoff, so no `interrupt` call is needed and this record names the owner as the review chain asked. **Decision on the `V1` residue, recorded rather than asked.** `V1` left `C:\Maps\v1-<map>.scm` validation copies and throwaway negative-control maps on the target. Nothing is deleted before the record is read, so `P1`, the first target-touching dispatch in this queue, is instructed to read `DEMO-LOG.md` at 2026-11-22 12:44, state per file whether an inverse was recorded, remove only what carries a recorded inverse, and name what stays. The seven `Scm*.tmp` backups stay in place per rule r002, and the 7195615 B per cycle of capture PNGs in the target's `/tmp` stays a named hygiene item for `Omega` rather than being cleaned mid-demo.
+
 **V1 closes the map-validation box against the editor that actually exists, and it narrows a constraint this task has been recording too broadly (2026-11-22 12:57, `Robotnik` session `ses_dffdc1f07ffewFDnixBYrSRFYw`).** `Tails`'s pass is at `## Implementation` doc:3364, DEMO-LOG 12:12, 12:31 and 12:44, team repo `c9f0d83`, selftest green at 61 checks. Verdict, SCMDraft 2 Beta 0.9.10 has no map-validation feature to drive, established on all six accepted maps, and the load path reports nothing either, proven by two negative controls on throwaway copies, a byte-corrupted map opening silently and rendering normally, and a map with its `VER ` section name renamed being refused silently in favour of a blank untitled map. The limit is the application, not the injection method. **Decision, recorded rather than asked, on the DoD box.** The box is not removed. It is restated as what was achievable, validation attempted against the editor as shipped, and the shipped editor performs none, with the negative controls as the evidence. `Vector` writes it that way in `D1`. **The injected-click constraint is narrower than recorded.** `Alt` alone, `Alt+E` and `F10` do not arm the menu bar under Wine, one injected click on a menu-bar title does arm it, and from there arrow keys walk the whole bar and open each menu, proven from Display Options to Triggers in three arrow presses with no further click. So menu titles respond to injected clicks and Delphi dialog buttons do not, which closes the 2026-11-20 open item that menus could not be driven, and any later dispatch needing a menu should arm it with one click rather than assume menus are unreachable. **One recorded bound is tighter.** The 4301926 B per cycle of `Scm*.tmp` residue from `S1b` is an upper bound on opens rather than a constant, because the six `V1` launches created no backup while the first six opens created one each. Integrity held, validation ran only on copies at `C:\Maps\v1-<map>.scm`, the editor save chain ran on all six copies and wrote nothing, and all six originals match their recorded SHA-256 with unchanged mtimes at `NO_SCM_RUNNING`. Checks not run are named in full in the subsection, including that no independent reader has read these captures. **Queue decision, recorded rather than asked.** The order stays as handed off, `P1`, TASK-0041 items 9 to 11, then the `R`, `T` and `G` chains plus the TASK-0043 gate fix, then `D1`, `K1`, `E1`. Reason, a review chain reading an implementation with one dispatch still missing is the exact shape of false completion this task exists to prevent, and the booth repo staying private until `R4` and `R5` rule is not a booth blocker, because the demo runs against the repo rather than against its visibility. **This session stops delegating here,** four dispatches run, `scripts/dispatch-gate --session ses_dffdc1f07ffewFDnixBYrSRFYw` at the stop answers `PASS`, peak 119445, child projection 197456 of 262144, 75.3 percent, which is above the peak of 86393 at which TASK-0043 records a false PASS being followed by a real child overflow.
 
 **S1c makes the loop runnable from a bare clone, and the booth mode is decided rather than left to whoever runs it (2026-11-22 11:59, `Robotnik` session `ses_dffdc1f07ffewFDnixBYrSRFYw`).** `Tails`'s pass is at `## Implementation` (Dispatch S1c), DEMO-LOG 10:45, 10:50, 11:28, 11:35 and 11:45, booth repo `main` at `93ff47b` with `dd86b46` and `0f31e96` beneath it, all three signed, team repo `6fcedb5` and `23a3567`, selftest green at 61 checks on each push. Measured, one full six-map cycle in the new published mode from a fresh clone at 300 s took 2232.13 s against 2232.36 s measured in rebuild mode, 0.01 percent apart, per-map overhead 43.35 to 44.64 s against 43.86 to 44.46 s, and rebuild mode now fails with a named reason when the withheld reference CHK is absent, so the `D3` gap is demonstrated in code rather than described. **Decision, recorded rather than asked, on which mode the booth runs.** The booth runs rebuild mode on this controller, because the operator's booth model of 2026-11-21 22:05 is that the team builds the maps live, and rebuild mode is the only mode in which a map is actually built during the cycle. Published mode is the fallback for a run holding nothing but a clone, and in that mode the maps are transferred, opened and rendered, not built, so any write-up of a published-mode run has to state that plainly instead of claiming live building. `Vector` carries this in `D1`, and the runbook now names both modes and states which one needs the withheld `ts-harvest/ref-era6.chk`. **The disk worry is closed with a measurement rather than a guess.** The runner leaves every capture PNG it fetches in `/tmp` on the target, measured 7195615 B per cycle, which is the leading candidate for `S1b`'s 1448858 B unattributed delta, is not touched by the cycle-start cleanup, and is bounded at roughly 21 MB across three cycles against the 64 G free on the target's `/`. That makes it a hygiene item for `Omega` and for the post-review `Tails` fix pass rather than a blocker, and it is not worth a dispatch before the review chains. A further 622661 B surplus from the `S1c` cycle is recorded as unattributed. **A finding for `Shadow`.** `S1c` published a manifest defect at `0f31e96`, two rows missing the backticks the row format requires, caught by the cross-check and repaired at `93ff47b`, with the defective commit left in the chain rather than amended, which is the right call for a published history and is recorded here so the review chain reads it as intentional. **What `S1c` named as not run,** carried into the queue, no independent read of its 69 captures, no blind reader, `V1` map validation still never run on any map, rebuild mode not re-run end to end after the change, published mode not measured at 150 s, loop drift unmeasured at one cycle per mode, no endurance run, per-frame WCAG, combo readout, EDID or autocorrelation re-measure, licence ruling, and only four credential values compared rather than all.
@@ -3440,6 +3442,127 @@ ruling made.
 the captures it produced are controller-side and publishing them belongs to a dispatch that re-runs the `D0`
 classification. The team-repo commits it adds are normal fast-forwards and removing them would need a
 force-push, which is not performed and not proposed.
+
+---
+
+### Dispatch P1, the one remaining `/dev/uinput` injection pass as DoD option (b), and the `V1` residue cleanup (2026-11-22, `Tails`)
+
+**Bounded scope, fixed before the first target write.** One pass, in this order, and a recorded failure at
+any gate closes option (b) rather than opening improvisation. Gate 0, baseline read of the target. Gate 1,
+a `/dev/uinput` device can be created and destroyed on the target at all. Gate 2, the mechanism check:
+injected events from that device reach a normal GNOME window on seat0, proven by SCMDraft 2's own status-bar
+coordinate readout changing and by a measured canvas diff, because those two readouts are the evidence this
+task has used before. Gate 3, the game attempt, at most 2 launches of StarCraft under Flatpak Wine 11.0 in
+its only rendering-capable mode (exclusive fullscreen), at most 16 injected actions, at most 10 captures read
+by me. Acceptance is one capture I have read myself that shows a StarCraft game window rendering a loaded
+map. If gate 2 or gate 3 fails, option (b) is recorded as failed and DoD option (c) becomes the recorded
+outcome for playability. Injector is `/tmp/opencode/t0042/p1_uinput.py` (ctypes on `/dev/uinput`, no
+third-party dependency, no package installed on the target, run under `sudo -n` which is passwordless on
+this target), copied to the target as `/tmp/p1_uinput.py`, inverse `rm -f /tmp/p1_uinput.py`.
+
+**Gate 0 baseline, measured 2026-11-22, commands recorded in `DEMO-LOG.md`.** `hostname` =
+`scmdraft2-map-creator`. `flatpak list --app` still carries `org.winehq.Wine 11.0 wow64-25.08` (user
+install). Flatpak prefix game data present at
+`~/.var/app/org.winehq.Wine/data/wine/drive_c/StarCraft/`, including `BroodWar.mpq`, `BrooDat.mpq`,
+`patch_rt.mpq`, a `maps/` directory, and the 2026-11-14 leftover `testmap.scm` at 90426 B.
+`pgrep -af "Star[C]raft.exe"` and `pgrep -af "Scm[D]raft[ ]2"` both empty. All six deliverable maps at
+their recorded SHA-256 prefixes `e856f0e1d62e`, `447360ce8077`, `b9b056c27a67`, `79002eacd5d6`,
+`c773a534a564`, `16fe455d46fd`. `/dev/uinput` exists, `crw------- root root 10, 223`. `sudo -n true`
+answers 0 and `sudo -n python3 -c ...` runs, so the injector needs no credential. `python3` is 3.12.15,
+no `evdev` module, no `gcc` and no `cc` on the target, which is why the injector is pure `ctypes`. Kernel
+`6.12.0-211.74.1.el10_2.x86_64`. No kernel headers package on the target
+(`/usr/include/linux/input.h` absent), so the `UI_DEV_SETUP` payload size is discovered by trying
+candidate struct sizes and printing the accepted one. `/` headroom 64978886656 B free of 75056865280.
+
+**Target residue read before any removal, `~/.wine-scmdraft/drive_c/Maps/`.** 26 entries: the six
+deliverable-original copies are not there, this directory holds the COPR prefix view. Present: 
+`(2)River Crossing.scm` 90426 B (item 4 era), `live-demo-ice.scm` 12502 B (booth scratch, editor-saved),
+sixteen `Scm*.tmp` editor backups totalling 9832973 B, and six `v1-*.scm` validation copies. The sixteen
+backups are the seven `S1c`-era files (`Scm8406` 10:51, `Scmf546` 10:57, `Scm7b4a` 11:03, `Scm199` 11:09,
+`Scm87c5` 11:15, `Scmf0d2` 11:21, `Scm799f` 11:27) plus the nine `V1`-era files (`Scm394e`, `Scm8d3b`,
+`Scm914e`, `Scme529`, `Scme6f2` at 12:11, `Scmbf92`, `Scmcf61` at 12:23, `Scm8d58` at 12:27, `Scm245f` at
+12:30). **Recorded conflict, both figures kept.** This dispatch's brief and the `## Status` entry of
+2026-11-22 13:10 both say seven `Scm*.tmp` backups; the target holds sixteen, which is the figure `V1`
+itself recorded in `DEMO-LOG.md:2294` (seven pre-existing plus nine created). All sixteen stay in place per
+rule r002, and the count discrepancy is surfaced rather than resolved silently.
+
+**Gate results, in the order the scope fixed.**
+
+| Gate | Result | Evidence |
+|---|---|---|
+| 0, baseline | PASS | `DEMO-LOG` 17:52, Flatpak Wine 11.0 present, six deliverables at recorded SHAs, no processes, `/dev/uinput` present, `sudo -n` passwordless |
+| 1, uinput device creation | PASS | `sudo -n /tmp/p1_uinput --probe` prints `uinput protocol version 5` and `created p1-kbd`, `p1-pen`, `p1-touch`, `done rc=0 devices=3`, destroyed before exit |
+| 2, events reach a normal GNOME window | PASS for keyboard and for a relative mouse, FAIL for the two absolute pointer devices | `DEMO-LOG` 18:16. `key ENTER` dismissed the profile dialog (`p1-mech2.png`). `rmove` homing opened the GNOME Activities overview (`p1-mech7.png`, read by me). The `p1-pen` device produced a zero-pixel difference between `p1-mech3.png` and `p1-mech4.png` and left the status-bar coordinate field empty |
+| 3, StarCraft game window rendering a loaded map | FAIL, the game never reached a window | `DEMO-LOG` 18:32. Two launches, both exit within seconds, `pgrep` empty at 12 s and 37 s, `p1-sc1.png` shows the plain desktop, the game's own `Errors/howard160101.ERR` records `INFO: CreateWindowEx` at 18:32:48 and 18:35:10, Wine logs `err:system:lock_display_devices Failed to read display config.` |
+
+**Verdict on DoD option (b).** Option (b) is **not achieved**, and it is closed as not testable in this pass
+rather than closed as refuted. The mechanism option (b) exists to defeat, kernel-level `uinput` input, now works
+on this target against a normal window (gate 2), which is the finding that matters for the record: the 2026-11-14
+failure was the compositor-level RDP virtual device being unable to reach an exclusive-fullscreen game, not the
+compositor refusing input. But StarCraft under Flatpak Wine 11.0 no longer produces a window on this target at
+all, so there was no game surface for `uinput` to drive, and the exclusive-fullscreen pointer-capture hypothesis
+is neither confirmed nor refuted. **DoD option (c) is the recorded outcome for playability**: the platform limit
+with the Flatpak Wine rendering evidence from 2026-11-14, the black-composite cause from 2026-11-14, and the
+per-map integrity evidence that `V1` and the `S1` cycles actually produced.
+
+**Conflict kept, both records standing.** `## Status` doc:194 and `## Implementation` (Item 3 recovery) record
+the same Flatpak Wine build rendering the Brood War intro and the 1.16.1 main menu on this target on 2026-11-14,
+and the game's own ERR log carries the same `CreateWindowEx` entries from that day (13:16, 13:27, 14:20, 14:23)
+alongside today's two. Today the same build and prefix exit before any window exists. I did not establish the
+difference. `lock_display_devices` failing to read display config under the Wine Wayland driver is the leading
+hypothesis and is named as a hypothesis, not a finding, and it is the first thing a later pass should test if
+playability is ever reopened.
+
+**Alternatives considered.** Option A, chosen, bounded pass with three input-device classes and a hard launch
+bound, because gate 2 is worth having on the record even if gate 3 fails, and it retires the assumption that
+`uinput` itself was the obstacle. Option B, keep launching StarCraft until a window appears (try `x11` driver in
+the flatpak prefix, virtual desktop, a reinstall of `org.winehq.Wine`, a windowed command line), rejected: the
+dispatch brief says a recorded failure closes option (b) and bounds the attempt, none of those are the
+`uinput` question, three of them were already tried against the COPR prefix on 2026-11-14 with recorded
+results, and a windowed StarCraft would not be the mode option (b) names. Option C, drive `StarEdit.exe`
+(StarCraft's own editor, present in the prefix at 1016320 B) as a substitute game-window render, rejected: it is
+not a game window rendering a loaded map, so it would not satisfy the box. Option D, rebuild the OpenBW UI path,
+rejected for the same reason `## Implementation` (Item 3 recovery) rejected it, it is not achievable in one pass
+and it is not the option this dispatch was asked to test.
+
+**Injector implementation, and the defect that cost a step.** The pure-`ctypes` Python helper failed with
+`EINVAL` on every uinput ioctl on both the target and the controller, and the reason was not established; the
+C helper using the documented API works. Recorded so a later dispatch does not repeat the Python attempt. The
+helper also needs a 1500 to 2000 ms settle after `UI_DEV_CREATE` before its first event, proven by the failed
+no-settle attempt (`p1-mech1.png`, profile dialog still open) and the successful settle-delayed one
+(`p1-mech2.png`, editor open). Device classes: `BTN_TOOL_PEN` plus `ABS_X`/`ABS_Y` produced nothing observable;
+`EV_REL` `REL_X`/`REL_Y` with `BTN_LEFT` works. Consequence for any future injected-pointer work on this target,
+use relative motion, and note that a clamped large negative `rmove` parks the pointer in the top-left GNOME hot
+corner and opens the Activities overview, which is useful as a mechanism proof and hazardous during a booth run.
+
+**Checks that did NOT run, named.** No loaded-map screenshot, none exists. No injected pointer event was ever
+delivered to a StarCraft surface, because no surface existed. No third StarCraft launch, bound reached. No COPR
+`x11` or virtual-desktop attempt on the flatpak prefix. No attempt to read the flatpak prefix registry (the
+`flatpak run --command=reg` form fails, `bwrap: execvp reg: No such file or directory`). No EDID or mode
+re-read today. No independent reader of the eleven captures this dispatch produced. No licence ruling. No
+booth-repo publish, this dispatch changes no booth artefact, which is the reason `P1` was demoted twice.
+
+**Inverse for this dispatch.** Target: `rm -f /tmp/p1_uinput /tmp/p1_uinput.py /tmp/p1-probe*.py
+/tmp/p1-probe.txt /tmp/p1-probe.log /tmp/p1-c*.txt /tmp/p1-inject*.log /tmp/p1-sc.log /tmp/p1-sc2.log
+/tmp/p1-mech*.png /tmp/p1-sc1.png /tmp/p1-sc2.png /tmp/p1-clean.png` (executed and verified absent),
+`rm -f /home/howard/.wine-scmdraft/drive_c/Maps/v1-*.scm` (executed, the `V1` inverse), `rm -f
+/home/howard/.wine-scmdraft/drive_c/Maps/Scm3a5d.tmp` (recorded and **not** executed, left per r002), `rm -f
+~/.var/app/org.winehq.Wine/data/wine/drive_c/StarCraft/Errors/howard160101.ERR` (recorded and not executed, it
+is the evidence). No package was installed on the target, no repo was enabled or disabled, no registry key was
+changed, no process this dispatch did not start was killed. Controller: `rm -f /tmp/opencode/t0042/p1_uinput.c
+/tmp/opencode/t0042/p1_uinput /tmp/opencode/t0042/p1_uinput.py /tmp/opencode/t0042/p1_probe*.py
+/tmp/opencode/t0042/p1_cprobe*.c /tmp/opencode/t0042/p1_cprobe /tmp/opencode/t0042/p1_cprobe2
+/tmp/opencode/t0042/p1-mech*.png /tmp/opencode/t0042/p1-sb*.png /tmp/opencode/t0042/p1-cv.png
+/tmp/opencode/t0042/p1-clean.png /tmp/opencode/t0042/p1-sc1.png /tmp/opencode/t0042/p1-sc2.png`, not executed
+yet because the captures are the evidence for this record and for a reviewer. Team-repo commits are normal
+fast-forwards; removing them would need a force-push, which is not performed and not proposed.
+
+**Consequence I ask `Robotnik` to take, written rather than asked.** The playability box now has three recorded
+failed hypotheses plus one recorded untestable option, and the honest wording is option (c). The literal in-game
+minimap box at `## Status` doc:174 is therefore also recorded as blocked by the playability blocker with the
+editor overview thumbnail as the proxy evidence, which is what doc:174 already anticipated. `Vector` should write
+it that way in `D1`. If the operator ever wants playability reopened, the first test is not an input test: it is
+why `lock_display_devices` now fails on this target.
 
 ---
 

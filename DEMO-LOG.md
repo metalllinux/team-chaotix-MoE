@@ -2317,3 +2317,188 @@ validation prompt before writing remains open, and the L5 record shows a save on
 without a validation prompt. No OCR read of the six title bars succeeded at 2x upscale, tesseract returned
 garbage on all six, the visual 4x reads stand instead, and that is three maps read visually rather than six.
 No independent reader has read these captures.
+
+## 2026-11-22 17:52 — Dispatch P1 step 1, baseline read of the target before any playability write (`Tails`, target, read-only)
+
+Read-only probe, inverse `none, nothing was written`. Command `sshpass -f ~/AI/secrets/scm_draft_pass.md ssh
+howard@192.168.1.99 '<probe>'`. Results. `hostname` = `scmdraft2-map-creator`. `flatpak list --app` carries
+`org.winehq.Wine 11.0 wow64-25.08` (user install), so the 2026-11-14 Flatpak Wine install is still present.
+Flatpak prefix game data present at `~/.var/app/org.winehq.Wine/data/wine/drive_c/StarCraft/` including
+`BroodWar.mpq` 571552776 B, `BrooDat.mpq` 23847431 B, `patch_rt.mpq` 1086853 B, a `maps/` directory with the
+shipped scenario set, and the 2026-11-14 leftover `testmap.scm` 90426 B. `pgrep -af "Star[C]raft.exe"` and
+`pgrep -af "Scm[D]raft[ ]2"` both empty, so no process was left by `V1`. All six deliverable maps at their
+recorded SHA-256 prefixes: `foss-for-all e856f0e1d62e`, `rocky-logo 447360ce8077`, `rocky-with-heart
+b9b056c27a67`, `tux 79002eacd5d6`, `republic-of-korea c773a534a564`, `i-love-korea 16fe455d46fd`.
+`~/.wine-scmdraft/drive_c/Maps/` holds 26 entries: `(2)River Crossing.scm` 90426 B, `live-demo-ice.scm`
+12502 B, sixteen `Scm*.tmp` backups totalling 9832973 B, and six `v1-*.scm` validation copies. `/dev/uinput`
+is `crw------- root root 10, 223`, `lsmod` shows `uinput 24576 0`, `/proc/misc` maps `223 uinput`, kernel is
+`6.12.0-211.74.1.el10_2.x86_64`, `CONFIG_INPUT_UINPUT=m`. `sudo -n true` answers 0 and `sudo -n python3` runs,
+so the injector needs no credential and none was read. `python3` is 3.12.15 with no `evdev` module, `gcc` and
+`cc` are absent, `/usr/include/linux/input.h`, `input-event-codes.h` and `uinput.h` are absent (no
+kernel-headers package), so nothing can be compiled on the target. `/` headroom 64978886656 B free of
+75056865280. Checks not run: EDID re-read (already measured by `B1`), target repo set re-enumeration.
+
+## 2026-11-22 17:58 — Dispatch P1 step 2, `/dev/uinput` device creation on the target, gate 1 (`Tails`, target, scratch files in `/tmp`)
+
+Injector built on the controller as `/tmp/opencode/t0042/p1_uinput.c` (self-authored, `gcc -O2 -Wall`, no
+third-party dependency, no package installed anywhere), copied to the target as `/tmp/p1_uinput`, binary
+inverse `rm -f /tmp/p1_uinput`. First attempt was a pure-`ctypes` Python helper
+`/tmp/opencode/t0042/p1_uinput.py`, copied to `/tmp/p1_uinput.py`; it failed with `EINVAL` on every uinput
+ioctl, `UI_SET_EVBIT`, `UI_SET_KEYBIT`, `UI_SET_ABSBIT`, `UI_SET_PROPBIT` and a version query, in both the
+value-passed and pointer-passed forms. The same failure reproduced on the controller with the same kernel
+family, which is the control that shows the failure is in the helper and not in the target. A C control probe
+using the documented API (`/usr/include/linux/uinput.h` on the controller) succeeded on the same controller:
+`UI_GET_VERSION` returns protocol 5, `UI_SET_EVBIT`, `UI_SET_KEYBIT`, `UI_DEV_SETUP` (`sizeof(struct
+uinput_setup)` = 92) and `UI_DEV_CREATE` all return 0, and the device appears in `/proc/bus/input/devices` as
+`Name="p1-cprobe2"`, `Sysfs=/devices/virtual/input/input30`, `Handlers=event20`, `EV=3`. Recorded limit: the
+reason the `ctypes` form fails was not established, only that it fails identically on two hosts and the C form
+works; the C form is what this dispatch uses, and the Python helper is not used further. Diagnostic scratch
+files on the target `/tmp/p1_probe.py /tmp/p1_probe2.py /tmp/p1_probe3.py /tmp/p1_probe4.py
+/tmp/p1-probe.txt /tmp/p1-probe.log` and the controller copies `p1_uinput.py p1_probe.py p1_probe2.py
+p1_probe3.py p1_probe4.py p1_probe5.py p1_cprobe.c p1_cprobe p1_cprobe2.c p1_cprobe2` are inverse-removed at
+the end of this dispatch.
+
+**Gate 1, PASS.** `sudo -n /tmp/p1_uinput --probe` on the target prints `uinput protocol version 5` and
+`created p1-kbd`, `created p1-pen`, `created p1-touch`, `done rc=0 devices=3`, all three destroyed before
+exit; `grep -c "p1-" /proc/bus/input/devices` answers 0 after the run, so no device was left behind. Kernel
+input device creation at root is therefore available on this target, and the pass can proceed to the
+mechanism check.
+
+## 2026-11-22 18:16 — Dispatch P1 step 3, mechanism check, do `/dev/uinput` events reach a normal window on this target (`Tails`, target, launch plus injections on the scratch map)
+
+Target changes this step. Launch `bash /tmp/t0042-run-dos.sh "C:\Maps\live-demo-ice.scm"` (the existing
+`L5` scratch map, launched for viewing only, never saved), inverse `pkill -f 'Scm[D]raft[ ]2'; pkill -f
+'start[.]exe /exec'`, verified `NO_SCM_RUNNING` at 18:29. Injector command scripts `/tmp/p1-c1.txt` through
+`/tmp/p1-c7.txt` and logs `/tmp/p1-inject1.log /tmp/p1-inject2.log /tmp/p1-inject5.log`, captures
+`/tmp/p1-mech1.png /tmp/p1-mech2.png /tmp/p1-mech3.png /tmp/p1-mech4.png /tmp/p1-mech7.png
+/tmp/p1-clean.png`, inverse `rm -f` for each, executed at the teardown entry. Nothing was written into
+`C:\Maps\`, no map was saved, and no new `Scm*.tmp` backup appeared.
+
+**Keyboard path, PASS.** `sudo -n /tmp/p1_uinput --script` with `key ENTER` on the `p1-kbd` device dismissed
+`Scmdraft 2 - Select Profile`, proven by the 18:17 capture `/tmp/opencode/t0042/p1-mech2.png`, read by me,
+which shows the full editor with the title bar `SCmdDraft 2.0 (Beta 0.9.10) - [C:\Maps\live-demo-ice.scm ]`,
+the Ice World canvas rendered, and the status bar `Terrain | User Select | Force 1 | Isometrical Terrain |
+Ice World\Snow`. A first attempt with no settle delay did not dismiss the dialog (`p1-mech1.png` still shows
+the profile dialog), so events emitted in the same millisecond as `UI_DEV_CREATE` are not delivered; the
+working form waits 1500 to 2000 ms after device creation before emitting. A later `key ESC` closed the GNOME
+Activities overview, confirming the keyboard path repeatedly.
+
+**Absolute pointer path (pen-tablet device, `BTN_TOOL_PEN` plus `ABS_X`/`ABS_Y` with a 0-1919 by 0-1079
+range), FAIL to show any effect.** Two `p1-pen` invocations, `mv 900 400` then `mv 1300 650`, then
+`click 80 180` on the overview thumbnail body. The status-bar coordinate field, which is the readout every
+earlier dispatch in this task has used for hover position, stayed empty in the 2x-upscaled crops
+`/tmp/opencode/t0042/p1-sb.png` read by me, and the `click` capture pair `p1-mech3.png` against
+`p1-mech4.png` differs by **zero** pixels over the whole 1920x1080 frame (`ImageChops.difference` bbox `None`),
+so no canvas jump and no hover were produced.
+
+**Relative pointer path (`p1-mouse`, `EV_REL` `REL_X`/`REL_Y` with `BTN_LEFT`), PASS.** `/proc/bus/input/devices`
+shows the created keyboard device as `Name="p1-kbd"`, `Sysfs=/devices/virtual/input/input39`,
+`Handlers=sysrq kbd event13`, `EV=3`. A script that homed the pointer with two `rmove -4000 -4000` commands and
+then moved inward produced the 18:27 capture `/tmp/opencode/t0042/p1-mech7.png`, read by me, which shows the
+**GNOME Activities overview open** with the search field `Type to search`, the window dash, and the SCMDraft
+window thumbnail labelled `Scmdraft 2.0 (Beta 0.9.10) - [C:\Maps\live-demo-ice.scm ]`. The overview opens from
+the top-left hot corner, which is exactly where two clamped negative relative motions park a pointer, so the
+compositor received and acted on events from the uinput mouse device. Consequence for the pass: this dispatch
+injects pointer input through the relative-mouse device and not through the absolute devices.
+
+**Measurement caveat recorded.** Consecutive captures of an untouched SCMDraft 2 canvas differ by about 64000
+pixels, bbox `(327, 10, 1798, 813)`, with no injection between them. Two causes are visible: the animated creep
+texture on the dark water band, and the GNOME top-bar clock advancing between captures. A non-zero frame diff is
+therefore not evidence of an injected effect, and evidence in this dispatch is the status-bar coordinate
+readout, the dialog state, and the overview state, read from captures, not the raw diff count.
+
+**Gate 2, PASS for keyboard and relative pointer.** The mechanism that failed on 2026-11-14 was the
+compositor-level RDP virtual device, not the compositor's willingness to accept input. A kernel-level uinput
+mouse and keyboard reach a normal GNOME window on seat0.
+
+## 2026-11-22 18:32 — Dispatch P1 step 4, StarCraft under Flatpak Wine 11.0 with `uinput` injection, gate 3, recorded failure (`Tails`, target, game launches)
+
+Two launches, which is the bound this dispatch set for itself, and both are recorded.
+Launch 1 at 18:32:48, `XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+WAYLAND_DISPLAY=wayland-0 XDG_SESSION_TYPE=wayland nohup flatpak run --command=wine org.winehq.Wine
+"C:\StarCraft\StarCraft.exe" "C:\StarCraft\testmap.scm" > /tmp/p1-sc.log 2>&1 &`, inverse `pkill -f
+"Star[C]raft.exe"` plus `rm -f /tmp/p1-sc.log`. Launch 2 at 18:35:10, the same command without the map
+argument, log `/tmp/p1-sc2.log`, same inverse. `org.winehq.Wine 11.0 wow64-25.08`, prefix
+`~/.var/app/org.winehq.Wine/data/wine/drive_c/StarCraft/`, `StarCraft.exe` 1220608 B, `StarCraft.mpq`
+601130098 B, `BroodWar.mpq` 571552776 B, `BrooDat.mpq`, `StarDat.mpq`, `patch_rt.mpq` all present, and
+`testmap.scm` 90426 B from 2026-11-14 still in place.
+
+**Neither launch produced a game window.** `ps -eo pid,comm,etime | grep -iE "star|wine"` answers nothing at
+12 s and at 37 s after launch 2, and `pgrep -afi starcraft` answers nothing afterwards, so the process exited
+on its own, it was not killed by this dispatch. The capture at 18:33, `/tmp/opencode/t0042/p1-sc1.png` read
+by me, shows the plain GNOME desktop with no game surface. Both Wine logs carry the same sequence:
+`waylanddrv:wayland_process_init` succeeds with two optional-protocol warnings, then
+`err:system:lock_display_devices Failed to read display config.` on two processes, then
+`err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.` for the
+`winemenubuilder`/explorer auto-start. The game's own error log
+`~/.var/app/org.winehq.Wine/data/wine/drive_c/StarCraft/Errors/howard160101.ERR` gained exactly two entries
+today, `PROGRAM VERSION: 1.16.1.1`, `TIME: 11/22/26 18:32:48.661` and `TIME: 11/22/26 18:35:10.418`, each with
+`INFO: CreateWindowEx`. That file is left in place, inverse `rm -f` on it, because it is the evidence.
+
+**Injected input was reached only in launch 1, and not in a window: the game was already gone by the time the
+one keyboard injection ran.** `key ENTER` on the `p1-kbd` device at 18:33 was delivered to the compositor but
+there was no game surface to receive it. **The pointer-capture hypothesis that DoD option (b) exists to test
+therefore was not reached and is neither confirmed nor refuted by this pass.** What this pass did establish is
+recorded in step 3: a kernel-level `uinput` keyboard and relative mouse do reach a normal GNOME window on this
+target, where the compositor-level RDP virtual device did not reach StarCraft on 2026-11-14.
+
+**Conflict kept rather than resolved, per AGENTS.md section 5.** `## Status` doc:194 and `## Implementation`
+(Item 3 recovery) record that this same Flatpak Wine build rendered the Brood War intro and the full 1.16.1
+main menu on this same target on 2026-11-14 (`~/AI/demo-evidence/t0042-h2-fp.png`, `-fp2.png`, `-fp3.png`),
+and the ERR log shows the same `CreateWindowEx` entries were being written then too (13:16, 13:27, 14:20,
+14:23). Today the same build and the same prefix exit before any window exists. The difference between the
+two states is not established by this dispatch; the `lock_display_devices` Wayland display-config failure is
+the leading candidate and is named as a hypothesis, not a finding. Checks not run: no `x11` driver attempt in
+the flatpak prefix, no virtual-desktop attempt in the flatpak prefix, no third launch, no windowed-mode
+command line, no `StarEdit.exe` attempt, no re-install of Flatpak Wine, no independent reader of these
+captures, no licence ruling.
+
+**Target state after this step.** `pgrep -af "Scm[D]raft[ ]2"` answers `NO_SCM_RUNNING`, `pgrep -afi
+starcraft` answers nothing, `pgrep -af wineserver` answers `NO_WINESERVER`. All six deliverable maps unchanged
+at their recorded SHA-256 with unchanged mtimes, `foss-for-all 614561 e856f0e1d62e 2026-11-20 06:03:19`,
+`rocky-logo 614559 447360ce8077 2026-11-20 08:17:08`, `rocky-with-heart 614565 b9b056c27a67 2026-11-20
+08:17:09`, `tux 614552 79002eacd5d6 2026-11-20 20:33:23`, `republic-of-korea 614566 c773a534a564 2026-11-21
+10:49:37`, `i-love-korea 614561 16fe455d46fd 2026-11-21 19:28:35`. The scratch map
+`C:\Maps\live-demo-ice.scm` is unchanged at 12502 B `f00d1f60521c` mtime 2026-11-22 11:28:34, so the editor
+wrote nothing to it. `/` headroom 64977186816 B free.
+
+## 2026-11-22 18:44 — Dispatch P1 step 5, `V1` target residue cleanup and this dispatch's teardown (`Tails`, target, removals)
+
+Read `DEMO-LOG.md` at 2026-11-22 12:44 first, per the `## Status` decision of 2026-11-22 13:10. The 12:44
+entry records the inverse `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/v1-*.scm` for the six validation
+copies; the 12:31 entry records `rm -f .../v1-negtest.scm` for the negative-control map. Only items carrying a
+recorded inverse were removed.
+
+**Removed, six files, all with the 12:44 recorded inverse, each verified against its source deliverable SHA
+before removal:** `v1-foss-for-all.scm` 614561 `e856f0e1d62e`, `v1-i-love-korea.scm` 614561 `16fe455d46fd`,
+`v1-republic-of-korea.scm` 614566 `c773a534a564`, `v1-rocky-logo.scm` 614559 `447360ce8077`,
+`v1-rocky-with-heart.scm` 614565 `b9b056c27a67`, `v1-tux.scm` 614552 `79002eacd5d6`. **The negative-control
+map `v1-negtest.scm` was already absent** (`ls` answers `No such file or directory`), so its recorded inverse
+needed no action; nothing else in `C:\Maps\` carries a `v1-` name.
+
+**Left in place, named by name and size.** `C:\Maps\live-demo-ice.scm` 12502 B (booth scratch map) and
+`C:\Maps\(2)River Crossing.scm` 90426 B (item 4 era copy), neither of which is a `V1` validation copy.
+Seventeen `Scm*.tmp` editor backups totalling 9845475 B, left per rule r002: `Scm199` 614552, `Scm245f`
+614561, `Scm394e` 614552, `Scm3a5d` 12502, `Scm799f` 614562, `Scm7b4a` 614565, `Scm8406` 614561, `Scm87c5`
+614566, `Scm8d3b` 614561, `Scm8d58` 614561, `Scm914e` 614565, `Scmbf92` 614561, `Scmcf61` 614561, `Scme529`
+614566, `Scme6f2` 614559, `Scmf0d2` 614561, `Scmf546` 614559. **One of those seventeen is new from this
+dispatch:** `Scm3a5d.tmp`, 12502 B, `ctime 2026-11-22 18:17:00`, created by the step 3 mechanism-check open of
+`live-demo-ice.scm`, with its `mtime` mirroring the source map's 11:28:34 rather than its creation time. The
+other sixteen are the seven `S1c`-era files and the nine `V1`-era files named in the 12:44 entry. The count
+discrepancy with the `## Status` entry of 2026-11-22 13:10, which says seven, is recorded in `## Implementation`
+rather than resolved silently. Also left: the game error file `Errors/howard160101.ERR` 1152 B named in step 4.
+
+**This dispatch's own scratch removed, inverse executed and verified.** Target `rm -f /tmp/p1_uinput
+/tmp/p1_uinput.py /tmp/p1-probe.txt /tmp/p1-probe.log /tmp/p1-probe*.py /tmp/p1-c1.txt /tmp/p1-c2.txt
+/tmp/p1-c3.txt /tmp/p1-c4.txt /tmp/p1-c5.txt /tmp/p1-c6.txt /tmp/p1-c7.txt /tmp/p1-c8.txt /tmp/p1-inject1.log
+/tmp/p1-inject2.log /tmp/p1-inject5.log /tmp/p1-sc.log /tmp/p1-sc2.log /tmp/p1-mech1.png /tmp/p1-mech2.png
+/tmp/p1-mech3.png /tmp/p1-mech4.png /tmp/p1-mech5.png /tmp/p1-mech6.png /tmp/p1-mech7.png /tmp/p1-sc1.png
+/tmp/p1-sc2.png /tmp/p1-clean.png`, verified by `ls /tmp/p1*` answering `No such file or directory`. Captures
+were fetched to the controller first and are read by me there, `p1-mech1.png` through `p1-mech7.png`,
+`p1-sc1.png`, `p1-sc2.png`, `p1-clean.png`, under `/tmp/opencode/t0042`. No credential was read into any
+file, argv, commit or log; the only credential used was `~/AI/secrets/scm_draft_pass.md` passed to `sshpass -f`
+at run time. No game data, no SCMDraft or Wine binary, no third-party binary was placed in a git-tracked path;
+the self-built injector binary lived only in `/tmp/opencode/t0042` and the target's `/tmp`, and both copies are
+now removed. No process was killed that this dispatch did not start: the SCMDraft 2 instance was started and
+killed by this dispatch, the two StarCraft processes exited on their own, and `NO_WINESERVER` was verified
+rather than forced.
