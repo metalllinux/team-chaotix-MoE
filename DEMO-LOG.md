@@ -2189,3 +2189,131 @@ to a mode change. Inverse for this step, the two booth commits are normal fast-f
 removing them would need a force-push, which is not performed and not proposed, and
 `/tmp/opencode/t0042/booth-verify-s1c-b`, `/tmp/opencode/t0042/s1c-test` and
 `/tmp/opencode/t0042/booth-clone-s1c` remove with `rm -rf`.
+## 2026-11-22 12:12 — Dispatch V1 step 1, keyboard navigation probe and the full menu census of SCMDraft 2 Beta 0.9.10 (`Tails`, target, copies only, no save on any map)
+
+Target preflight, `pgrep -af "ScmDraft[ ]2"` answers `NO_SCM_RUNNING`, and `sha256sum` over
+`/home/howard/scmdraft-maps/*/*.scm` reproduces all six accepted deliverables at their recorded values
+(`e856f0e1d62e`, `447360ce8077`, `b9b056c27a67`, `79002eacd5d6`, `c773a534a564`, `16fe455d46fd`) with mtimes
+2026-11-20 06:03, 2026-11-20 08:17, 2026-11-20 08:17, 2026-11-20 20:33, 2026-11-21 10:49 and
+2026-11-21 19:28, all before this dispatch. Validation runs on six copies
+`cp /home/howard/scmdraft-maps/<n>/<n>.scm /home/howard/.wine-scmdraft/drive_c/Maps/v1-<n>.scm`, each copy
+verified at the same SHA-256 before any editor contact, inverse `rm -f
+/home/howard/.wine-scmdraft/drive_c/Maps/v1-*.scm`. The originals are never opened by an editor.
+
+Keyboard probe, three results. A bare Alt (`key 0x38`) is delivered, the status bar reads `154, 311 (4,9)`
+against `v1-alt1.png`, but no menu opens and no accelerator underline appears in the bar. `Alt+E`
+(`keydown 0x38, key 0x24, keyup 0x38`) produces nothing visible, `v1-alte.png`. `F10` (`key 0x44`) produces
+nothing visible, `v1-f10.png`. What does work: one injected pointer click on a menu-bar title arms the bar,
+and from there **the arrow keys drive the whole menu bar**, `keyx 0x4D` moving one menu right with the
+menu opening automatically, proven across Scenario, Advanced, Options, File, Edit, Display Options,
+Triggers and Help, `/tmp/opencode/t0042/v1-kbd-triggers.png` reached purely by three right-arrows from the
+Display Options click. So the menu bar IS keyboard drivable; the Delphi-dialog-button limit recorded at
+item 4 does not apply to it, and the earlier "menu did not stay open" reading at DEMO-LOG 2026-11-20
+applied to a click that was not the arming click.
+
+Full menu census, every entry read from the captures, this is the evidence for the V1 verdict.
+`File` New Ctrl+N, Open Ctrl+O, Recent Maps, Close, Save Ctrl+S, Save As, Save Image, Quit.
+`Edit` Undo Ctrl+Z, Redo Ctrl+Y, Cut, Copy, Paste, Select All Ctrl+A, Delete Del, Clear Selections Esc,
+Convert to terrain, Stack Selected, Create Location, Create Inverted Location, Layer, Properties Enter.
+`Options` Grid, Units, Locations, Doodads, Sprites, Preview Fog of War, Cut Copy Paste, Output, Zoom,
+Map Load, Enable Sound, Profile Settings.
+`Display Options` All Colors, Display Units, Cloak Units, Hide Units, Animate unit death, Show Powered
+Status, Hide Map Revealers, Display Doodad Sprites, Cloak Doodad Sprites, Hide Doodad Sprites, Display
+Sprites, Cloak Sprites, Hide Sprites, Enable Color Cycling.
+`Scenario` Map Dimensions Ctrl+Shift+Enter, Map Properties Ctrl+Shift+F, Forces Ctrl+Shift+F, Unit Settings
+Ctrl+Shift+H, Upgrade Settings Ctrl+Shift+U, Tech Settings Ctrl+Shift+E, Strings Ctrl+Shift+S, Sound Editor
+Ctrl+Shift+W, Place Map Revealers, Remove Map Revealers, Disable Fog, Enable Fog, Jump to Start location
+Ctrl+G, Randomize Minerals. `Advanced` Check for Updates, Open Backup Database, Automatically check for
+updates. `Triggers` Classic Map Triggers Ctrl+Shift+T, Classic Mission Briefing Ctrl+Shift+B, Trigger
+Editor, Mission Briefing Editor. `Windows` opened with no readable contents in two attempts. `Help` About,
+Homepage, Donate.
+
+**No menu or submenu of SCMDraft 2 Beta 0.9.10 carries a map-validation, error-check or validity command.**
+The only "check" entries are `Advanced > Check for Updates` and `Automatically check for updates`, which
+are software-update checks, not map checks, and neither was activated. `Advanced > Open Backup Database`
+is the editor's own backup store, not a validator, and was not opened.
+## 2026-11-22 12:31 — Dispatch V1 step 2, two negative controls, what SCMDraft 2 does when a map is malformed (`Tails`, target, throwaway copy, original untouched)
+
+The menu census says there is no validation command. Two controls test whether the editor validates at all,
+and whether anything it would show is keyboard reachable. Control file
+`/home/howard/.wine-scmdraft/drive_c/Maps/v1-negtest.scm`, a copy of `v1-foss-for-all.scm` (itself a copy
+of the accepted `e856f0e1d62e...` map), inverse `rm -f .../v1-negtest.scm`.
+
+Control 1, one byte flipped deep in the container at offset 307280 of 614561, file
+`63dd948f2f1b...`. Launched by `C:\Maps\v1-negtest.scm`. The editor opened it with **no error dialog**, the
+title read `SCmdDraft 2.0 (Beta 0.9.10) - [C:\Maps\v1-negtest.scm ]`, the thumbnail still rendered FOSS FOR
+ALL, and `v1-neg-open.png` shows the normal editor (`/tmp/opencode/t0042/v1-neg-open.png`). `Ctrl+S`
+followed by `Enter` produced no dialog and no write, `stat` still
+`614561 2026-11-22 12:27:11` and `sha256sum` still `63dd948f2f1b...`.
+
+Control 2, the CHK section name `VER ` renamed to `XER ` at the first section header, file
+`1b1ee97cd66f...`. On launch the editor showed `Scmdraft 2 - Select Profile`, Enter dismissed it as in every
+prior dispatch, and the editor then opened **a blank untitled new map** with no filename in the title bar, a
+grey empty canvas and a default `Terrain / Doodads / Locations / Units / Unit Sprites / Pure Sprites` tree
+(`/tmp/opencode/t0042/v1-neg2-open.png`, `v1-neg2-after.png`). The corrupt map was refused **silently**, no
+error text, no validation report, nothing to record and nothing to dismiss. `Ctrl+S` on that state produced
+no dialog and no file write.
+
+Reading. SCMDraft 2 Beta 0.9.10 has no user-facing map-validation surface: no menu command (step 1), no load
+-time report, and a malformed map is either silently tolerated (control 1) or silently dropped in favour of a
+blank map (control 2). The one dialog that did appear, the profile selector, is keyboard drivable by Enter,
+which is already how every dispatch in this task has launched the editor.
+## 2026-11-22 12:44 — Dispatch V1 step 3, the editor's own load and save path run on all six accepted maps, verdict, six hashes unchanged (`Tails`, target, copies only)
+
+Runner `/tmp/opencode/t0042/v1_cycle.sh <map>`, inverse `rm -f /tmp/opencode/t0042/v1_cycle.sh`. Per map:
+record copy size, mtime and SHA-256, launch by drive-qualified path `C:\Maps\v1-<map>.scm`, Enter to dismiss
+the profile dialog, capture, `Ctrl+S` then three Enters (the L5 chain), capture, re-hash, `pkill` with no
+save. All six ran in order at 12:34 to 12:41.
+
+Map / copy SHA-256 before / after / open captured / save-attempt captured:
+`foss-for-all` `e856f0e1d62e` unchanged, `v1-foss-for-all-open.png`, `v1-foss-for-all-save.png`.
+`rocky-logo` `447360ce8077` unchanged, `v1-rocky-logo-open.png`, `v1-rocky-logo-save.png`.
+`rocky-with-heart` `b9b056c27a67` unchanged, `v1-rocky-with-heart-open.png`, `v1-rocky-with-heart-save.png`.
+`tux` `79002eacd5d6` unchanged, `v1-tux-open.png`, `v1-tux-save.png`.
+`republic-of-korea` `c773a534a564` unchanged, `v1-republic-of-korea-open.png`, `v1-republic-of-korea-save.png`.
+`i-love-korea` `16fe455d46fd` unchanged, `v1-i-love-korea-open.png`, `v1-i-love-korea-save.png`.
+
+For all six the copy's mtime also stayed at the 12:11:08 copy time, so the editor wrote nothing to the copy
+either. Every `-open` and `-save` capture is pixel-identical in its title strip (dark-pixel counts equal in
+all six pairs, 2032, 1973, 2225, 1728, 2253, 2053), each title reads
+`SCmdDraft 2.0 (Beta 0.9.10) - [C:\Maps\v1-<map>.scm ]` with **no dirty-marker asterisk**, verified by 4x
+LANCZOS upscale crops read visually for `tux`, `i-love-korea` and `republic-of-korea`
+(`v1-title4x-<map>.png`). No map reported an error, and no save, validation or error dialog appeared on any
+of the six.
+
+**Verdict for the DoD box.** SCMDraft 2 Beta 0.9.10 has no map-validation feature to drive. The full menu
+census in step 1 names every entry of all nine menus and carries no validation, error-check or validity
+command. The two controls in step 2 show the editor reports nothing on load either: a byte-corrupted map is
+accepted silently, a map with a broken CHK section name is refused silently in favour of a blank untitled
+map. The keyboard path is drivable, arrow keys walk the menu bar and Enter drives the dialogs that do exist,
+so the limitation is the application's missing feature, not the injection method. Recorded as: the box is
+run against the editor that exists, and its result is that this build performs no map validation.
+
+Post-cycle target state, all six deliverable originals at their recorded SHA-256 with mtimes unchanged at
+2026-11-20 06:03, 2026-11-20 08:17, 2026-11-20 08:17, 2026-11-20 20:33, 2026-11-21 10:49 and
+2026-11-21 19:28. `pgrep -af "ScmDraft[ ]2"` answers `NO_SCM_RUNNING`. Residue, sixteen `C:\Maps\Scm*.tmp`
+editor backups totalling 9832973 B, seven pre-existing from `S1c` (10:51 to 11:27) and nine created by this
+dispatch (five at 12:11 when the six copies were first opened, one 12:11 per remaining copy, then `Scmbf92`
+and `Scmcf61` at 12:23, `Scm8d58` at 12:27 and `Scm245f` at 12:30 from the two negative-control launches),
+left in place per rule r002, inverse `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/Scm*.tmp`. Measured, the
+six 12:34 to 12:41 validation launches created no new `Scm*.tmp` backup at all, so the open-time backup this
+task saw in `S1a` to `S1c` is not written on every launch and the per-cycle residue bound carried from `S1b`
+is an upper bound, not a constant. Six validation copies left in place for the
+operator to inspect, inverse `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/v1-*.scm`. Target `/` headroom
+64978395136 B free of 75056865280.
+
+**Checks that did NOT run, named.** No validation dialog was exercised on any map, because none exists in
+this build. `Advanced > Check for Updates` and `Automatically check for updates` not activated, they are
+software-update checks and one would have opened a network call. `Advanced > Open Backup Database` not
+opened. The `Windows` menu was opened twice with no readable contents and its entries were not enumerated,
+so a validation command hidden in that menu cannot be ruled out by capture, only by the fact that it opens
+as an empty or list-style menu. `Help > About` not opened, so the exact build string was not read from the
+application itself, it is read from the title bar. Submenus under `Options` (Grid, Units, Locations, Doodads,
+Sprites, Preview Fog of War, Cut Copy Paste, Output, Zoom, Map Load), under `Edit > Layer`, and under
+`Scenario > Place Map Revealers`, `Remove Map Revealers`, `Disable Fog`, `Enable Fog` were not expanded and
+not enumerated. `File > Save As` and `Save Image` were not exercised. A dirty-map save chain (paint, then
+Ctrl+S) was not run in this dispatch, so the question of whether an editor save on a copy triggers any
+validation prompt before writing remains open, and the L5 record shows a save on a dirty map completes
+without a validation prompt. No OCR read of the six title bars succeeded at 2x upscale, tesseract returned
+garbage on all six, the visual 4x reads stand instead, and that is three maps read visually rather than six.
+No independent reader has read these captures.

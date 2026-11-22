@@ -3361,6 +3361,84 @@ purity, and the runbook states the four things a clone still needs.
 lives. The 300 s default and the 150 s fallback stand unchanged, and the cycle counts a schedule is planned
 from are now measured in the mode a clone can actually run.
 
+### Dispatch V1, SCMDraft 2's own map validation on each of the six accepted maps (2026-11-22, `Tails`)
+
+**Verdict, recorded plainly.** SCMDraft 2 Beta 0.9.10 has **no map-validation feature to drive**. The box has
+now been run against the editor that actually exists, on all six accepted maps, and the result is that this
+build performs no map validation and shows no validation report. The keyboard path is drivable, so the
+limitation is the application, not the injection method. Evidence, three steps, DEMO-LOG 2026-11-22 12:12,
+12:31 and 12:44.
+
+**Drivability, measured, this is the part the brief asked to record plainly.** A bare `Alt` (`key 0x38`) and
+`F10` (`key 0x44`) do not arm the menu bar under Wine, and `Alt+E` fires nothing, `v1-alt1.png`,
+`v1-alte.png`, `v1-f10.png`. What works is one injected pointer click on a menu-bar title followed by arrow
+keys: `keyx 0x4D` walks one menu right and opens it, proven from Display Options to Triggers in three
+arrow presses with no further click, `v1-kbd-triggers.png`. So the menu bar is keyboard drivable after being
+armed, and the Delphi-dialog-button limit recorded at item 4 does not extend to it. That corrects the
+2026-11-20 open item at DEMO-LOG line 418, "Scenario menu strip did not leave a menu open", the cause was the
+click position and the arming behaviour, not an unreachable menu.
+
+**Full menu census, the evidence for the verdict.** Every entry of all nine menus was opened and read from
+captures, `v1-menu-{scenario,advanced,options2,file2,edit2,display2}.png`, `v1-kbd-{triggers,windows,help}.png`:
+File New/Open/Recent Maps/Close/Save/Save As/Save Image/Quit; Edit Undo/Redo/Cut/Copy/Paste/Select All/
+Delete/Clear Selections/Convert to terrain/Stack Selected/Create Location/Create Inverted Location/Layer/
+Properties; Options Grid/Units/Locations/Doodads/Sprites/Preview Fog of War/Cut Copy Paste/Output/Zoom/Map
+Load/Enable Sound/Profile Settings; Display Options, fifteen view toggles only; Scenario Map Dimensions/Map
+Properties/Forces/Unit Settings/Upgrade Settings/Tech Settings/Strings/Sound Editor/Place Map Revealers/
+Remove Map Revealers/Disable Fog/Enable Fog/Jump to Start location/Randomize Minerals; Advanced Check for
+Updates/Open Backup Database/Automatically check for updates; Triggers Classic Map Triggers/Classic Mission
+Briefing/Trigger Editor/Mission Briefing Editor; Windows, opened twice, no readable contents; Help About/
+Homepage/Donate. No validation, error-check or validity entry exists. The only "check" entries are software
+update checks.
+
+**Two negative controls, because "no dialog appeared" needs a comparison.** Control 1, one byte flipped at
+offset 307280 of a copy, the editor opens it silently and renders normally. Control 2, the first CHK section
+name `VER ` renamed to `XER `, the editor refuses the map **silently** and opens a blank untitled map, no
+error text anywhere, `v1-neg2-after.png`. So the load path validates nothing visible either, and a malformed
+map can be dropped without a word, which is a fact worth carrying to `Vector` for the documentation.
+
+**Per-map cycle, all six, on copies.** `v1_cycle.sh`, launch by drive-qualified `C:\Maps\v1-<map>.scm`, Enter
+to dismiss the profile dialog, capture, `Ctrl+S` plus three Enters, capture, re-hash, `pkill` with no save.
+All six copies kept both their SHA-256 and their 12:11:08 mtime through the cycle, so the editor wrote
+nothing to any copy, and every `-save` capture is title-strip identical to its `-open` capture with no dirty-
+marker asterisk, read visually at 4x upscale for `tux`, `i-love-korea` and `republic-of-korea`.
+
+**Deliverable integrity.** All six originals at their recorded SHA-256 before and after, mtimes unchanged at
+2026-11-20 06:03, 2026-11-20 08:17, 2026-11-20 08:17, 2026-11-20 20:33, 2026-11-21 10:49 and
+2026-11-21 19:28. `NO_SCM_RUNNING` at the end. Residue left deliberately per rule r002, sixteen `Scm*.tmp`
+backups at 9832973 B and the six `v1-*.scm` copies, both with named inverses.
+
+**New measured fact for `S1` and the runbook.** The six validation launches created no `Scm*.tmp` backup at
+all, while the first six opens at 12:11 created one each. The per-cycle residue bound carried from `S1b` at
+4301926 B is an upper bound on opens, not a constant cost per cycle, and `Omega`'s hygiene item should read
+it that way.
+
+**Alternatives considered.** Option A, drive a validation dialog that does not exist, impossible, rejected.
+Option B, record the box as not achievable, rejected as incomplete, because the editor's load and save paths
+were drivable and were driven on all six maps, which is a result rather than a gap. Option C, chosen, run the
+editor's own paths on all six, census every menu as the existence evidence, and add two malformed-map
+controls so the absence of a validation report is a measured behaviour and not an absence of observation.
+Option D, not taken in this dispatch, dirty a copy and save it to test whether the save path validates before
+writing, the `L5` record already shows a dirty era-6 save completing with no validation prompt, so the marginal
+information was judged low and the risk of rewriting a container copy was judged non-zero. Revisit only if
+`Shadow` calls for it.
+
+**Checks that did NOT run, named.** No validation dialog on any map, none exists. `Advanced > Check for
+Updates` and `Automatically check for updates` not activated, they are network update checks. `Advanced >
+Open Backup Database` not opened. `Windows` menu contents not enumerated, so a command hidden there is not
+ruled out by capture. `Help > About` not opened, the version string comes from the title bar. Submenus under
+`Options`, `Edit > Layer` and four `Scenario` entries not expanded. `File > Save As` and `Save Image` not
+exercised. No dirty-map save chain on a copy in this dispatch. Tesseract OCR of the six title bars failed at
+2x, three titles were read visually instead of six. No independent reader has read these captures. No licence
+ruling made.
+
+**Inverse for this dispatch.** `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/v1-*.scm
+/home/howard/.wine-scmdraft/drive_c/Maps/Scm*.tmp` on the target, `rm -f /tmp/opencode/t0042/v1_*.sh
+/tmp/opencode/t0042/v1-*.png /tmp/opencode/t0042/DEMO-LOG-v1-step*.md` on the controller. This dispatch publishes no booth-repo commit,
+the captures it produced are controller-side and publishing them belongs to a dispatch that re-runs the `D0`
+classification. The team-repo commits it adds are normal fast-forwards and removing them would need a
+force-push, which is not performed and not proposed.
+
 ---
 
 ## Review
