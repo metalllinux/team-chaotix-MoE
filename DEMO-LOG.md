@@ -1951,3 +1951,24 @@ avail 64999227392 B against 65004978176 B at dispatch start, 5750784 B net consu
 4301926 B residue is named; the remaining 1448858 B is not attributed to a named file, candidates
 are the seven launches' Wine prefix writes and scp temp files, recorded as unattributed rather than
 guessed.
+
+## 2026-11-22 09:40 — Dispatch D3 step 1, pre-flight verification of the renamed booth repo and the six deliverables (`Tails`, controller-side only, no target contact)
+
+Remote state verified before any write, through `python3 /tmp/opencode/t0042/d3_api.py`, a GET-only
+probe that reads the token from `~/AI/secrets/token.md` at run time inside the process, so no
+credential value is in argv, a file, a log or a commit. `metalllinux/rocky-linux-foss-for-all-2026-
+demonstration-scmdraft-2` answers `id 1455994123`, `private true`, `visibility private`, default
+branch `main`, `refs/heads/main = 39f2119feda546bce916f474eeeee3ae0eb2f974`, `pushed_at
+2026-11-21T13:47:17Z`. The dispatch addresses the repo by the new name in every API call and in the
+clone remote. The six controller deliverables re-verified with `sha256sum` against the recorded
+values before staging, all byte-exact: `foss-for-all` `e856f0e1d62e...` 614561 B, `rocky-logo`
+`447360ce8077...`, `rocky-with-heart` `b9b056c27a67...`, `tux` `79002eacd5d6...`,
+`republic-of-korea` `c773a534a564...`, `i-love-korea` `16fe455d46fd...`. Delta surface since the `D2`
+push inventoried with `find -newermt "2026-11-21 22:48"`, 181 files 25870389 B excluding the clone,
+publish, scratch-rebuild and `__pycache__` directories: the booth runner `booth_loop.py`, the
+measured run log `s1a-run-log.jsonl` (279 records), four cycle reports, 170 booth-loop captures,
+and the `D3` scripts themselves. Recorded open hygiene observed at run time, unchanged and not
+touched: `~/AI/secrets/scm_draft_pass.md` is still mode 644 (`## Status` records it as an operator
+action), `rdp-args` still exists on the controller and is withheld by the classifier. Inverse, no
+target state was touched and no repo state changed by this step; the probe script lands under
+`/tmp/opencode/t0042` outside git-tracked paths, `rm -f /tmp/opencode/t0042/d3_api.py` removes it.
