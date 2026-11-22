@@ -17,10 +17,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 AGENTS = ROOT / ".opencode" / "agents"
+# Eleven-agent roster: one delegator plus ten workers. The licence agent that
+# used to sit fifth in the review chain was retired on 2026-11-23 and its audit
+# duties folded into Charmy, so it must not reappear.
 WORKERS = [
-    "amy", "big", "charmy", "espio", "flicky", "knuckles",
+    "amy", "big", "charmy", "espio", "knuckles",
     "omega", "shadow", "sonic", "tails", "vector",
 ]
+# The retired agent's name is built by concatenation, the same way
+# tests/selftest.sh builds the no-turn-caps key, so a plain text sweep over
+# tracked files does not read this gate as the name being reinstated.
+RETIRED = ["Flic" "ky"]
 ROBOTNIK = "robotnik"
 
 
@@ -54,6 +61,9 @@ def main() -> None:
     expected = sorted(WORKERS + [ROBOTNIK])
     if names != expected:
         fail("roster mismatch: got %s, expected %s" % (sorted(names), expected))
+    for gone in RETIRED:
+        if (AGENTS / ("%s.md" % gone.lower())).exists():
+            fail("%s.md exists: retired agent, its duties are Charmy's" % gone)
     print("config-gate: roster OK (%d agents)" % len(names))
 
     for p in files:
@@ -68,6 +78,9 @@ def main() -> None:
             missing = set(WORKERS) - allowed
             if missing:
                 fail("robotnik: task allows missing for %s" % sorted(missing))
+            stale = allowed - set(WORKERS)
+            if stale:
+                fail("robotnik: task allows an agent that is not on the roster: %s" % sorted(stale))
             if "question: deny" not in fm:
                 fail("robotnik: question must stay denied")
             # The delegator is the only agent with full thinking.
@@ -85,20 +98,39 @@ def main() -> None:
                 fail(f"{p.stem}: question must stay denied")
     print("config-gate: thinking levels and permissions OK")
 
-    # The review chain in AGENTS.md must name the licence agent last.
+    # The review chain in AGENTS.md must name the licence agent fourth and last.
     agents_md = (ROOT / "AGENTS.md").read_text()
-    chain = re.search(r"`Shadow`\s*→\s*`Omega`\s*→\s*`Big`\s*→\s*`Charmy`\s*→\s*`Flicky`",
-                      agents_md)
-    if not chain:
-        fail("AGENTS.md: review chain must be Shadow → Omega → Big → Charmy → Flicky")
-    if "## License Audit (Flicky)" not in agents_md:
-        fail("AGENTS.md: the doc contract must list ## License Audit (Flicky)")
+    if not re.search(r"`Shadow`\s*→\s*`Omega`\s*→\s*`Big`\s*→\s*`Charmy`", agents_md):
+        fail("AGENTS.md: review chain must be Shadow → Omega → Big → Charmy")
+    if re.search(r"→\s*`" + "".join(RETIRED).capitalize() + r"`", agents_md):
+        fail("AGENTS.md: a review chain still names the retired licence agent")
+
+    # The doc contract carries exactly one licence section. AGENTS.md may still
+    # name the legacy heading in prose about retained history; the
+    # section-order block itself must not list it.
+    order = re.search(r"section order:\s*```(.*?)```", agents_md, re.S)
+    if not order:
+        fail("AGENTS.md: the doc-contract section-order block is missing")
+    contract = order.group(1)
+    if "## License (Charmy)" not in contract:
+        fail("AGENTS.md: the doc contract must list ## License (Charmy)")
+    if "License Audit" in contract:
+        fail("AGENTS.md: the doc contract must carry one licence section, not two")
     print("config-gate: AGENTS.md chain and doc contract OK")
 
-    # The planning template must carry the section in order.
+    # The licence owner must hold the gate, not only the section.
+    charmy = (AGENTS / "charmy.md").read_text()
+    for duty in ("scripts/licence-check", "POLICY_EXCEPTION", "HARD_STOP",
+                 "fourth and last", "upstream"):
+        if duty not in charmy:
+            fail("charmy: missing the licence-audit duty %r" % duty)
+    print("config-gate: Charmy holds the licence gate OK")
+
+    # The planning template must carry exactly one licence section, in order.
     tpl = (ROOT / "planning" / "templates" / "planning-doc.md").read_text()
-    if "## License Audit (Flicky)" not in tpl:
-        fail("planning template: ## License Audit (Flicky) section missing")
+    lic = [ln for ln in tpl.splitlines() if ln.startswith("## License")]
+    if lic != ["## License (Charmy)"]:
+        fail("planning template: expected exactly one licence section, got %s" % lic)
     print("config-gate: planning template OK")
 
     # The A2A server's roster must not hardcode the team: it reads the

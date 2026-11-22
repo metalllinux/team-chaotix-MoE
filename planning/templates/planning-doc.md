@@ -35,8 +35,8 @@ if a box cannot be verified by looking at something, rewrite it.*
 - [ ] `Shadow`: no unresolved blockers or should-fix findings in `## Review`
 - [ ] `Omega`: no unresolved findings above `low` in `## Security`
 - [ ] `Big`: all harness checks PASS, with no silently dropped checks
-- [ ] `Charmy`: no unresolved findings in `## License (Charmy)`
-- [ ] `Flicky`: gate outcome `PASS`, or a `POLICY_EXCEPTION` recorded in `## License Audit (Flicky)`
+- [ ] `Charmy`: no unresolved findings in `## License (Charmy)`, and the gate outcome recorded in
+      that section is `PASS`, or a `POLICY_EXCEPTION` with the exception written down
 - [ ] `Vector`: documentation updated as affected
 - [ ] Human review completed (if external PR or deployment)
 
@@ -125,8 +125,15 @@ the PM reads.*
 
 ## License (Charmy)
 
-*Owner: `Charmy`. Fourth in the review chain. Every license is verified at the upstream source
-repository and the ref used, never from a copy in this repo.*
+*Owner: `Charmy`. Fourth and last in the review chain, and the team's single licence owner. Runs the
+machine gate; the gate is evidence, and this section records it. Every licence is verified at the
+upstream source repository at the ref actually used, never from a copy in this repo. Never grants or
+refuses an exception.*
+
+**Gate:** `scripts/licence-check <project-root>` (exit 0 `PASS` · 6 `POLICY_EXCEPTION` ·
+7 `BLOCK` · 8 `HARD_STOP`)
+
+**Outcome:** PASS | POLICY_EXCEPTION | BLOCK | HARD_STOP *(state the exit code that produced it)*
 
 **Project license:** <license> — appropriate | finding
 
@@ -135,20 +142,6 @@ repository and the ref used, never from a copy in this repo.*
 | Component | Source (repo @ ref) | License (verified at) | Obligations met | Status |
 |---|---|---|---|---|
 | | | | yes/no + what | pass/finding |
-
-**Verdict:** pass | findings *(Tails fixes; the chain re-runs until clean)*
-
----
-
-## License Audit (Flicky)
-
-*Owner: `Flicky`. Fifth in the review chain. Runs the machine gate; the gate is evidence, and
-this section records it. Never grants or refuses an exception.*
-
-**Gate:** `scripts/licence-check <project-root>` (exit 0 `PASS` · 6 `POLICY_EXCEPTION` ·
-7 `BLOCK` · 8 `HARD_STOP`)
-
-**Outcome:** PASS | POLICY_EXCEPTION | BLOCK | HARD_STOP *(state the exit code that produced it)*
 
 **Declarations**
 
@@ -159,7 +152,14 @@ this section records it. Never grants or refuses an exception.*
 **Exceptions recorded:** *(each POLICY_EXCEPTION with the clause quoted and why it is lawful,
 or "none")*
 
-**Verdict:** pass | findings *(fail-closed: a gate run that cannot be read is FAIL)*
+**Verdict:** pass | findings *(Tails fixes; the chain re-runs until clean. Fail-closed: a gate run
+that cannot be read is FAIL.)*
+
+VERDICT: PASS | VERDICT: FAIL <reason>
+
+*(Planning docs written before 2026-11-23 keep the legacy licence-audit section written by the fifth
+reviewer retired on that date. It is record history. Do not rename or delete it. Only `Espio` folds
+it into `## Archive`.)*
 
 ---
 

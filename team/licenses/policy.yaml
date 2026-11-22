@@ -1,7 +1,7 @@
 # Team Chaotix house licence policy.
 #
 # This is the metalllinux house policy, encoded for the licence gate
-# (team/licenses/core.py) and for the Flicky agent. It is a restatement
+# (team/licenses/core.py) and for the licence agent, Charmy. It is a restatement
 # for machines, not legal advice: a finding that reads like a legal
 # conclusion is routed to the operator in the planning doc, never decided
 # here.

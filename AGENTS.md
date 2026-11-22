@@ -1,7 +1,7 @@
 # AGENTS.md — shared operating rules for Team Chaotix
 
 Auto-loaded by opencode for every agent (globbed up from the working directory). These rules are
-binding on all twelve agents. Agent-specific instructions live in `.opencode/agents/`.
+binding on all eleven agents. Agent-specific instructions live in `.opencode/agents/`.
 
 ---
 
@@ -76,12 +76,15 @@ Every planning doc has this exact section order:
 ## Review                 (Shadow)
 ## Security               (Omega)
 ## License (Charmy)       (Charmy)
-## License Audit (Flicky) (Flicky)
 ## Test Results           (Big)
 ## Docs                   (Vector)
 ## Release                (Knuckles)
 ## Archive                (Espio prunes from here)
 ```
+
+One licence section carries everything licence-shaped. `## License (Charmy)` holds the licence review
+of the change, the upstream audit against the ref actually used, the recorded exceptions, and the
+machine-gate outcome.
 
 Binding rules:
 
@@ -98,6 +101,10 @@ Binding rules:
 6. `Espio` is the **only** agent that deletes content. It moves superseded detail into
    `## Archive` and deletes only narration, superseded plans, and findings that are resolved and
    shipped. Decisions and verified facts are never deleted.
+7. **Retired headings stay where they were written.** A planning doc that already carries a section
+   heading belonging to a retired agent is record history. No agent but `Espio` renames or deletes
+   it; the current owner writes the new work in its own section and names the legacy heading as
+   retained history. `Espio` folds it into `## Archive` at the prune step.
 
 ### Writing style inside planning docs
 
@@ -111,14 +118,15 @@ the command that produced it. If you did not verify something, say so explicitly
 
 - **`Robotnik` is the only agent that delegates.** The project config sets `subagent_depth: 1`
   (v2.0.18 omits it as a legacy setting; kept for compatibility). The guarantee that actually
-  binds is `task` permissions: only robotnik has task allows, all eleven workers have `task: deny`.
+  binds is `task` permissions: only robotnik has task allows, all ten workers have `task: deny`.
 - **The model endpoint runs `--parallel 1`: one inference slot, one agent at a time.** All
   dispatch is strictly sequential. `Robotnik` issues **one task call, waits for it to complete,
   then issues the next**. Issuing several task calls in a single message queues them against the
   single slot, wastes context, and risks timeouts.
 - The review chain is independent, so its internal order is free, but it still runs one at a
-  time in a fixed sequence: `Shadow` → `Omega` → `Big` → `Charmy` → `Flicky`.
-- The cycle is a single chain: `Amy` → `Tails` → `Shadow` → `Omega` → `Big` → `Charmy` → `Flicky`
+  time in a fixed sequence: `Shadow` → `Omega` → `Big` → `Charmy`. `Charmy` is fourth and last,
+  and it is the only licence reviewer in the chain.
+- The cycle is a single chain: `Amy` → `Tails` → `Shadow` → `Omega` → `Big` → `Charmy`
   → `Tails` fixes → `Vector` → `Knuckles`.
 - Keep briefs to subagents short. Point at the planning doc; do not restate it.
 
@@ -248,9 +256,9 @@ be handled autonomously.
 
 ## 9. License compliance
 
-Licence checking is owned by `Flicky (Licence)`, fifth in the review chain; licence work is her
-whole job. She runs the machine gate (`scripts/licence-check`, scanner and house policy in
-`team/licenses/`) and verifies two things, always against the **upstream source repository** at
+Licence checking is owned by `Charmy (License)`, fourth and last in the review chain, and the team's
+single licence owner. Charmy runs the machine gate (`scripts/licence-check`, scanner and house policy
+in `team/licenses/`) and verifies two things, always against the **upstream source repository** at
 the ref actually used:
 
 1. The project's own licence is declared and appropriate for what the project does.
@@ -260,13 +268,14 @@ the ref actually used:
 The gate emits four outcomes with fixed exit codes: `PASS` (0), `POLICY_EXCEPTION` (6),
 `BLOCK` (7), `HARD_STOP` (8). "Avoid" is not "refuse": inherited copyleft is frequently the only
 lawful option, so an avoid-list licence is a recorded exception, never a block. The gate is
-evidence, not a lawyer; legal conclusions go in `## License Audit (Flicky)` with the upstream
-ref cited. The gate runs in CI (`Licence Check` workflow) and on this repo in every
-`tests/selftest.sh`.
+evidence, not a lawyer; the gate outcome, the recorded exceptions, and the legal conclusions all go
+in `## License (Charmy)` with the upstream ref cited. The gate runs in CI (`Licence Check`
+workflow) and on this repo in every `tests/selftest.sh`.
 
-`Charmy` stays fourth in the chain and owns `## License (Charmy)` for the licence review of the
-change; `Omega` flags license signals as security findings (vector `license`). Never distribute
-code under incompatible licenses. GPL-2.0 code remains GPL-2.0.
+`Omega` flags license signals as security findings (vector `license`). Never distribute code under
+incompatible licenses. GPL-2.0 code remains GPL-2.0. Planning docs written before 2026-11-23 carry a
+legacy licence-audit section written by the fifth reviewer retired on 2026-11-23. Those headings
+stay, per section 2 rule 7, and Charmy writes its audit into `## License (Charmy)` alongside them.
 
 ---
 
@@ -485,7 +494,7 @@ The team's own machinery, as a python package in the repo. Dependencies are decl
 pytest). Recorded in `planning/docs/TASK-0037-team-platform.md`.
 
 - **`team/graph/`** the cycle as a langgraph `StateGraph`: intake → plan → implement → review
-  chain (`Shadow` → `Omega` → `Big` → `Charmy` → `Flicky`) → fix loop → docs → release →
+  chain (`Shadow` → `Omega` → `Big` → `Charmy`) → fix loop → docs → release →
   archive. Runs are checkpointed per thread id (SQLite under `.runs/`, gitignored; in-memory
   when no runs dir is available) and the thread id is the A2A `contextId`. The default runner
   is one `opencode run --standalone` session per stage; tests inject a fake runner, so the

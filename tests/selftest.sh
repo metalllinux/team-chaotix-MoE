@@ -75,6 +75,22 @@ fi
 PASS
 note "no turn caps OK"
 
+# --- agent roster -----------------------------------------------------------
+# Eleven agent files: the delegator plus ten workers. The licence agent that
+# used to sit fifth was retired on 2026-11-23, and its name is built here by
+# concatenation (the same trick as the [m]axTurns pattern above) so the file
+# does not match a plain text sweep for the retired name.
+AGENT_FILES=$(find .opencode/agents -maxdepth 1 -name "*.md" | wc -l)
+if [ "${AGENT_FILES}" -ne 11 ]; then
+  fail "agent roster is ${AGENT_FILES} files, expected 11"
+fi
+PASS
+if [ -e ".opencode/agents/fli""cky.md" ]; then
+  fail "retired licence agent file is back in .opencode/agents"
+fi
+PASS
+note "agent roster OK (${AGENT_FILES} agent files)"
+
 # --- agent configuration gate ----------------------------------------------
 python3 tests/config_gate.py || fail "config gate"
 PASS

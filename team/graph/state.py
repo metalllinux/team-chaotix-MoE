@@ -29,19 +29,20 @@ STAGES: tuple[str, ...] = (
     "review_omega",
     "review_big",
     "review_charmy",
-    "review_flicky",
     "docs",
     "release",
     "archive",
 )
 
 #: Review stages, in chain order. Each maps to exactly one reviewer agent.
+#: The chain ends at ``review_charmy``: the licence reviewer retired in
+#: 2026-11-23 is gone, and Charmy holds the licence review and the upstream
+#: audit and the machine gate in one stage.
 REVIEW_STAGES: tuple[str, ...] = (
     "review_shadow",
     "review_omega",
     "review_big",
     "review_charmy",
-    "review_flicky",
 )
 
 #: The agent that owns each stage. ``fix`` is owned by the implementer.
@@ -53,7 +54,6 @@ STAGE_AGENT: dict[str, str] = {
     "review_omega": "omega",
     "review_big": "big",
     "review_charmy": "charmy",
-    "review_flicky": "flicky",
     "fix": "tails",
     "docs": "vector",
     "release": "knuckles",

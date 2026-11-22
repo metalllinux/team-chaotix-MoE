@@ -19,7 +19,6 @@ Robotnik (PM) ── delegates to ──┬── Amy (Task Planner)
                                 ├── Sonic (Triage)
                                 ├── Knuckles (Release Manager)
                                 ├── Charmy (License)
-                                ├── Flicky (Licence)
                                 └── Espio (Context Curator)
 ```
 
@@ -37,8 +36,7 @@ Robotnik (PM) ── delegates to ──┬── Amy (Task Planner)
 | **Vector (Documentation)** | README, changelog, user-facing content | subagent | Read/write docs, git read + add + commit -m + push origin main + ls-remote, exact ssh verification commands to 192.168.1.106 |
 | **Espio (Context Curator)** | Planning doc pruning and context hygiene | subagent | File operations only, no bash |
 | **Knuckles (Release Manager)** | Releases, PRs, branching, deployment | subagent | Full bash for git operations |
-| **Charmy (License)** | Licence review of the change, fourth in the review chain | subagent | Read-only code, writes `## License (Charmy)` |
-| **Flicky (Licence)** | Dedicated licence checks: runs the machine gate, verifies upstream at the ref used | subagent | Runs `scripts/licence-check`, writes `## License Audit (Flicky)` |
+| **Charmy (License)** | The team's single licence owner: licence review of the change plus the upstream audit at the ref used, fourth and last in the review chain | subagent | Runs `scripts/licence-check`, writes `## License (Charmy)` |
 
 Key permission patterns:
 
@@ -129,7 +127,7 @@ machines, they do not parallelise the model. One agent runs at a time.
 2. Robotnik creates a planning doc and dispatches Amy for planning
 3. Amy produces a plan with work breakdown
 4. Robotnik dispatches Tails for implementation
-5. After implementation, Robotnik dispatches Shadow, then Omega, then Big, then Charmy, then Flicky, one at a time
+5. After implementation, Robotnik dispatches Shadow, then Omega, then Big, then Charmy, one at a time
 6. If any findings are raised, Tails fixes them and the cycle repeats
 7. Once clean, Vector updates documentation
 8. Knuckles handles branching, PR, and merge
@@ -142,7 +140,7 @@ The team's own machinery lives in the `team/` package (python, stdlib plus the d
 
 | Part | What it is |
 |---|---|
-| `team/graph/` | The cycle as a langgraph state machine: intake, plan, implement, the review chain (Shadow, Omega, Big, Charmy, Flicky), the fix loop, docs, release, archive. Runs checkpoint to SQLite under `.runs/` (gitignored) keyed by the A2A `contextId` |
+| `team/graph/` | The cycle as a langgraph state machine: intake, plan, implement, the review chain (Shadow, Omega, Big, Charmy), the fix loop, docs, release, archive. Runs checkpoint to SQLite under `.runs/` (gitignored) keyed by the A2A `contextId` |
 | `team/a2a/` | The A2A server and client: agent card generated from `.opencode/agents/`, `message/send`, `message/stream`, `tasks/get`, `tasks/cancel` |
 | `team/portless/` | Name-based service addressing: registry plus a Host-routed proxy with a local `*.localhost` CA. CLI: `team/portless/portless` |
 | `team/licenses/` | The licence scanner and house policy behind `scripts/licence-check` |
@@ -356,12 +354,12 @@ Agents respect software licenses at all times. When forking or modifying upstrea
 - Verify and comply with the upstream license
 - GPL-2.0 code remains GPL-2.0, never relicensed
 - Include original copyright headers and license files
-- `Flicky` owns the licence gate: she runs `scripts/licence-check` (scanner and house policy in
+- `Charmy` owns the licence gate: it runs `scripts/licence-check` (scanner and house policy in
   `team/licenses/`), and the gate's four outcomes are `PASS` (0), `POLICY_EXCEPTION` (6),
   `BLOCK` (7), `HARD_STOP` (8). The gate runs in CI and on this repo in every selftest
-- `Charmy` reviews the licence of the change in the review chain, and every imported
-  component is verified at its upstream source repository. `Omega` flags license signals as
-  security findings
+- `Charmy` is the team's single licence owner, fourth and last in the review chain, and every
+  imported component is verified at its upstream source repository at the ref actually used.
+  `Omega` flags license signals as security findings
 
 ## External PRs
 

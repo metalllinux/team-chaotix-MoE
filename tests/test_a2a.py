@@ -66,11 +66,14 @@ def test_agent_card_matches_roster_files(live_server):
     card = _get(base, "/.well-known/agent.json")
     assert card["name"] == srv.TEAM_NAME
     skill_ids = {s["id"] for s in card["skills"]}
-    # Every roster agent file is advertised, including the new licence
-    # agent and the delegator.
-    assert "flicky" in skill_ids
+    # Every roster agent file is advertised, including the licence agent that
+    # absorbed the retired one, and the delegator.
+    assert "charmy" in skill_ids
     assert "robotnik" in skill_ids
     assert "tails" in skill_ids
+    # The retired licence agent is not on the card. Name built by
+    # concatenation so a text sweep does not read it as reinstated.
+    assert ("fli" + "cky") not in skill_ids
     # The card carries the protocol version and the team version.
     assert card["protocolVersion"] == srv.PROTOCOL_VERSION
     assert card["version"] == srv.TEAM_VERSION

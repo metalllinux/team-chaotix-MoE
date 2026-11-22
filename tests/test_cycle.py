@@ -27,7 +27,7 @@ class FakeRunner:
     def __call__(self, agent: str, task_id: str, brief: str) -> str:
         self.calls.append((agent, brief))
         out = f"[{agent}] stage done"
-        if agent in ("shadow", "omega", "big", "charmy", "flicky"):
+        if agent in ("shadow", "omega", "big", "charmy"):
             # Reviewers always end with an explicit verdict; a clean round
             # is a PASS, not silence (silence is fail-closed by design).
             if self.round < self.fail_rounds and (
@@ -70,7 +70,7 @@ def test_cycle_runs_start_to_archive_with_clean_reviews(tmp_path, monkeypatch):
     assert final["stage_history"] == [
         "intake", "plan", "implement",
         "review_shadow", "review_omega", "review_big", "review_charmy",
-        "review_flicky", "docs", "release", "archive",
+        "docs", "release", "archive",
     ]
     # langchain-core messages: the first message is the task brief, and
     # every stage left an AIMessage in the log.
@@ -108,6 +108,20 @@ def test_cycle_halts_when_reviews_never_pass(tmp_path, monkeypatch):
     assert "shadow" in final["result"]
     # And it stopped instead of looping: no stage after the halt.
     assert final["stage_history"][-1] == "halted"
+
+
+def test_review_chain_ends_at_the_licence_agent():
+    # The chain is four reviewers and it ends at the licence reviewer, which
+    # holds the licence review, the upstream audit, and the machine gate in
+    # one stage. A fifth review stage must not come back.
+    assert st.REVIEW_STAGES == (
+        "review_shadow", "review_omega", "review_big", "review_charmy",
+    )
+    assert st.STAGE_AGENT[st.REVIEW_STAGES[-1]] == "charmy"
+    assert st.REVIEW_STAGES[-1] == st.STAGES[st.STAGES.index("implement") + 4]
+    # The retired stage name, built by concatenation so the source sweep stays clean.
+    assert "review_" + "flic" + "ky" not in st.STAGES
+    assert "review_" + "flic" + "ky" not in st.STAGE_AGENT
 
 
 def test_no_turn_cap_anywhere_in_state():
