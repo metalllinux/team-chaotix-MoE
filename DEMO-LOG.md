@@ -2067,3 +2067,125 @@ seven `Scm*.tmp` backups left by `S1b` totalling 4301926 B, `/tmp/t0042-run-dos.
 written by this step, and `preflight_target_run_script` has not run yet, it runs at the start of the
 clone run. Checks not run at this point, the measured six-map cycle in published mode, which is the
 next step, no independent read of the captures this dispatch will produce, no licence ruling.
+
+## 2026-11-22 10:50 — Dispatch S1c step 2, bounded smoke cycle in published mode from the fresh clone (`Tails`, one map, 20 s window)
+
+`cd /tmp/opencode/t0042/booth-clone-s1c && python3 code/booth_loop.py --source published --clone
+/tmp/opencode/t0042/booth-clone-s1c --maps tux --display-seconds 20 --tag-prefix S1cSmoke`, rc 0,
+30 log records, one map plus the painting segment. `preflight_published` PASS with `maps_checked 1`.
+`preflight_target_run_script` PASS, `/tmp/t0042-run-dos.sh` on the target reads `a85bba3c89f1...`,
+equal to the clone's published `code/t0042-run-dos.sh`, no install needed, read-only inverse.
+`published_source` read `/tmp/opencode/t0042/booth-clone-s1c/maps/deliverable/tux.scm` read-only at
+614552 B, `sha_verify_controller` PASS `79002eacd5d6`, transfer PASS with the target copy re-hashing to
+the same value, open on `C:\Maps\tux.scm` with the path in the title bar, zoom verified from the
+capture indicator at 216 x 96 tiles and 7.931 x 7.854 px per tile in one verification pass, teardown
+`NO_SCM_RUNNING` with the loop copy `REMOVED`. Per-map total 80.53 s, overhead excluding display
+44.12 s, which is the `S1a` and `S1b` 44 s overhead unchanged in published mode. The painting segment
+took its seed from `live-segment/maps/live-demo-ice.scm` in the clone at `8f338a3cea24...`, re-derived
+the palette by OCR at Rocky Snow 839 and High Outpost 968, and measured 42581 changed pixels at median
+WCAG 6.267 with minimum pair 1.2, identical to all three `S1b` phases. Scratch map restored to 12502 B
+`f00d1f60521c...` at teardown. Cycle cost for this smoke cycle 154.38 s. `tmp_cleanup` at cycle start
+removed the seven `Scm*.tmp` backups `S1b` had left under rule r002, named with sizes in the log,
+4301926 B, so the r002 residue from `S1b` is now gone by the runner's own documented cycle-start
+behaviour and the residue visible to the operator at the end of this dispatch is this dispatch's own.
+
+## 2026-11-22 11:28 — Dispatch S1c step 3, one full six-map cycle measured in published mode from a fresh clone at the 300 s default (`Tails`, target touched)
+
+`cd /tmp/opencode/t0042/booth-clone-s1c && python3 code/booth_loop.py --source published --clone
+/tmp/opencode/t0042/booth-clone-s1c --maps foss-for-all,rocky-logo,rocky-with-heart,tux,republic-of-korea,i-love-korea
+--loops 1 --display-seconds 300 --tag-prefix S1c300`, rc 0, 90 log records, wall clock 10:51:17 to
+11:28:34, 37 min 17 s. Report `/tmp/opencode/t0042/S1c300_cycle_report.json`, console
+`/tmp/opencode/t0042/s1c300.out`.
+
+**Measured cycle cost 2232.13 s, 37 min 12 s, against the 2232.36 s `S1b` measured in rebuild mode, a
+difference of 0.23 s or 0.01 percent.** Maps total 2157.96 s, cycle steps 1.26 s, painting segment
+72.91 s. `modes_recorded` for the cycle is `["published"]`. Complete cycles that fit, computed from
+this measurement, 1 in one hour, 3 in two, 4 in three, the same figures `S1b` produced.
+
+Per-map totals 356.69 `foss-for-all`, 361.97 `rocky-logo`, 362.01 `rocky-with-heart`, 361.96 `tux`,
+352.91 `republic-of-korea`, 362.42 `i-love-korea`. Non-display overhead 43.35 to 44.64 s per map,
+unchanged from `S1b`'s 43.86 to 44.46 s, so removing the rebuild changes nothing measurable in the
+cycle. Acquisition is `published_source` at 0.00 s on all six maps instead of a `build` at 0.04 to
+0.56 s. Transfer 0.51 to 0.54 s, open 25.46 to 26.17 s, zoom walk 14.44 to 15.10 s, teardown 2.89 to
+2.93 s. Display windows 309.56 to 318.08 s against the 300 s request, the same 3 to 6 percent
+per-frame capture overhead `S1b` recorded.
+
+Every one of the six maps passed `sha_verify_controller` against its recorded SHA-256 before transfer
+and re-matched on the target after transfer, `e856f0e1d62e`, `447360ce8077`, `b9b056c27a67`,
+`79002eacd5d6`, `c773a534a564`, `16fe455d46fd`, with target sizes 614561, 614559, 614565, 614552,
+614566 and 614561 B. All six opens carry the opened drive-qualified path in the title bar. All six
+zoom settings verified from the capture indicator at 216 x 96 tiles and 7.931 x 7.854 px per tile in
+one verification pass each, no combo readout used. 31 scripted display frames captured and measured,
+4, 6, 6, 6, 3 and 6 across the six maps, the same frame plan `S1b` used, planned from the mask code the
+clone publishes at `code/rocky.py` and `code/glyph.py`. All six teardowns answer `NO_SCM_RUNNING` with
+the loop copy `REMOVED`. The painting segment ran on the clone's seed, palette re-derived at rows 839
+and 968, 42581 changed pixels sampled at median WCAG 6.267, minimum pair 1.2. No editor save was
+performed on any map, the runner has no save step, and the six originals in `~/scmdraft-maps/` keep
+their 2026-11-20 and 2026-11-21 mtimes.
+
+Target disk for the cycle, `df -B1 /` avail 64994611200 B before and 64983736320 B after, 10874880 B
+consumed. Named items account for 11497541 B of that, the seven `Scm*.tmp` backups the cycle's seven
+opens wrote at 4301926 B, and the 52 capture PNGs the cycle left in `/tmp` on the target at 7195615 B,
+which the runner writes for scp to fetch and never deletes. The 622661 B surplus against the measured
+consumption is not attributed, recorded rather than guessed. This also names the leading candidate for
+`S1b`'s 1448858 B unattributed delta, the same target-side capture PNGs, and it is a booth-day fact
+worth knowing, a multi-hour session accumulates roughly 7.2 MB per cycle of captures on the target
+against 65 GB free.
+
+## 2026-11-22 11:35 — Dispatch S1c step 4, post-cycle verification and the runbook wording correction (`Tails`, target read-only)
+
+`python3 code/booth_loop.py --stability` from the clone, all six deliverable originals on the target at
+their recorded SHA-256 values with mtimes 2026-11-20 06:03, 2026-11-20 08:17, 2026-11-20 08:17,
+2026-11-20 20:33, 2026-11-21 10:49 and 2026-11-21 19:28, all before this cycle started, so nothing in
+the cycle wrote to them. `pgrep -af "ScmDraft[ ]2"` answers `NO_SCM_RUNNING`. `C:\Maps\` holds the
+pre-existing reference map `(2)River Crossing.scm` 90426 B, the scratch map restored at 12502 B
+`f00d1f60521c...`, and exactly seven named `Scm*.tmp` residue files, `Scm8406.tmp` 614561 B,
+`Scmf546.tmp` 614559 B, `Scm7b4a.tmp` 614565 B, `Scm199.tmp` 614552 B, `Scm87c5.tmp` 614566 B,
+`Scmf0d2.tmp` 614561 B and `Scm799f.tmp` 614562 B, 4301926 B total, left in place per rule r002,
+inverse `rm -f /home/howard/.wine-scmdraft/drive_c/Maps/Scm*.tmp` recorded in the cycle log.
+
+One accuracy correction found by checking the clone after the run. The runbook as pushed at `dd86b46`
+says a published-mode run writes nothing into the clone it runs from. That is true of captures, OCR
+crops, the run log and the reports, which all go to `CHAOTIX_T0042_WORK`, but importing the mask code
+makes Python write `code/__pycache__/` inside the clone, 67389 B of bytecode caches for `rocky`,
+`glyph`, `korea`, `korea_10m`, `rocky_svg` and `tux`. Untracked, removable with
+`rm -rf /tmp/opencode/t0042/booth-clone-s1c/code/__pycache__`, and the runbook now says that rather
+than the cleaner-sounding thing.
+
+## 2026-11-22 11:45 — Dispatch S1c step 5, booth repo publish of the measured record, one manifest defect found by the cross-check and repaired (`Tails`, controller-side and repo-side, no new target contact)
+
+Booth repo commit `0f31e969d7da3f29d1196641385e1968d8f5518e`, signature Good, pushed `dd86b46..0f31e96`,
+publishes this dispatch's run record, six modified files (`BOOTH-RUNBOOK.md` with the published-mode cost
+row and two wording corrections, `DEMO-LOG.md`, `MANIFEST.md`, `PUBLISH-STATUS.md` with a new `S1c`
+section, `booth-loop/s1a-run-log.jsonl` at 399 records, `code/booth_loop.py`) and two added
+(`gate-reports/S1c300_cycle_report.json`, `gate-reports/S1cSmoke_cycle_report.json`). Credential scan
+reused from `D3`, 4 secret values against 8 landing files, zero hits.
+
+Defect found by running the cross-check rather than trusting the generator. `d2_verify.py` against a
+fresh clone of `0f31e96` answered `manifest rows 786 unique paths 786 tree paths 789
+omitted-by-manifest 2`, FAIL. The two new gate-report rows had been written by `/tmp/opencode/t0042/s1c_manifest.py`
+without the backticks around their SHA-256 values that the manifest's own row format uses, so the
+cross-checker did not read them as rows at all. Recorded rather than quietly amended, booth commit
+`93ff47bbe04746110922204f8aeccc8dd14040f4`, signature Good, pushed `0f31e96..93ff47b`, repairs the two
+rows and the generator that wrote them. No pushed commit was rewritten, the defective commit stays in the
+chain where a reader can see it.
+
+Re-verified from a second fresh clone, `/tmp/opencode/t0042/booth-verify-s1c-b` at `93ff47b`, `git ls-tree
+-r HEAD` 789 paths, `python3 /tmp/opencode/t0042/d2_verify.py .` answers 788 rows, 788 unique paths, 789
+tree paths, 0 omitted, 0 absent, 0 size-or-hash mismatches, PASS. `git diff --name-status f0255bd HEAD`
+is 6 modified and 2 added with zero deletions and zero renames, so nothing published by `D0`, `D2` or
+`D3` was replaced or moved by this dispatch. `git diff --stat` for `LICENSE` and `README.md` over the same
+range is empty, the files read `5c620b9317b6...` and `e278208f88b9...`. `sha256sum` in that clone
+reproduces all six deliverables at their recorded values, `e856f0e1d62e`, `447360ce8077`, `b9b056c27a67`,
+`79002eacd5d6`, `c773a534a564`, `16fe455d46fd`, at 614561, 614559, 614565, 614552, 614566 and 614561 B.
+`git ls-remote` answers `93ff47b` at `refs/heads/main`. The API through `/tmp/opencode/t0042/d3_api.py`,
+token read inside the process, answers `id 1455994123`, `visibility private`, `default_branch main`,
+`pushed_at 2026-11-22T02:42:43Z`, visibility unchanged.
+
+Not published by this dispatch, named. The 69 capture frames this dispatch produced, 52 tagged
+`S1c300L1-*` and 17 tagged `S1cSmokeL1-*`, stay on the controller under `/tmp/opencode/t0042`, publishing
+them belongs to a publish dispatch that re-runs the `D0` classification over a controller tree rather than
+to a mode change. Inverse for this step, the two booth commits are normal fast-forwards on `main` and
+removing them would need a force-push, which is not performed and not proposed, and
+`/tmp/opencode/t0042/booth-verify-s1c-b`, `/tmp/opencode/t0042/s1c-test` and
+`/tmp/opencode/t0042/booth-clone-s1c` remove with `rm -rf`.

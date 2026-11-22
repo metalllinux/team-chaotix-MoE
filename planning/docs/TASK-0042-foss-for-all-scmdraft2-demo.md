@@ -3238,6 +3238,126 @@ deliverables at recorded SHA-256, clone runner byte-identical to the controller 
 `38c46709c491...`, scratch seed at `8f338a3cea24...`, `d2_verify.py` 786 rows against 787 paths with
 0 omitted, 0 absent, 0 mismatches, PASS, clone working tree clean.
 
+**Bounded smoke cycle first, 2026-11-22 10:50.** `python3 code/booth_loop.py --source published --clone
+/tmp/opencode/t0042/booth-clone-s1c --maps tux --display-seconds 20 --tag-prefix S1cSmoke` from the fresh
+clone, rc 0, 30 records, `preflight_published` PASS, `preflight_target_run_script` PASS with the target
+launch script at `a85bba3c89f1...` equal to the clone's published copy so no install was needed,
+`published_source` read-only, `sha_verify_controller` PASS `79002eacd5d6`, transfer PASS with the target
+copy re-matching, teardown `NO_SCM_RUNNING` with `REMOVED`, overhead excluding display 44.12 s against
+the `S1a`/`S1b` 44 s, palette re-derived 839 and 968, paint 42581 changed pixels at median WCAG 6.267.
+Cycle-start cleanup removed the seven `Scm*.tmp` files `S1b` had left under rule r002, named with sizes,
+4301926 B, which is the runner's documented behaviour rather than a deviation, and the residue visible to
+the operator at the end of this dispatch is this dispatch's own.
+
+**Measured full six-map cycle in published mode, 2026-11-22 11:28, the acceptance number.**
+`--maps foss-for-all,rocky-logo,rocky-with-heart,tux,republic-of-korea,i-love-korea --loops 1
+--display-seconds 300 --tag-prefix S1c300` from `/tmp/opencode/t0042/booth-clone-s1c`, rc 0, 90 records,
+wall clock 10:51:17 to 11:28:34, 37 min 17 s, report `/tmp/opencode/t0042/S1c300_cycle_report.json`,
+`modes_recorded` for the cycle `["published"]`.
+
+**Cycle cost 2232.13 s against the 2232.36 s `S1b` measured in rebuild mode, 0.23 s apart, 0.01 percent.**
+Maps total 2157.96 s, cycle steps 1.26 s, painting segment 72.91 s. Complete cycles that fit from this
+measurement, 1 in one hour, 3 in two, 4 in three, identical to `S1b`.
+
+| map | acquire | sha gate | transfer | open | zoom walk | display window | teardown | overhead | total |
+|---|---|---|---|---|---|---|---|---|---|
+| `foss-for-all` | `published_source` 0.00 | 0.00 | 0.53 | 26.17 | 15.05 | 312.05 | 2.89 | 44.64 | 356.69 |
+| `rocky-logo` | `published_source` 0.00 | 0.00 | 0.51 | 25.52 | 15.07 | 317.98 | 2.89 | 43.99 | 361.97 |
+| `rocky-with-heart` | `published_source` 0.00 | 0.00 | 0.51 | 25.53 | 15.05 | 318.01 | 2.91 | 44.00 | 362.01 |
+| `tux` | `published_source` 0.00 | 0.00 | 0.51 | 25.51 | 14.97 | 318.08 | 2.89 | 43.88 | 361.96 |
+| `republic-of-korea` | `published_source` 0.00 | 0.00 | 0.52 | 25.46 | 14.44 | 309.56 | 2.93 | 43.35 | 352.91 |
+| `i-love-korea` | `published_source` 0.00 | 0.00 | 0.54 | 25.84 | 15.10 | 318.03 | 2.91 | 44.39 | 362.42 |
+
+**Every `S1a` and `S1b` property re-checked in published mode, each with the record that shows it.**
+All six maps passed `sha_verify_controller` against the recorded SHA-256 and re-matched on the target
+after transfer, `e856f0e1d62e`, `447360ce8077`, `b9b056c27a67`, `79002eacd5d6`, `c773a534a564`,
+`16fe455d46fd`, at 614561, 614559, 614565, 614552, 614566 and 614561 B, and all six were verified a third
+time in `preflight_published` before the runner touched the target. Absolute paths throughout, opens on the
+drive-qualified `C:\Maps\<name>.scm` with the path in the title bar in all six `open` records. Zoom verified
+from capture pixels on all six, indicator 216 x 96 tiles, 7.931 x 7.854 px per tile, one verification pass
+each, no combo readout. Palette re-derived per cycle from a fresh capture by `ocr-tsv-label-rows`, Rocky
+Snow 839 and High Outpost 968. 31 scripted frames, 4, 6, 6, 6, 3 and 6, planned from the mask code the
+clone publishes. Painting segment on the clone's seed at `8f338a3cea24...`, 42581 changed pixels sampled at
+median WCAG 6.267 with minimum pair 1.2, identical to all three `S1b` phases. No save on any map, the
+runner has no save step, and the six originals in `~/scmdraft-maps/` keep mtimes of 2026-11-20 and
+2026-11-21, all before the cycle started. All six teardowns `NO_SCM_RUNNING` with the loop copy `REMOVED`,
+and the final `pgrep` after the cycle answers `NO_SCM_RUNNING`. Every step in the run log carries its
+inverse, and every record from this dispatch carries `mode`, `published` for 120 of them and `rebuild`
+only for the two named local tests.
+
+**Target state after the cycle.** `C:\Maps\` holds the pre-existing reference map, the scratch map restored
+to 12502 B `f00d1f60521c...`, and exactly seven named `Scm*.tmp` residue files, `Scm8406.tmp` 614561,
+`Scmf546.tmp` 614559, `Scm7b4a.tmp` 614565, `Scm199.tmp` 614552, `Scm87c5.tmp` 614566, `Scmf0d2.tmp`
+614561 and `Scm799f.tmp` 614562 B, 4301926 B total, left per r002. Headroom 64994611200 B before and
+64983736320 B after, 10874880 B consumed.
+
+**New finding for `Omega`, and it partly closes `S1b`'s open disk item.** The named items account for
+11497541 B of that consumption, the 4301926 B of residue plus 7195615 B in the 52 capture PNGs the cycle
+wrote into `/tmp` on the target, which the runner creates for `scp` to fetch and never deletes. The 622661
+B surplus against the measured change is recorded as unattributed, and the same target-side capture PNGs
+are the leading candidate for `S1b`'s 1448858 B unattributed delta. Consequence for the booth, a
+multi-hour session accumulates about 7.2 MB per cycle on the target against 65 GB free, bounded but not
+currently cleaned by the cycle-start cleanup step, which is a one-line change a later dispatch can make.
+
+**Deviation recorded, a manifest defect this dispatch created and repaired.** The manifest rows
+`0f31e96` published for the two new gate reports lacked the backticks around their SHA-256 values that the
+document's own row format uses, so `d2_verify.py` reading a fresh clone of that commit reported 786 rows
+against 789 tree paths and FAIL. `s1c_manifest.py` was fixed, the rows were repaired in booth commit
+`93ff47b`, and the defective commit was left in the chain rather than amended, because rewriting a pushed
+commit is the larger risk, same call as the `D3` signing deviation. Re-verified from a second fresh clone
+at `93ff47b`, 788 rows against 789 tree paths, 0 omitted, 0 absent, 0 mismatches, PASS, six deliverables
+matching their recorded hashes, `git diff --name-status f0255bd HEAD` 6 modified and 2 added with zero
+deletions and zero renames, `LICENSE` and `README.md` byte-unchanged, API answering `id 1455994123` and
+`visibility private`.
+
+**A correction this dispatch made to its own earlier claim.** The runbook as pushed at `dd86b46` said a
+published-mode run writes nothing into the clone it runs from. Checking the clone after the run found
+`code/__pycache__/`, 67389 B of Python bytecode caches for the mask modules the frame planner imports. The
+captures, crops, log and reports do go to `CHAOTIX_T0042_WORK`, the bytecode cache does land in the clone,
+untracked, and the runbook now says that.
+
+**Changes table.** Controller, `/tmp/opencode/t0042/booth_loop.py` modified 827 to 1006 lines, the two modes,
+the preflights, the mode field, the path model. `/tmp/opencode/t0042/s1c_manifest.py` new, 130 lines,
+regenerates manifest rows, directory counts and totals from the tree as written and refuses on a row without
+a file or a path without a row. `/tmp/opencode/t0042/BOOTH-RUNBOOK.md` modified, mode documentation, cost row,
+two wording corrections. Booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2`,
+three signed commits, `dd86b46` runner plus runbook, `0f31e96` measured record, `93ff47b` manifest repair,
+`refs/heads/main` at `93ff47b`, visibility unchanged, no `.chk`, no credential, no upstream code or dataset,
+no binary published. Team repo, DEMO-LOG entries 10:45, 10:50, 11:28, 11:35 and 11:45, this `## Implementation`
+subsection, commits `6fcedb5` and this one, `tests/selftest.sh` green at 61 checks on each push. Target, the
+smoke and measured cycles plus one restored scratch map and seven named residue files, nothing else written
+outside `C:\Maps\` and `/tmp`.
+
+**Checks that did not run, named in full.** No independent agent has read the 69 capture frames this dispatch
+produced, 52 `S1c300L1-*` and 17 `S1cSmokeL1-*`, and there was no blind reader, both belong to the review
+chain. `V1`'s map-validation dialog has still never run on any map. The rebuild-mode path was not re-run end
+to end after this change, only its new failure branch was tested, so a rebuild-mode regression is asserted
+from shared code paths and from `S1b`'s earlier measurement rather than re-measured here. Published mode was
+not measured at the 150 s window, only at the 300 s default. One cycle per mode, so loop-to-loop drift within
+a booth session remains unmeasured and the cycles-that-fit figures stay arithmetic. No six-hour endurance run.
+No per-frame WCAG on deliverable frames, tone share and run census only. Zoom combo not read on booth frames.
+Grid-line autocorrelation not re-run, panel EDID not re-measured, `B1`'s figures carried. No byte-for-byte
+comparison in this dispatch between a rebuild product and the published copy beyond both reproducing the
+recorded SHA-256, which `S1a` and `S1b` established. No licence ruling, `R4` and `R5` remain open, and this
+dispatch published no upstream code or dataset. The credential scan compared four secret values rather than
+every credential the operator holds. The 69 captures are on the controller and are not published. No
+`scripts/dispatch-gate` run by me, that is the dispatcher's step. The 622661 B disk surplus is unattributed.
+
+**Competing priorities.** One runner with a mode switch against a separate clone-mode script, chosen, traded
+a longer file for one code path so the display, painting, cleanup and teardown properties cannot drift between
+the two ways of running. Publishing the measured record without the captures, chosen scope discipline, traded
+a booth repo whose capture set stops at `D3`. Recording the manifest defect in a third commit against amending
+it, chosen, traded a visibly defective commit for not rewriting pushed history. Keeping the painting seed as
+the published flat seed against painting on whatever scratch map is resident on the target, chosen, traded a
+dependency on a published artifact for keeping the measured before-state honest. Machine-local injector and
+credentials as a named prerequisite against packaging them, chosen the exclusion rules, traded clone-and-run
+purity, and the runbook states the four things a clone still needs.
+
+**Recommendation for the booth run.** Run published mode from a clone of the booth repo, it costs the same
+37 min 12 s per cycle, and keep rebuild mode for the controller working tree where the withheld reference CHK
+lives. The 300 s default and the 150 s fallback stand unchanged, and the cycle counts a schedule is planned
+from are now measured in the mode a clone can actually run.
+
 ---
 
 ## Review
