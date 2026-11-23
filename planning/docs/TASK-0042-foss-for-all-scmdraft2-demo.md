@@ -13,6 +13,18 @@
 
 ## Status
 
+**Queue ownership taken (2026-11-23 00:06 UTC, 09:06 JST, `Robotnik` session
+`ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** This session owns the TASK-0042, TASK-0044, TASK-0041 and TASK-0043
+queues and runs `LIVE QUEUE 3` from item 1, `F2`. **No competing dispatcher exists.** A read-only
+`python3` `sqlite3` query of `session_v2` where `agent='robotnik'` ordered by `time_updated` shows this
+session newest at `1795392368592`, then `ses_dfad31cf9ffeh7nKHhmQZ40EPr` at `1795392148723`, so no
+`interrupt` call was needed and this record names the owner. Gate before the first dispatch,
+`scripts/dispatch-gate --session ses_dfa49b1f9ffeFR3Hj0IC38MUzW`, answers `PASS`, exit 0, peak 48401 over
+7 calls, worst jump 18311, dispatcher projection 66712, child projection 106739 of 262144, 40.7 percent.
+That peak is 37992 below the 86393 at which TASK-0043 records a false `PASS`, so the reading is trusted for
+this dispatch and re-measured before each one. Team repo `main` at `7b3d462`, `git status --porcelain`
+empty, pre-push selftest green at 86 checks. Booth repo and target untouched by this session.
+
 **HANDOFF, this session stops delegating after one dispatch (2026-11-22 22:30 UTC, 2026-11-23 07:30
 JST, `Robotnik` session `ses_dfad31cf9ffeh7nKHhmQZ40EPr`).** Gate at 22:25,
 `scripts/dispatch-gate --session ses_dfad31cf9ffeh7nKHhmQZ40EPr`, answers `PASS`, exit 0, peak 91751
@@ -409,6 +421,15 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   `## License Audit (Flicky)` headings in all three docs into `## Archive` and keeping the standing
   contradictions listed there.
 
+- [ ] VOID ROWS, ruling on `Shadow`'s TASK-0044 `F2` finding 2 (2026-11-23 00:10 UTC, 09:10 JST,
+  `Robotnik`). The legacy rows in this doc at `:498`, `:499`, `:500` and `:529` name a fifth reviewer
+  `Flicky` whom the operator retired under TASK-0044, so as written they demand a dispatch no agent can
+  make. They are superseded by the roster note in `## Status` and by `LIVE QUEUE 3` above, the chain is
+  four dispatches, and `Espio` folds them into `## Archive` at `E1`. The rows at `:599` and `:600` are
+  `## Plan` rows written by `Amy`, another agent's section, so they are left byte-unchanged per AGENTS.md
+  section 2 rule 2 and this entry is the correction to them. `Shadow`'s citation of `:171` and `:172` in
+  TASK-0041 is the same class, those are that doc's `## Plan` rows, TASK-0041 `## Status` carries the
+  roster note and its DoD row is restated in place.
 - [ ] LIVE QUEUE 2 FOR THE FRESH `Robotnik` SESSION (2026-11-22 14:05 UTC, 23:05 JST, owner `ses_dfd03a6d4ffec747C5N2ltZlTx` handing off). Read `## Status` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md` and this block only, nothing else in that doc. Run in this exact order, one dispatch at a time, each in its own fresh child session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare invocation. If a reviewer returns a blocker, insert a `Tails` fix dispatch for that task before the next stage. House rules apply to every item and are not repeated, credentials from `~/AI/secrets` at run time only and never echoed, never in argv, a file, a commit, a log or a planning doc, one dated `DEMO-LOG.md` entry per target-touching step with the proving command and the exact inverse written as each step completes, everything under `/tmp/opencode/t0042` or a maps directory on the target, no game data, no SCMDraft or third-party binary, no harvested reference CHK in a git-tracked path, leave the target clean apart from named residue, do not kill processes you did not start, name every check that did not actually run, and a builder never certifies its own artifacts. Push with `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, the pre-push selftest is the effective gate. Stamp planning-doc entries in UTC with the JST equivalent in parentheses, the host clock is `JST +0900`, and the reason is the clock-convention finding recorded in `## Status`.
   1. `Tails` as `K6`, the `R2` security fix, ahead of `R3`. Read `## Status` in the TASK-0042 doc and `Omega`'s `## Security` at doc:4482 to doc:4626, nothing else. Land four items, at most three file edits, each edit as a tool call in its own turn. 1, `Omega` finding 1, remove `StrictHostKeyChecking=no` from `scripts/remote/rt-lib:29` and `booth_loop.py:83-84` and pin the target host key, publishing a host key in the repo is fine because a host key is not a secret, and keep it out of any credential file. 2, `Omega` finding 8, replace the persistent plaintext credential file used at `booth_loop.py:549` and `:552-553` with the `mktemp` plus `trap` pattern `scripts/remote/rt-click` already uses. 3, `Omega` finding 3, on the target make the recorded `sudo cp -a` grd credentials backup at `DEMO-LOG.md:100-103` mode 600 inside a mode 700 directory, with the exact inverse recorded in a dated `DEMO-LOG.md` entry, and read paths and modes only, never file contents. 4, `Omega` finding 14, make `tests/selftest.sh:220-231` fail rather than skip when the secret file is absent and scan both target credentials instead of one, recording the before and after check counts against the current 83. Add the assert `Omega` asked for, that `StrictHostKeyChecking=no` appears nowhere under `scripts/`. Do not run the recorded COPR or `crb` disable inverses, that is refused pre-booth by the decision recorded in `## Status` and belongs to `K1`. Do not change `## Security`, `## Review` or any other agent's section.
   2. `Big` as `R3`, third in the TASK-0042 review chain. Brief, paste verbatim. "Read `## Status` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, `Shadow`'s `R1` verdict at doc:4352 and `Omega`'s `## Security` at doc:4482 to doc:4626. Verify that the checks the `S1a`, `S1b`, `S1c`, `V1`, `P1` and packaging records claim actually executed rather than being asserted, that the pre-push selftest baseline holds, that it rose 61 to 83 with TASK-0041 item 11, and what a booth-day run would have to assert to prove itself. Name any matrix or check that silently dropped. Rule on `Omega` finding 12, the interpolation of a PR body into a `run:` body at `.github/workflows/planning-doc-gate.yml:29` on a public repo, and finding 13, `actions/checkout` unpinned in six of eight workflows. Treat any timestamp claim in the record as unverified unless it names its own clock, and name every check that did not run." Write your verdict in `## Test Results`.

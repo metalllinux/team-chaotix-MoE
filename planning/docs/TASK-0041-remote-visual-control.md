@@ -11,7 +11,7 @@
 
 ## Status
 
-**Roster note, `Robotnik` 2026-11-22 22:05 UTC (2026-11-23 07:05 JST).** The fifth reviewer `Flicky` was retired by operator instruction under TASK-0044, and `Charmy` is now the team's single licence owner holding the audit and the machine gate. The `T1` to `T5` chain for this task is now four dispatches, `Shadow`, `Omega`, `Big`, `Charmy`, and `T4` carries the audit scope written in TASK-0044 `## Next Actions`. Do not dispatch `T5`. See `planning/docs/TASK-0044-flicky-into-charmy.md`.
+**Roster note, `Robotnik` 2026-11-22 22:05 UTC (2026-11-23 07:05 JST).** The fifth reviewer `Flicky` was retired by operator instruction under TASK-0044, and `Charmy` is now the team's single licence owner holding the audit and the machine gate. The `T1` to `T5` chain for this task is now four dispatches, `Shadow`, `Omega`, `Big`, `Charmy`, and `T4` carries the audit scope written in TASK-0044 `## Next Actions`. Do not dispatch `T5`. See `planning/docs/TASK-0044-flicky-into-charmy.md`. Ruling on `Shadow`'s TASK-0044 `F2` finding 2, 2026-11-23 00:10 UTC, the `## Plan` rows at `:171` and `:172` of this doc still name `Flicky` as a fifth reviewer and as the owner of the gate run. They are `Amy`'s section and stay byte-unchanged per AGENTS.md section 2 rule 2, this entry is the correction to them, the DoD row for the chain is restated in place, and `Espio` folds the legacy rows into `## Archive` at `E1`.
 
 **Now:** Gate PASSED. Eyes, OCR, keyboard hands, and mouse hands are proven on the live target. Items 1, 2, 3, 12, 4, 5, 6, 7 complete. Chosen keyboard input path is `xfreerdp /kbd:pipe:<fifo>` with `/args-from:file:` for the credential and `/cert:ignore`. Chosen mouse input path is a custom C client (`rdp-pointer`) using `libfreerdp3` with `freerdp_client_context_new` for full channel initialization; click at (960, 14) opened the GNOME 49 calendar/notification dropdown, confirmed by before/after screenshot pair. Item 8 (AT-SPI fallback) not needed. Remaining: items 9 to 11 packaging, then the review chain.
 
@@ -56,7 +56,7 @@
 - [ ] A skill or docs page tells every agent how to use it, including the secrets rule (password read from `~/AI/secrets/scm_draft_pass.md` at run time, never echoed, never written to a file, never in a commit).
 - [ ] `tests/selftest.sh` asserts at least one new check for the new tooling, and the whole selftest passes with an increased check count (record the before/after counts).
 - [ ] `grep -R -F -f ~/AI/secrets/scm_draft_pass.md` over the repo returns no match after the change (evidence recorded, output not pasted).
-- [ ] `Shadow`, `Omega`, `Big`, `Charmy`, `Flicky` each report with no unresolved finding above `low`/no blocker.
+- [ ] `Shadow`, `Omega`, `Big`, `Charmy` each report with no unresolved finding above `low`/no blocker. Restated in place 2026-11-23 00:10 UTC by `Robotnik` per `Shadow`'s TASK-0044 `F2` finding 2, the fifth reviewer named in the original row was retired under TASK-0044 and no agent can satisfy her row. `T4` carries her audit scope.
 - [ ] `Vector` updates `README.md` and the tooling docs to match.
 - [ ] Work is committed on a branch, GPG-signed, PR'd to `metalllinux/team-chaotix-MoE` `main`, merged (local pre-push selftest gate is the effective CI gate while the repo is public).
 - [ ] `DEMO-LOG.md` records each step against the target.

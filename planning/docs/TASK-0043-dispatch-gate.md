@@ -50,14 +50,14 @@
 - [x] `tests/selftest.sh` passes, 61 checks, before push.
 - [x] No credential appears in the diff. Verified with `grep -R -F -f ~/AI/secrets/scm_draft_pass.md .` and the same for the RDP secret, both no match.
 - [x] Committed, PR opened, merged to `main`, pushed.
-- [ ] `Shadow`, `Omega`, `Big`, `Charmy`, `Flicky` each review the change. Owed by a fresh `Robotnik` session, this row stays open until they run.
+- [ ] `Shadow`, `Omega`, `Big`, `Charmy` each review the change. Owed by a fresh `Robotnik` session, this row stays open until they run. Restated in place 2026-11-23 00:10 UTC by `Robotnik` per `Shadow`'s TASK-0044 `F2` finding 2, the fifth reviewer named in the original row was retired under TASK-0044 and no agent can satisfy her row. `G4` carries her audit scope.
 - [ ] `agentsmd learn` proposes the lesson once the project is initialized for agentsmd, which it is not. Recorded in TASK-0042 `## Next Actions`.
 
 ---
 
 ## Next Actions
 
-- [ ] `Robotnik`, fresh session, run the gate: `scripts/dispatch-gate`. Then dispatch the review chain for this change, `Shadow` → `Omega` → `Big` → `Charmy` → `Flicky`, one at a time.
+- [ ] `Robotnik`, fresh session, run the gate as `scripts/dispatch-gate --session <the caller's own session id>`, never the bare invocation, that is defect 2. Then dispatch the review chain for this change, `Shadow` → `Omega` → `Big` → `Charmy`, four dispatches, one at a time, `G5` void per TASK-0044. Amended in place 2026-11-23 00:10 UTC by `Robotnik` per `Shadow`'s TASK-0044 `F2` finding 2, the row as originally written tells a verbatim reader to dispatch a reviewer the roster no longer has, which contradicts this doc's own roster note at `## Status`.
 - [ ] `Tails`, if any reviewer finds a fault, fix it in a follow-up commit on `main`.
 - [x] Initialize agentsmd for this project, done 2026-11-19 by `Robotnik`, four rules proposed and pending. `agentsmd promote` is the operator's action.
 
