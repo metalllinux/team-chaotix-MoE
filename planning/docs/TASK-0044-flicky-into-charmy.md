@@ -384,11 +384,87 @@ and PR framing; this work is on `main` directly because the dispatch brief said 
 
 `VERDICT` is not mine to record.
 
+**Fix pass for `Shadow` finding 1, 2026-11-23.** Brief: fix `team/licenses/policy.yaml:20` and `:129`
+so licence escalations route to the current contract section. `Shadow`'s diagnosis is confirmed from the
+file: the sweep missed this because the stale text names the dead section, not the retired agent, and my
+first pass fixed only the `owner:` line at `:4` of the same file. Two-line edit, no policy content
+changed, only the section pointer, exactly the direction the review prescribed.
+
+| Line | Before | After |
+|---|---|---|
+| `policy.yaml:20` | `...recorded in the planning doc's ## License Audit and routed` | `...recorded in the planning doc's ## License (Charmy) and routed` |
+| `policy.yaml:129` | `...via the planning doc's ## License Audit section.` | `...via the planning doc's ## License (Charmy) section.` |
+
+No alternatives considered. `Shadow`'s suggested direction is the contract-correct one: `charmy.md` and
+`.github/workflows/licence-check.yml:57` already point at `## License (Charmy)`, so leaving the policy
+file pointing elsewhere would leave three escalation routes and two section names in one tool. The
+finding is guidance to agents and the operator, not machine behavior: `team/licenses/core.py` does not
+parse `disclaimer` or `escalation.note`, which is why the fix needs no code change and no test change.
+
+Verification. `git grep -rin 'License Audit' -- team/` after the edit returns no matches, exit 1, so
+`team/` carries no stale section pointer. Gates, both run after the edit:
+
+| Check | Command | Result | Exit |
+|---|---|---|---|
+| licence gate | `scripts/licence-check` | `licence-check: /home/howard/AI/projects/team-chaotix-moe (PASS)`, 3 findings, all MIT | 0 |
+| config gate | `python3 tests/config_gate.py` | 6 notes, `roster OK (11 agents)`, all six assertions green | 0 |
+| sweep | `git grep -rin 'License Audit' -- team/` | no match | 1 |
+
+Check counts against the 86-check post-`ef06147` baseline are unchanged. The edit is prose in a YAML
+scalar block, so no selftest check, no config-gate assertion, and no pytest test covers those two lines;
+that is the same reasoning `Shadow` used to rate the defect should-fix rather than a blocker, and it is
+why I added no assertion rather than inventing one. The pre-push selftest remains the effective gate.
+
+`Shadow` finding 2 (cross-task DoD rows in TASK-0041, 0042, 0043 that still demand the fifth reviewer)
+is untouched and stays owned by each task's `Robotnik` per decision 3. No contact with `192.168.1.99`.
+
+`VERDICT` is not mine to record.
+
 ---
 
 ## Review
 
 *Owner: `Shadow`. Read-only, findings only, no edits.*
+
+**Review of `F1` against `ef06147` and `641922e`, read at HEAD `7b3d462`, 2026-11-23.** The core sweep is verified sound. The findings below are one in-scope file left incomplete and one cross-task bookkeeping hazard, neither of which is a defect in the contract files themselves.
+
+### What I verified clean, with the command that proves it
+
+- Sweep. `git grep -rin -i flicky -- .opencode AGENTS.md README.md planning/templates tests .github team scripts` at HEAD returns zero matches, exit 1. Total tracked matches at HEAD is 180, breakdown `git grep -rin -i flicky | awk -F: '{print $1}' | sort | uniq -c`: 168 in `planning/docs/*`, 5 in `planning/TASKS.md`, 1 in `planning/HANDOFF-TASK-0038.md`, 4 in `DEMO-LOG.md`, 2 in the two `continue-prompt-task0038-*.md`. The 11-match rise over `Tails`' 169 is queue record added by `7b3d462`, which is itself record history.
+- Four-stage chain consistency. `AGENTS.md:4` (eleven), `:78` (contract block, one licence section), `:127` and `:129` (four-stage chains), `:259-278` (section 9 ownership plus generic retired-heading prose), `:497` (section 18). `planning/templates/planning-doc.md:38` and `:126`, one `## License` line. `README.md:39`, `:130`, `:143`, `:360`. `.github/workflows/licence-check.yml:57` and `scripts/licence-check:17` both route to `## License (Charmy)`. `team/graph/state.py` `REVIEW_STAGES` is four, `review_charmy` last, `STAGE_AGENT` has no retired key, and `cycle.py:205`, `:210`, `:212` attach the router to `REVIEW_STAGES[-1]` and the fix edge to `REVIEW_STAGES[0]`, so the graph rewires from the tuple exactly as `Tails` claims.
+- The `VERDICT` fail-closed contract. `team/graph/state.py:116-134` scans reversed lines for `VERDICT:`. `charmy.md`'s new section template ends with the machine-read `VERDICT:` line, so `record_verdict` at the new last stage reads Charmy. The prose `**Verdict:**` line starts with `**` and is not matched, no collision. `Tails`' Option B reasoning at `## Implementation` holds.
+- Charmy covers every Flicky duty. Compared line by line against `git show 1cf0bc6:.opencode/agents/flicky.md`: gate plus four-outcome exit table, present. Avoid-is-not-refuse, present. House-policy ownership, present. Upstream-at-the-ref verification, present. Attribution and NOTICE obligations, `charmy.md:66` and `:70`. POLICY_EXCEPTION recording, present. Never-grant-an-exception and GPL-stays-GPL boundaries, present. Gate-before-your-own-reading ordering, present. Fail-closed VERDICT with the gate-conditioned PASS rule, present.
+- Permissions. `diff` of the frontmatter permission blocks of `flicky.md` and `charmy.md` at `1cf0bc6` is empty. `bash: allow` carries `scripts/licence-check`, `webfetch` and `websearch` carry upstream verification. The merged block covers the gate work, verified from the files, not from the record's claim.
+- Gates and roster. `robotnik.md` task allows are the 10 workers, no stale entry, and `tests/config_gate.py` now fails a stale allow via `stale = allowed - set(WORKERS)`. The `RETIRED` file-absence assertion, the AGENTS.md arrow assertion, the fenced-contract-block parse, the Charmy duty-string assertions, the template exactly-one-licence-line assertion, the selftest roster block, `test_review_chain_ends_at_the_licence_agent`, and the `test_a2a.py` file-driven card assertions are all real assertions that execute, not skips. Split-name constructions (`"Flic" "ky"`, `"fli" + "cky"`, `fli""cky.md`) are deliberate and commented, and none matches the sweep pattern, confirmed by the zero-match grep above.
+
+### policy.yaml still routes licence escalations to a section that no longer exists
+**Severity:** should-fix, and the sole reason for this review's FAIL.
+**Where:** `team/licenses/policy.yaml:20` and `team/licenses/policy.yaml:129`
+**Problem:** The disclaimer and the escalation note both direct findings to "the planning doc's ## License Audit", a section that is no longer in the doc contract and that no agent writes. The name sweep could not catch this because the stale text names the dead section, not the retired agent, and `Tails` fixed only the `owner:` line at `:4` of the same file.
+**Failure scenario:** A future task produces a `POLICY_EXCEPTION` or a licence decision that cannot be made from the policy file. The agent follows the house policy it is reading and records the finding into a `## License Audit` section. That heading is off-contract, unowned, and not what `team/graph/state.py:record_verdict` reads, so the escalation either lands in a section no other agent consumes or is silently dropped, while `charmy.md` and `licence-check.yml:57` point at `## License (Charmy)`. `team/licenses/core.py` does not parse these two fields, so the defect is guidance to agents and the operator, not machine behavior, which is why this is should-fix and not a blocker.
+**Suggested direction:** `Tails` fix pass, two-line edit, both references to `## License (Charmy)`. `team/licenses/` is in this task's declared scope in `## Status`, and TASK-0044 is exactly the "task that explicitly changes policy" that `charmy.md` requires before the file may be touched. No policy content changes, only the section pointer.
+
+### Live DoD and Next Actions rows in the three gated tasks still demand the fifth reviewer
+**Severity:** should-fix. Owner is each task's `Robotnik`, not `Tails`, because the DoD and Next Actions are `Robotnik`-owned sections and decision 3 bars rewriting other tasks' records.
+**Where:** `planning/docs/TASK-0043-dispatch-gate.md:53` and `:60`. `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md:498` to `:500`, `:529`, `:599` (DoD row 12, "Flicky: run `scripts/licence-check` on the documentation repo", acceptance "Flicky's gate exits 0"), `:600` (DoD row 13), `:429` and `:430` (LIVE QUEUE 2 items 5 and 6 still enumerate `T5`/`G5` with the fifth agent inside the same block whose item 4 voids `R5`). `planning/docs/TASK-0041-remote-visual-control.md:171` (DoD row 13, five-reviewer chain) and `:172` (DoD row 14, "Flicky runs `scripts/licence-check` on this repo ... Flicky's gate exits 0").
+**Problem:** Open acceptance rows define "done" for those three tasks as including a review dispatch and a gate run by an agent that no longer exists.
+**Failure scenario.** Two concrete ones. One, a fresh `Robotnik` session runs TASK-0043 `## Next Actions` verbatim at `:60`, which spells `Shadow` → `Omega` → `Big` → `Charmy` → the retired reviewer as a dispatch instruction, directly contradicting the roster note at `:13` of the same doc, and the dispatch fails against a roster with no such agent. Two, `Knuckles` at `K1` reads each DoD "ticked or explicitly recorded as blocked with evidence" against DoD rows whose acceptance condition is "Flicky's gate exits 0", a condition no agent can ever satisfy, so the release step either blocks or invites a false tick.
+**Suggested direction:** `Robotnik` amends the open rows in the three docs at the next dispatch to those tasks: strike the fifth name from the four chain enumerations, reassign the two "Flicky runs the gate" acceptance conditions to Charmy (the gate work is already carried verbatim into `R4`, `T4`, `G4`, so no scope is lost, verified against the `R4` brief in LIVE QUEUE 3, which already names StormLib at the pinned commit, the Rocky logo SVG, the patched `ERA`, and the game-data posture), and add a `SUPERSEDED` marker to LIVE QUEUE 2 so the internal contradiction at `:429` is inert. Record history in closed tasks (`TASK-0037` to `TASK-0040`, the closed 13:45 queue, `HANDOFF-TASK-0038.md`) stays untouched.
+
+### Unclassified residue band, ruled
+**Severity:** nit, closing `Tails`' open question.
+**Where:** `DEMO-LOG.md:286`, `:605`, `:1163`, `:1252`. `planning/HANDOFF-TASK-0038.md:80`. `continue-prompt-task0038-port-fix.md:38`. `continue-prompt-task0038-icon-parity.md:98`. `planning/docs/TASK-0041-decision-third-party-repos.md:44`.
+**Ruling:** Accepted as record history. I read every one of the 8 matches. Each is a dated record of a closed or earlier pass (provenance warnings, checks-not-run lists, closed-run handoff narratives, a decision note), none is a live dispatch instruction, and rewriting them would edit other tasks' records against decision 3. `Robotnik` should extend the DoD sweep box's accepted-history list to name these four paths so the box can be ticked with a complete enumeration rather than the current 120/169/180 drift.
+
+### README key-pattern bullet versus Charmy's policy ownership
+**Severity:** nit, already handed to `Vector`.
+**Where:** `README.md:50-51` versus `.opencode/agents/charmy.md:33-35`
+**Problem:** README says Charmy is read-only on code in practice. Charmy's prompt says it owns `team/licenses/policy.yaml` and may change it in an explicit policy task. Both can be true (the gate is read-only execution; the policy edit is task-scoped), but the README sentence as written reads as a contradiction a new member will trip on.
+**Suggested direction:** `Vector` at `F6` words the exception in one clause. `Tails` already flagged this at `## Implementation`, "Open for the next agents".
+
+**Verdict:** the roster removal itself is complete, consistent across every contract file I checked, and its gates are real. The one in-scope file the name sweep missed, `team/licenses/policy.yaml`, and the cross-task DoD rows both need the fix pass, so this review does not pass clean.
+
+VERDICT: FAIL team/licenses/policy.yaml:20 and :129 still route licence escalations to the retired section; cross-task DoD rows listed above still demand the fifth reviewer and are owned by each task's Robotnik, not Tails
 
 ---
 
