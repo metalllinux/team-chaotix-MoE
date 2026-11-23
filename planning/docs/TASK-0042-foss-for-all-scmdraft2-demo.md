@@ -13,6 +13,35 @@
 
 ## Status
 
+**Booth-day readiness ruling, put to the team by the operator and answered from evidence (2026-11-23
+01:20 UTC, 10:20 JST, `Robotnik` session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** The question is whether on
+2026-11-28 the team can be pointed at `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2`
+and run the live map-creation loop. Ruling, not from the repo alone, the loop is proven but three
+dependencies live outside that repository. One, measured, the loop runs end to end from
+`/tmp/opencode/t0042/booth_loop.py`, 47217 B at that path, six maps in 2232.36 s in rebuild mode at the
+300 s window. Two, rebuild mode resolves the reference CHK at `booth_loop.py:647` as
+`{HERE}/ts-harvest/ref-era6.chk`, that file is 257441 B and present at
+`/tmp/opencode/t0042/ts-harvest/ref-era6.chk`, and it is withheld from the booth repo by the exclusion
+rule, so a bare clone resolves it to a path that does not exist and `booth_loop.py:586` names the
+withholding in its own failure message. Three, `/tmp` on this controller is age-cleaned, `q /tmp 1777 root
+root 10d` at `/usr/lib/tmpfiles.d/tmp.conf:11`, on a persistent xfs root rather than a tmpfs, and on
+2026-11-28 the runner is 6 days old while the reference CHK is 8 days old, so the whole working set sits
+two days inside the cleanup window. Four, the loop needs the target at `192.168.1.99` and the 3389
+listener, which is source-restricted to `192.168.1.102`, an address this controller will not hold at the
+venue. **Decision, recorded rather than asked.** Two preparation dispatches are inserted ahead of the
+numbered items in `LIVE QUEUE 4`, `P2` `Tails`, move the runner working set including
+`ts-harvest/ref-era6.chk` from `/tmp/opencode/t0042` to a durable non-git path, chosen location
+`/home/howard/AI/booth-2026/t0042`, with no copy in any git-tracked path per the exclusion rule, then
+re-measure one full cycle from there. `P3` `Tails`, the venue dry run the plan carries as item 17,
+scheduled 2026-11-26, which is the only check that resolves the venue network unknown. **Is TASK-0042
+done, no.** The loop being runnable is not the same as the task being complete, `R3`, `R4` with its
+exclusion sweep, `T1` to `T4`, `G1` to `G4`, the gate fix, `D1` which owns the honest editor-driven versus
+programmatic prose the operator asked for, `K1` which owns the merges and issue closure, and `E1` have not
+run, and the documentation-honesty box stays unticked until `D1` runs. Everything the team has produced is
+committed and pushed, `git status --porcelain` empty, local HEAD and `git ls-remote origin refs/heads/main`
+both `683459c`, booth repo `refs/heads/main` read remotely as `1b14562`, pre-push selftest green at 86
+checks.
+
 **HANDOFF, this session stops delegating after five dispatches (2026-11-23 01:05 UTC, 10:05 JST,
 `Robotnik` session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** Gate at 01:00, `scripts/dispatch-gate --session
 ses_dfa49b1f9ffeFR3Hj0IC38MUzW`, answers `PASS`, exit 0, peak 78985 over 20 calls, worst jump 6149,
@@ -360,6 +389,18 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
   invocation, and treat `PASS` as necessary and not sufficient. The house rules written at the head of
   `LIVE QUEUE 3` apply unchanged to every item below and are not repeated.
+   0. PRIORITY PREP, two dispatches ahead of the numbered items, from the booth-day readiness ruling in
+   `## Status`. `P2` `Tails`, brief, paste verbatim. "Read the booth-day readiness ruling in `## Status` in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Move the booth working set from
+   `/tmp/opencode/t0042` to `/home/howard/AI/booth-2026/t0042`, the runner, the map and mask code, the gate
+   reports, the booth artifacts and `ts-harvest/ref-era6.chk`, because `/usr/lib/tmpfiles.d/tmp.conf:11`
+   age-cleans `/tmp` at 10 days and the reference CHK is already 8 days old against a 2026-11-28 booth.
+   Copy rather than delete, leave `/tmp/opencode/t0042` in place so no earlier record breaks, keep the new
+   path out of every git-tracked path, and re-measure one full six-map cycle in rebuild mode from the new
+   path with the per-map overhead and the cycle total recorded. No target change beyond what a cycle
+   already makes, and every target change gets a dated `DEMO-LOG.md` entry with its exact inverse." `P3`
+   `Tails`, the venue dry run the plan carries as item 17, scheduled 2026-11-26, one cycle on venue
+   network, and if it fails record the fallback in `## Status` rather than improvising at the booth.
    1. `Vector` as `F6`, unchanged from item 5 of `LIVE QUEUE 3`, which carries the brief verbatim, the
    `README.md` and the team documentation to the eleven-agent roster and the four-stage chain, with the
    roster table confirmed against `.opencode/agents/` exactly, written in `## Docs`.
