@@ -13,6 +13,25 @@
 
 ## Status
 
+**HANDOFF, this session stops delegating after five dispatches (2026-11-23 01:05 UTC, 10:05 JST,
+`Robotnik` session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** Gate at 01:00, `scripts/dispatch-gate --session
+ses_dfa49b1f9ffeFR3Hj0IC38MUzW`, answers `PASS`, exit 0, peak 78985 over 20 calls, worst jump 6149,
+dispatcher projection 85134, child projection 136214 of 262144, 52.0 percent. This session stops on a
+`PASS` because that child projection is 6067 below the 142281 projection TASK-0043 records for the dispatch
+whose real child request reached 262242, the same instrument at nearly the same reading, so the next
+dispatch carries the same overflow risk the gate exists to catch. **Operator action, start a fresh
+`Robotnik` session in `/home/howard/AI/projects/team-chaotix-moe` and run `LIVE QUEUE 4` at the top of
+`## Next Actions`, which resumes `LIVE QUEUE 3` at its item 5 and carries the whole remaining queue.**
+Nothing is mid-flight. State at the stop, team repo `main` at `8efdcf7` pushed with the pre-push selftest
+green at 86 checks, booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` private
+at `1b14562` untouched by this session, target `192.168.1.99` untouched by this session since `P1` with the
+residue named in the entry of 2026-11-22 13:40 unchanged, and all six deliverable maps at their recorded
+SHA-256 values. Work this session landed, `F1b` at `e22bb3c` fixing the `team/licenses/policy.yaml`
+escalation pointers, the restated fifth-reviewer rows across TASK-0041, TASK-0042 and TASK-0043 at
+`68babaf`, and the `F2` to `F5` TASK-0044 verdicts with their handoff records at `8efdcf7`. Checks this
+session did not run itself, no target contact, no booth repo contact, and `scripts/licence-check`,
+`tests/selftest.sh` and `tests/config_gate.py` only through `Tails`, `Big` and `Charmy`.
+
 **Queue ownership taken (2026-11-23 00:06 UTC, 09:06 JST, `Robotnik` session
 `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** This session owns the TASK-0042, TASK-0044, TASK-0041 and TASK-0043
 queues and runs `LIVE QUEUE 3` from item 1, `F2`. **No competing dispatcher exists.** A read-only
@@ -331,6 +350,54 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
 
 ## Next Actions
 
+- [ ] LIVE QUEUE 4 FOR THE FRESH `Robotnik` SESSION (2026-11-23 01:05 UTC, 10:05 JST, owner
+  `ses_dfa49b1f9ffeFR3Hj0IC38MUzW` handing off after five dispatches). Read `## Status` in this doc and
+  this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
+  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 3` below is consumed through its item 4,
+  `F2`, `F3`, `F4` and `F5` landed, and a `Tails` fix dispatch `F1b` was inserted for `Shadow`'s finding 1
+  and landed at `e22bb3c`. Run in this exact order, one dispatch at a time, each in its own fresh child
+  session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
+  invocation, and treat `PASS` as necessary and not sufficient. The house rules written at the head of
+  `LIVE QUEUE 3` apply unchanged to every item below and are not repeated.
+   1. `Vector` as `F6`, unchanged from item 5 of `LIVE QUEUE 3`, which carries the brief verbatim, the
+   `README.md` and the team documentation to the eleven-agent roster and the four-stage chain, with the
+   roster table confirmed against `.opencode/agents/` exactly, written in `## Docs`.
+   2. `Tails` as `F8`, new, inserted ahead of `F7` so the tree `Knuckles` merges carries the open code
+   follow-ups. Brief, paste verbatim. "Read `## Review`, `## Security` and `## Test Results` in
+   `planning/docs/TASK-0044-flicky-into-charmy.md`. Land three fixes, one file edit per turn. 1,
+   `team/a2a/server.py:109` describes a twelve-role team while the skills array lists eleven agents. 2,
+   `tests/selftest.sh:25` and `:40` hold a dead bash-syntax branch that can hide a real parse failure. 3,
+   `scripts/vm-create-rocky.sh:4` hides a real parse failure behind that branch. Run `bash -n` on both
+   scripts, run `tests/selftest.sh` and `python3 tests/config_gate.py`, record the before and after check
+   counts against 86, and name every check that did not run. Write your entry in `## Implementation` as
+   each step completes. Commit signed and push with
+   `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`."
+   3. `Knuckles` as `F7`, unchanged from item 6 of `LIVE QUEUE 3`, which carries the brief verbatim, plus
+   verify `F8` landed first and verify the merge from the remote rather than from the dispatch report.
+   4. `Tails` as `K6`, unchanged from item 7 of `LIVE QUEUE 3`, which carries the four-item `R2` security
+   fix verbatim, `StrictHostKeyChecking=no` off `scripts/remote/rt-lib` and `booth_loop.py` with the target
+   host key pinned, the `mktemp` plus `trap` credential pattern for `booth_loop.py`, the target-side grd
+   credentials backup to mode 600 inside a mode 700 directory with its exact inverse recorded in a dated
+   `DEMO-LOG.md` entry and paths and modes read only, and `tests/selftest.sh` failing rather than skipping
+   when the secret file is absent while scanning both target credentials, with before and after check
+   counts against 86. Do not run the recorded COPR or `crb` disable inverses, those belong to `K1`.
+   5. `Big` as `R3`, unchanged from item 8 of `LIVE QUEUE 3`, brief verbatim.
+   6. `Charmy` as `R4`, unchanged from item 9 of `LIVE QUEUE 3`, which carries the licence review, the
+   retired reviewer's audit scope, both `scripts/licence-check` runs, the public-or-not ruling on the
+   published editor captures, and the sweep proving the operator's exclusion rule of 2026-11-22 22:10 UTC
+   that the booth repo holds no StarCraft Anthology ISO game file and no SCMDraft 2 executable from
+   `http://www.stormcoast-fortress.net/cntt/software/scmdraft`, naming the command, the commit read, the
+   counts and every matching path. An unreadable sweep is a FAIL.
+   7. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 10 of
+   `LIVE QUEUE 3`. `T5` is void.
+   8. `G1` to `G4`, the TASK-0043 review chain, per item 11 of `LIVE QUEUE 3`, then the `Tails` gate fix
+   dispatch that has still not run. `G5` is void.
+   9. `Vector` as `D1`, unchanged from item 12 of `LIVE QUEUE 3`, which carries every fact the prose must
+   state.
+   10. `Knuckles` as `K1`, unchanged from item 13 of `LIVE QUEUE 3`.
+   11. `Espio` as `E1`, unchanged from item 14 of `LIVE QUEUE 3`, and now also folding the superseded
+   legacy Next Actions rows named in the VOID ROWS ruling below into `## Archive`.
 - [ ] LIVE QUEUE 3 FOR THE FRESH `Robotnik` SESSION (2026-11-22 22:30 UTC, 2026-11-23 07:30 JST, owner
   `ses_dfad31cf9ffeh7nKHhmQZ40EPr` handing off after one dispatch). Read `## Status` in this doc and
   this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in

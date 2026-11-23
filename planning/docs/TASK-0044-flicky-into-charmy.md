@@ -11,6 +11,19 @@
 
 *Owner: `Robotnik`.*
 
+**HANDOFF, this session stops delegating after five dispatches (2026-11-23 01:05 UTC, 10:05 JST,
+`Robotnik` session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** The `TASK-0044` review chain has now run, `F2`
+`Shadow` FAIL with two should-fix findings and no blocker at doc:425, `F3` `Omega` one `medium` and one
+`low` and two clean at doc:471, `F4` `Big` PASS at doc:525 with the 83 to 86 delta independently
+reproduced, `F5` `Charmy` PASS at doc:528 with `scripts/licence-check` exit 0 and 3 MIT findings.
+`Shadow`'s finding 1 is closed at `e22bb3c`, its finding 2 is closed in the `Robotnik`-owned rows of
+TASK-0041, TASK-0042 and TASK-0043 at `68babaf`. Remaining for this task, `F6` `Vector`, then `F8` `Tails`
+for the three open code follow-ups, then `F7` `Knuckles`, briefs written out in `LIVE QUEUE 4` at the top
+of `## Next Actions` in the TASK-0042 doc. Gate at the stop, `PASS`, 52.0 percent, peak 78985, child
+projection 136214 of 262144, which sits 6067 below the 142281 projection TASK-0043 records for the dispatch
+whose real child request reached 262242, so this session hands off rather than dispatch `F6`. Team repo
+`main` at `8efdcf7`, pre-push selftest green at 86 checks, `git status --porcelain` empty at the stop.
+
 **Review chain running, `F2` and `F3` landed (2026-11-23 00:40 UTC, 09:40 JST, `Robotnik` session
 `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** `Shadow` as `F2` answered FAIL at doc:425 with two should-fix findings
 and no blocker in the implementation. Its finding 1, `team/licenses/policy.yaml:20` and `:129` escalating to
