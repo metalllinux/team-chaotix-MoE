@@ -11,6 +11,32 @@
 
 *Owner: `Robotnik`.*
 
+**Review chain running, `F2` and `F3` landed (2026-11-23 00:40 UTC, 09:40 JST, `Robotnik` session
+`ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** `Shadow` as `F2` answered FAIL at doc:425 with two should-fix findings
+and no blocker in the implementation. Its finding 1, `team/licenses/policy.yaml:20` and `:129` escalating to
+a section no longer in the contract, was fixed by `Tails` as `F1b` at commit `e22bb3c`, verified from the
+remote by `git ls-remote` and by `grep -c 'License Audit' team/licenses/policy.yaml` returning 0, selftest
+unchanged at 86 checks. Its finding 2, open DoD and Next Actions rows elsewhere that demand a fifth reviewer
+no agent can supply, is `Robotnik`-owned and is handled, see the VOID ROWS ruling in TASK-0042
+`## Next Actions` and the restated DoD rows in TASK-0041 and TASK-0043. `Omega` as `F3` wrote doc:471 with
+one `medium`, one `low` and two clean. Decision on the `medium`, single-reviewer concentration, accepted as
+this task's stated purpose, the mitigation `Omega` names is machine-enforced exit codes plus the
+`record_verdict` fail-close, and it is recorded rather than reversed. Decision on the `low`,
+`team/a2a/server.py:109` says `twelve-role` while the skills array lists 11, verified by grep, carried into
+the queued `K6` `Tails` fix dispatch instead of costing a dispatch of its own, because it is a description
+string with no behavioural effect and `K6` already edits adjacent files. `F4` `Big` is next.
+
+**`F4` `Big` PASS, two follow-ups, and a queue decision (2026-11-23 00:50 UTC, 09:50 JST, `Robotnik`
+session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** `Big` ran `tests/selftest.sh` at HEAD `68babaf`, 86 checks,
+exit 0, and reproduced the 82 plus 1 gateway baseline from `git archive 1cf0bc6`, so the 83 to 86 delta is
+measured rather than inherited. Mutant injection on the roster assertions, the six config-gate assertions,
+the cycle test and the A2A card test proves those checks execute rather than skip. Only the shellcheck block
+did not run, `shellcheck` is absent on this controller. Two open follow-ups, a dead bash-syntax branch at
+`tests/selftest.sh:25` and `:40`, and a real parse failure hidden at `scripts/vm-create-rocky.sh:4`. Decision,
+those two plus `team/a2a/server.py:109` go into one `Tails` fix dispatch named `F8`, run after `F6` `Vector`
+and before `F7` `Knuckles`, so the tree `Knuckles` merges carries them. `F5` `Charmy` is next, fourth and last
+in the chain.
+
 **HANDOFF, this session stops delegating after one dispatch (2026-11-22 22:30 UTC, 2026-11-23 07:30
 JST, `Robotnik` session `ses_dfad31cf9ffeh7nKHhmQZ40EPr`).** `F1` landed and is verified. `Shadow` as
 `F2`, `Omega` as `F3`, `Big` as `F4`, `Charmy` as `F5`, `Vector` as `F6` and `Knuckles` as `F7` remain,
@@ -472,6 +498,31 @@ VERDICT: FAIL team/licenses/policy.yaml:20 and :129 still route licence escalati
 
 *Owner: `Omega`. Read-only.*
 
+### Single licence reviewer concentrates gate authority in one agent with no independent cross-check
+**Severity:** medium
+**Vector:** authz
+**Where:** `team/graph/state.py:41-46` (REVIEW_STAGES is four), `.opencode/agents/charmy.md:31-35`
+**Attack:** Not an external attack. Internal governance risk. Charmy runs `scripts/licence-check`, reads the gate output, verifies upstream licences via `webfetch`, writes the verdict, AND owns `team/licenses/policy.yaml` (the policy the gate reads). Charmy has `edit: allow` and `bash: allow`. Previously Flicky held identical permissions and provided an independent second pass that could challenge Charmy's interpretation of gate output or upstream verification. With one reviewer, Charmy's reading of a `POLICY_EXCEPTION` finding, or its choice to record an exception rather than escalate it, goes unchallenged. Charmy can edit `policy.yaml` in a policy task and then run the gate against its own edit in the same task. Flicky's identical `edit: allow` and `bash: allow` made this pre-existing, but the second reviewer was the cross-check.
+**Impact:** A misclassified licence exception (a blocker read as an avoid, or a genuine incompatibility recorded as a policy_exception) passes CI without any agent contesting the reading. Blast radius is the published artifact's licence posture.
+**Fix:** Accepted as a deliberate design decision per `## Status` decision 1. Mitigate by keeping the CI gate independent of Charmy's prose (the gate's exit codes are machine-enforced and Charmy cannot suppress them), and by the `record_verdict` fail-close at `team/graph/state.py:116-134` (no `VERDICT:` line means FAIL). The `Shadow` reviewer at stage one provides a check on Charmy's section structure but not on its licence reasoning. Document this residual risk in the operator's awareness. No code fix required for this task; the concentration is the task's stated purpose.
+
+### A2A agent card description misstates team size as "twelve-role"
+**Severity:** low
+**Vector:** input-validation
+**Where:** `team/a2a/server.py:109`
+**Attack:** An external A2A consumer querying `GET /.well-known/agent.json` reads the description as "a twelve-role autonomous software development team" while the `skills` array correctly lists 11 agents (file-driven from `.opencode/agents/`). No exploit, but the mismatch is a trust signal for an external integrator: the card's own self-description disagrees with its advertised capabilities.
+**Impact:** Minor. An external caller may believe a `@flicky` task address exists because the description says twelve and only enumerate skills after connecting.
+**Fix:** Change `team/a2a/server.py:109` from "twelve-role" to "eleven-role". One-line edit. `Vector` or `Tails` fix pass.
+
+### Gate remains asserted in CI and selftest after the collapse
+**Verified clean.** The licence gate (`scripts/licence-check`) runs at `tests/selftest.sh:113` (invoked by the pre-push hook on every push) and in `.github/workflows/licence-check.yml` (triggers on `team/**`, `scripts/**`, `LICENSE`, and the workflow file itself). Both paths fail closed: selftest uses `|| fail`, CI maps exit 7 and 8 to `::error::` and `exit 1`. The gate's logic in `team/licenses/core.py` is unchanged by this task. `set -euo pipefail` at `scripts/licence-check:18` and the `exec` at `:24-26` mean the script's exit code is `core.py`'s exit code directly, no wrapping that could swallow a nonzero. The `record_verdict` function at `team/graph/state.py:116-134` fail-closes when the last review stage produces no `VERDICT:` line. Charmy's section template (`charmy.md:117`) ends with the machine-read `VERDICT:` line, so the graph's own router reads it. All three assertion paths (selftest, CI workflow, graph router) survive the reviewer collapse.
+
+### `policy.yaml` and `scripts/licence-check` fail closed after the fix pass
+**Verified clean.** `policy.yaml:20` and `:129` now route to `## License (Charmy)`, confirmed by `git grep -rin 'License Audit' -- team/` returning zero at HEAD. The escalation path from the policy file reaches the section the graph reads. The gate's four-outcome contract (exit 0/6/7/8) is unchanged. `core.py` reads `policy.yaml`'s `avoid` severity labels and `hard_stop` conditions; the YAML scalar text edits at `:20` and `:129` are in `disclaimer` and `escalation.note` fields which `core.py` does not parse for decision logic (confirmed by reading `core.py`'s policy loading: it reads `approved`, `avoid`, `hard_stop_licences`, `hard_stop`, and `compatibility`, not `disclaimer` or `escalation`). The prose fix has no machine-behavior effect, matching `Shadow`'s should-fix rating.
+
+### A2A card roster is file-driven and correct
+**Verified clean.** `team/a2a/server.py:85-93` (`load_roster`) globs `*.md` from `.opencode/agents/` at call time. `agent_card()` at `:96-122` builds `skills` from `load_roster()`. The retired agent's `.md` file is deleted, so it cannot appear in the skills array. `tests/test_a2a.py` asserts the card advertises `charmy` and does not advertise the retired agent. The card's roster is correct. The only stale text is the `description` string at `:109` (finding above).
+
 ---
 
 ## License (Charmy)
@@ -480,11 +531,223 @@ VERDICT: FAIL team/licenses/policy.yaml:20 and :129 still route licence escalati
 the licence review of the change and the upstream audit against the ref actually used, plus the machine
 gate outcome.*
 
+**Gate:** `scripts/licence-check /home/howard/AI/projects/team-chaotix-moe` at HEAD `68babaf`, exit 0.
+Plain run prints `licence-check: /home/howard/AI/projects/team-chaotix-moe (PASS)` with 3 findings, all
+MIT (`LICENSE` as `repo_license`, `planning/docs/TASK-0039-agent-gpg-icon-feature-catch.md` and
+`tests/test_licence.py` as `header`). The `--json` report confirms `"outcome": "PASS"`, `"exit": 0`,
+`"reasons": []`. Readable output, so the gate counts as having run.
+
+**Outcome:** PASS
+
+**Project license:** MIT, `LICENSE` at HEAD, `Copyright (c) 2026 Howard`. Appropriate. The tree is the
+team's own tooling, agent configuration, and planning records authored in house, the two commits in
+this change (`ef06147`, `e22bb3c`) add no vendored or copied source from outside the project, and the
+gate scanned the whole tree for LICENSE files, SPDX headers, and package metadata with no copyleft
+declaration found. A permissive licence on in-house work is compatible with the permissive dependency
+set below, and nothing in this change inherits copyleft that would have to be preserved.
+
+**Imported code**
+
+The change set imports no code. `git show --stat` for `ef06147` lists 18 files of agent config,
+contract text, graph stage tuple, and tests; `e22bb3c` lists the house-policy pointer fix and this doc.
+`team/requirements.txt` is untouched by both. The imported set this repo carries is therefore the five
+declared Python dependencies, verified as follows. Installed resolution is what the test suite actually
+ran against, from `importlib.metadata` on this host.
+
+| Component | Source (repo @ ref) | License (verified at) | Obligations met | Status |
+|---|---|---|---|---|
+| langgraph 1.2.16 (`team/requirements.txt:12`, declared `>=1.0`) | `langchain-ai/langgraph`, PyPI record at 1.2.16 plus repo `LICENSE` at `main` | MIT. PyPI `license_expression` at 1.2.16 is `MIT`; `raw.githubusercontent.com/langchain-ai/langgraph/main/LICENSE` first line `MIT License`. The git tag `langgraph==1.2.16` did not resolve, 404 on both the raw path and the GitHub refs API, so this row is registry evidence at the version in use plus the repo's declared licence, not a blob read | yes. Not vendored here, the pip artifact carries its own notice, no NOTICE file owed by this repo | pass, bounded ref |
+| langchain-core 1.7.0 (`team/requirements.txt:13`) | `langchain-ai/langchain` @ tag `langchain-core==1.7.0`, `libs/core/LICENSE` | MIT, read at that tag, `Copyright (c) LangChain, Inc.` | yes, same basis as above | pass |
+| langgraph-checkpoint-sqlite 3.1.2 (`team/requirements.txt:14`) | `langchain-ai/langgraph` `libs/checkpoint_sqlite`, PyPI record at 3.1.2 plus repo `LICENSE` at `main` | MIT. PyPI `license_expression` at 3.1.2 is `MIT`; `main` `LICENSE` first line `MIT License`. Tag `langgraph-checkpoint-sqlite==3.1.2` did not resolve (404) | yes, not vendored | pass, bounded ref |
+| PyYAML 6.0.1 (`team/requirements.txt:15`) | `yaml/pyyaml` @ tag `6.0.1`, `LICENSE` | MIT, read at that tag, `Copyright (c) 2017-2021 Ingy döt Net` and `Copyright (c) 2006-2016 Kirill Simonov` | yes, not vendored | pass |
+| pytest 9.1.1 (`team/requirements.txt:16`) | `pytest-dev/pytest` @ tag `9.1.1`, `LICENSE` | MIT, read at that tag, `Copyright (c) 2004 Holger Krekel and others` | yes, not vendored | pass |
+| Change set (`ef06147`, `e22bb3c`) | in house, `metalllinux/team-chaotix-MoE` @ those commits | MIT, the project licence above | nothing imported, no header stripped, the gate's header scan reports none | pass |
+
+No copyleft in the set, so no pair to test for GPL-2.0 against GPL-3.0-only, AGPL-3.0, or relicense
+incompatibility. All six rows are permissive and compatible with the project's MIT.
+
+**Exceptions recorded:** none. The gate reported no avoid-list hit, no `POLICY_EXCEPTION` (exit 6), no
+`BLOCK` (7), and no `HARD_STOP` (8). `team/licenses/policy.yaml` was not edited in this pass; the only
+policy-file edits in this change are `Tails`' two pointer lines at `policy.yaml:20` and `:129` in
+`e22bb3c`, which route escalations to `## License (Charmy)` and change no policy content, so this task
+is not a policy change under my ownership rule and I made none.
+
+**Duty parity with the retired reviewer.** Confirmed held, not assumed. `charmy.md:26` (fourth and
+last, one licence section), `:31` (the gate and its scanner and policy in `team/licenses/`),
+`:56` (GPL code stays GPL, no relicense), `:63` and `:67` (read the upstream LICENSE at the revision in
+use, a headerless vendored file is missing attribution rather than unlicensed), `:88` to `:90` (the four
+outcomes with exit codes), `:93` (avoid is not refuse), `:101` to `:122` (the section contract, the
+exception record, the machine-read `VERDICT:` line, and the gate-conditioned PASS rule), and `:127`
+(verify from upstream). `Shadow` verified the same parity line by line against
+`git show 1cf0bc6:.opencode/agents/flicky.md` in `## Review`, including attribution and NOTICE
+obligations, and the permission blocks are byte-identical, so `bash: allow` carries the gate and
+`webfetch`/`websearch` carry upstream verification. I ran the gate in this pass, which is the duty the
+retired reviewer held and that `tests/selftest.sh:113` and `.github/workflows/licence-check.yml` keep
+asserting.
+
+**Retained history, named and not edited.** The legacy `## License Audit (Flicky)` headings written by
+the fifth reviewer before 2026-11-23 stand where they were written, and I did not edit them.
+`planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md:4827`,
+`planning/docs/TASK-0041-remote-visual-control.md:832`, and
+`planning/docs/TASK-0043-dispatch-gate.md:96`. `planning/docs/TASK-0041-decision-third-party-repos.md`
+and `planning/docs/TASK-0042-decision-compat-layer.md` carry no such heading. Per AGENTS.md section 2
+rule 7 only `Espio` folds those sections into `## Archive`, at `E1` for TASK-0042. My audit is this
+section.
+
+**Recorded for the operator, not findings against this change.** Two bounded items, both outside this
+task's scope and neither blocking it. First, `team/requirements.txt` declares ranges and there is no
+lockfile, so langgraph and langgraph-checkpoint-sqlite are verified at their installed registry version
+with the repo's own `LICENSE` at `main` as corroboration, and their upstream git tags for those versions
+could not be resolved from this host. A pinned lockfile would turn those two rows into blob-level
+verification, and `requirements.txt` is untouched by `ef06147` and `e22bb3c`, so a pinning change is a
+separate task for `Robotnik` to open. Second, the upstream audits for the booth and remote work
+(Natural Earth mask at `nvkelso/natural-earth-vector` `v5.1.2`, the archive.org StarCraft Anthology ISO,
+the Ar3sgice starcraft-tools mirror which carries no licence file, StormLib at
+`d60b7e6d3501474f4d92c7b9c752a37e78385f67`, the Rocky logo SVG from `rocky-logos-100.5-3.el10`, the
+patched `ERA`, FreeRDP for `scripts/remote/rdp-input.c` and `scripts/rdp-pointer.c`, and
+`scripts/remote/uinput-inject.c` kernel UAPI use) are the carried `R4`, `T4` and `G4` scope in those
+tasks' own Charmy dispatches. This section does not tick them, and no booth repo clone audit ran here.
+
+**Verdict:** pass. The project licence is declared and appropriate, the change imports no code, the five
+declared dependencies are MIT and compatible with it, the gate exits 0 with PASS, and no licence finding
+is open against this task.
+
+VERDICT: PASS
+
 ---
 
 ## Test Results
 
 *Owner: `Big`.*
+
+**Run context.** `bash tests/selftest.sh` executed by me at HEAD `68babaf` on 2026-11-23, on the
+host that is the runner. No GitHub Actions run exists for this task. The repo is public and the
+self-hosted runner is not registered (AGENTS.md section 6), so the pre-push selftest is the
+effective gate, and `scripts/hooks/pre-push` runs the same script. No Sparky, podman, or libvirt VM
+run applies. This task changes roster and contract text plus the graph stage tuple, no runtime
+service, no UI, and no contact with `192.168.1.99`.
+
+**Workflow run.**
+
+| Check | What it exercises | Result | Notes |
+|---|---|---|---|
+| selftest | the whole suite | PASS | `SELFTEST: 86 checks passed`, exit 0 |
+| check-count delta | 83 baseline to 86 | PASS | reproduced from both commits, see Check count below |
+| agent roster block | 11 agent files, retired agent file absent | PASS | `tests/selftest.sh:83-92`, unconditional, both assertions fire under mutation |
+| config gate | roster equality, stale task allow, chain, doc contract, Charmy duties, template, A2A | PASS | `python3 tests/config_gate.py` exit 0, 6 notes. Ran inside selftest at `tests/selftest.sh:95` and standalone |
+| licence gate | this repo against the house policy | PASS | `scripts/licence-check` exit 0, `(PASS)`, 3 findings, all MIT. Ran inside selftest at `tests/selftest.sh:113` and standalone |
+| unit tests | pytest, cycle 7, a2a 7, licence 9, portless 6 | PASS | `29 passed`, zero skipped, zero deselected in the suite run |
+| new graph assertion | `test_review_chain_ends_at_the_licence_agent` | PASS | fires when a fifth review stage is reinstated, see mutation H |
+| A2A card assertion | `test_agent_card_matches_roster_files` | PASS | live server, skills read from `.opencode/agents/`, retired name asserted absent |
+| DoD name sweep | retired name absent from the forbidden paths | PASS | `git grep -c -i flicky -- .opencode AGENTS.md README.md planning/templates tests .github team scripts` exit 1, zero matches. Total tracked matches measured before this section was written is 186, all record history, 6 more than `Shadow`'s 180 at `7b3d462`, added by the `68babaf` queue record. This section names the retired agent five times in its mutation table, which is record history too, and `planning/docs/` is not in the sweep's forbidden list |
+| CI floor | `MIN=70` at `.github/workflows/team-selftest.yml:50` | PASS | unchanged, 86 reported, floor not restated |
+| bash syntax gate | `tests/selftest.sh:22-34` bash branch | FAIL, harness bug | the branch asserts nothing, finding 1 |
+| shellcheck gate | `tests/selftest.sh:38-50` | SKIPPED | shellcheck not installed on this host |
+| Sparky, podman, libvirt | Rocky target behavior | not applicable | no runtime code path in this change |
+
+**Checks requested vs run.** 86 checks counted and 86 executed. Four guard blocks in the script are
+conditional, and three of them ran. The one that did not run is the shellcheck block, reported as
+`selftest: shellcheck absent, skipped`. No other check dropped out, and nothing in the suite
+reported a skip. `pytest` reported 29 passed with no skips. The `dispatch-gate` real read ran
+(`exit 0`), the gateway selftest ran (`/usr/local/bin/agentgateway` present), the offline C build
+ran, and the credential leak scan ran (`~/AI/secrets/scm_draft_pass.md` present).
+
+**Check count, reproduced from both commits.** The 83 to 86 delta was re-measured rather than
+accepted from `## Implementation`. Clean trees were exported with `git archive` into
+`/tmp/opencode/t0044-base` at `1cf0bc6` and `/tmp/opencode/t0044-mut` at HEAD, and the gateway
+selftest was held off in both with `AGENTGATEWAY_BIN=/nonexistent` so the two runs differ only by
+the change. `1cf0bc6` answers `SELFTEST: 82 checks passed` with `28 passed` in pytest. HEAD answers
+`SELFTEST: 85 checks passed` with `29 passed`. Adding the one gateway check each run skipped gives
+83 and 86, which is the recorded pair, and the +3 is the two roster `PASS` calls at
+`tests/selftest.sh:87` and `:91` plus the one new pytest test.
+
+**Assertion liveness.** The roster and licence assertions were tested by breaking them, in seven
+throwaway copies of the tree. Each mutant is a copy at HEAD with one defect injected.
+
+| Mutant | Injection | Gate response | Exit |
+|---|---|---|---|
+| A | `.opencode/agents/flicky.md` restored | `selftest FAIL: agent roster is 12 files, expected 11` | 1 |
+| A2 | same copy, `python3 tests/config_gate.py` | `config-gate FAIL: roster mismatch`, both lists printed | 1 |
+| B | retired file restored and another agent removed, so the count stays 11 | `selftest FAIL: retired licence agent file is back in .opencode/agents` | 1 |
+| C | `"flicky": allow` re-added to `robotnik.md` task block | `config-gate FAIL: robotnik: task allows an agent that is not on the roster: ['flicky']` | 1 |
+| D | `POLICY_EXCEPTION` stripped from `charmy.md` | `config-gate FAIL: charmy: missing the licence-audit duty 'POLICY_EXCEPTION'` | 1 |
+| E | `ROSTER = [...]` re-added to `team/a2a/server.py` | `config-gate FAIL: a2a server: the static ROSTER list must stay retired` | 1 |
+| F | a second `## License Audit` line added to the planning template | `config-gate FAIL: planning template: expected exactly one licence section` | 1 |
+| G | `→ \`Flicky\`` re-added to the AGENTS.md chain | `config-gate FAIL: AGENTS.md: a review chain still names the retired licence agent` | 1 |
+| H | `review_flicky` re-added to `REVIEW_STAGES` | `test_review_chain_ends_at_the_licence_agent` FAILED, 5 failed in `tests/test_cycle.py` including two `KeyError` graph wiring failures | 1 |
+
+Split-name constructions (`"Flic" "ky"`, `"fli" + "cky"`, `fli""cky.md`, `"review_" + "flic" + "ky"`)
+are deliberate, commented at `tests/config_gate.py:27-30`, `tests/selftest.sh:78-82`, and
+`tests/test_cycle.py:124-126`, and none matches the sweep pattern, which is why the sweep box above
+returns zero while the assertions still name the retired agent.
+
+### Finding 1, the bash syntax gate asserts nothing, harness bug, mine
+**Where:** `tests/selftest.sh:25` and the same pattern at `tests/selftest.sh:40`
+**Problem:** the case pattern is `*"/bin/bash"*`, and `/bin/bash` is not a substring of
+`#!/usr/bin/env bash`, which is the shebang every bash file in this repo carries. Verified directly.
+A loop over the 21 shebang'd files under `scripts`, `team`, and `tests` prints `NO MATCH bash branch`
+for all 17 bash files and matches only the 4 python files, `scripts/a2a-send`,
+`scripts/a2a-server.py`, `scripts/dispatch-gate`, `team/portless/portless`. So the syntax gate
+contributes 4 `PASS` calls, all of them python, and the line `selftest: bash + python syntax OK`
+overstates what it ran. The shellcheck loop uses the identical pattern, so installing shellcheck on
+this host would add 0 checks and lint 0 files, which also means the shellcheck skip costs nothing.
+**Failure scenario:** a bash file in `scripts` or `team` stops parsing and the suite stays green.
+That is not hypothetical, see finding 2.
+**Fix, owned by Big, out of this task's scope:** match the interpreter rather than a path prefix,
+covering both `#!/bin/bash` and `#!/usr/bin/env bash`, in both loops, and re-count. Expected effect
+is 17 additional syntax checks, and 17 more once shellcheck is installed on the runner. Not applied
+in this pass because the brief is the TASK-0044 verdict, not a harness change, and a check-count
+change in the middle of a review chain would move the number the other agents are quoting.
+
+### Finding 2, a real defect the dead gate is currently hiding, code bug, goes to Tails
+**Where:** `scripts/vm-create-rocky.sh:4`
+**Evidence:** `bash -n scripts/vm-create-rocky.sh` answers
+`scripts/vm-create-rocky.sh: line 78: unexpected EOF while looking for matching '"'`, exit 2. The
+cause is on line 4, isolated by `sed -n '4p' scripts/vm-create-rocky.sh > t2.sh; bash -n t2.sh`,
+also exit 2, while the corrected line parses with exit 0. `od -c` on that line ends `... 3 0 G ] " }`,
+so the closing brace of the parameter expansion sits outside the closing double quote, and the
+correct order is `...]}"`. Out of the 17 bash files checked by hand with `bash -n`, this is the only
+failure.
+**Blast radius.** None today. `grep -rn vm-create-rocky` over `scripts team .github tests README.md`
+finds only the file's own usage string at `:4`, and `scripts/vm-create` is the documented entry
+point (AGENTS.md section 12). `git log -1 -- scripts/vm-create-rocky.sh` is `88e9f01`, so this is
+pre-existing and outside the TASK-0044 sweep, which is exactly why a sweep that greps for a name
+finds it and a gate that should parse it does not. Owned by Tails as a one-character fix, paired
+with finding 1, and not a blocker for this task's roster change.
+
+### Finding 3, soft assertion, nit
+**Where:** `tests/config_gate.py:139`. The retired static roster is guarded only by the literal
+`"ROSTER = ["`. A `ROSTER=[` or a tuple form would pass the gate while hardcoding the roster again.
+It fires under mutant E, so it is a real assertion with a narrow trigger, not a dead one. Recorded
+rather than fixed for the same reason as finding 1.
+
+### Finding 4, graph verdict contract, nit for Robotnik
+**Where:** `team/graph/state.py:116-134`, contract at `:117-122`. A review stage whose output carries
+no `VERDICT:` line is fail-closed. In this doc `Shadow` ends `## Review` with a `VERDICT:` line and
+`Omega`'s `## Security` section ends with none. Under the graph router that reads `review_omega`, the
+absence reads as fail. This is the graph's contract working as designed, and it is worth `Robotnik`
+knowing before a graph-driven run reads this chain. My own report to the dispatcher carries a
+`VERDICT:` line for the same reason.
+
+**Coverage dropped by this run.** None relative to the recorded suite. The suite lost the shellcheck
+block because the tool is absent, and that block would have asserted 0 checks even with the tool
+present, per finding 1. The python files under `tests/` that carry no shebang, `conftest.py`,
+`test_a2a.py`, `test_cycle.py`, `test_licence.py`, `test_portless.py`, are not `py_compile`'d by the
+syntax gate, and are covered indirectly because `pytest` imports them, which is why they compile
+cleanly here.
+
+**Verdict:** the TASK-0044 change passes. The roster is 11 files with the retired agent file absent,
+both selftest roster assertions execute and both fail when the retired agent is reinstated, the
+config gate runs inside selftest and standalone and all six of its assertions fail under mutation,
+the licence gate runs inside selftest and standalone at `PASS` exit 0, pytest is 29 passed with no
+skips, the 83 to 86 delta reproduces from `1cf0bc6` and HEAD rather than being taken on trust, the
+CI floor at 70 is unchanged, and the name sweep over the DoD's forbidden paths is zero. Two findings
+do not block it and neither is a defect in the change under review. The bash syntax gate is a dead
+branch that I own and must fix, and it is currently hiding a genuine `bash -n` failure in
+`scripts/vm-create-rocky.sh:4` that belongs to Tails. Both are outside the roster sweep and neither
+touches the contract files this task changed.
+
+VERDICT: PASS the roster change, gates execute and fail under mutation, 86 checks reproduce the recorded delta. Two follow-ups are open and neither blocks this task, the dead bash syntax branch at tests/selftest.sh:25 and :40 owned by Big, and the parse failure at scripts/vm-create-rocky.sh:4 owned by Tails
 
 ---
 
