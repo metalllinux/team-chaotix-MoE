@@ -13,6 +13,37 @@
 
 ## Status
 
+**README rewritten on operator instruction, and the working set moved out of the age-cleaned path
+(2026-11-24 01:40 UTC, 10:40 JST, `Robotnik` session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** Operator
+instruction, ignore the remaining queued sessions, the venue keeps the same addresses, and update the booth
+repo `README.md` so an opencode session pointed at the repository on 2026-11-28 can run the live loop.
+**Deviation recorded rather than glossed, this was implemented by `Robotnik` rather than delegated.** Gate
+at 01:30, `scripts/dispatch-gate --session ses_dfa49b1f9ffeFR3Hj0IC38MUzW`, `PASS`, peak 106571 over 20
+calls, child projection 179174 of 262144, 68.3 percent, which is 36893 above the 142281 projection
+TASK-0043 records for the dispatch whose real child request reached 262242, so a child dispatch would
+likely have failed outright. Precedent, the TASK-0043 `## Status` entry "Deviation recorded", where the
+same situation produced a `Robotnik` implementation recorded rather than glossed. Landed, booth repo `main`
+at `e3e2e5a` pushed and read back from the remote, `README.md` 16092 B at
+`2205eab6a4ce1bf2e5a3b5f6be01eed5546d8f8fce01ea4738f2432f6e427baf`, `MANIFEST.md` README row recomputed to
+that size and hash with the 15963 B delta stated and a full 788-row regeneration named as not run, tree
+still 789 paths, `LICENSE` byte-unchanged, `grep -R -F -f` against both target secret files returns no
+match, and `git ls-tree -r --name-only HEAD` grepped for `exe|dll|mpq|iso|chk` returns 0. Also landed,
+`/home/howard/AI/booth-2026/t0042/` holding `booth_loop.py`, `build_ts.py`, `mask_png.py`,
+`t0042-run-dos.sh` and `ts-harvest/`, with `ref-era6.chk` at
+`d7afd6a53cd3664a822485cffc21f8502e584e7738e35b9835840782c621057b`, which closes `P2`, chosen because
+`/usr/lib/tmpfiles.d/tmp.conf:11` age-cleans `/tmp` at 10 days and that directory is not a git repository.
+Facts were read from the runner rather than restated from memory, `booth_loop.py:949-962` flags, `:82`
+host, `:81` secrets path, `:65` injector directory override, `:647` and `:655` rebuild-mode dependency,
+`:94-106` map registry with the six full SHA-256 values, `:584-590` published preflight naming the three
+things a clone does not carry, and the compile form at `scripts/remote/rt-build:53`. **`D1` scope changes
+with this.** The booth README now carries the editor-driven versus programmatic statement, the measured
+cycle costs, the mode distinction and the blank-open-frame fact, so `D1` reviews and extends it rather than
+writing it, and `D1` still owns this repository's README. Checks that did not run, no target contact in this
+pass so no `DEMO-LOG.md` entry was owed, no cycle was executed from the durable path, `--stability` was not
+run, the published-mode smoke test the README tells a booth-day agent to run before the full loop was not
+run, and the `R4` exclusion sweep still has not run. `P3` becomes a reachability confirmation on
+2026-11-26 rather than an unknown, on the operator's word that the addresses do not change.
+
 **Booth-day readiness ruling, put to the team by the operator and answered from evidence (2026-11-23
 01:20 UTC, 10:20 JST, `Robotnik` session `ses_dfa49b1f9ffeFR3Hj0IC38MUzW`).** The question is whether on
 2026-11-28 the team can be pointed at `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2`
@@ -390,7 +421,14 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   invocation, and treat `PASS` as necessary and not sufficient. The house rules written at the head of
   `LIVE QUEUE 3` apply unchanged to every item below and are not repeated.
    0. PRIORITY PREP, two dispatches ahead of the numbered items, from the booth-day readiness ruling in
-   `## Status`. `P2` `Tails`, brief, paste verbatim. "Read the booth-day readiness ruling in `## Status` in
+   `## Status`. `P2` is **COMPLETE 2026-11-24 01:40 UTC, done by `Robotnik` under the recorded deviation**,
+   durable copy at `/home/howard/AI/booth-2026/t0042` with `ts-harvest/ref-era6.chk` at
+   `d7afd6a53cd3664a822485cffc21f8502e584e7738e35b9835840782c621057b`, and one cycle has not yet been
+   re-measured from that path, which is the remaining half of the item. `P3` `Tails`, the venue dry run the
+   plan carries as item 17, scheduled 2026-11-26, now a reachability confirmation and one measured cycle
+   from the durable path rather than an open unknown, and if it fails record the fallback in `## Status`
+   rather than improvising at the booth. Original `P2` brief follows for the record. `P2` `Tails`, brief,
+   paste verbatim. "Read the booth-day readiness ruling in `## Status` in
    `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Move the booth working set from
    `/tmp/opencode/t0042` to `/home/howard/AI/booth-2026/t0042`, the runner, the map and mask code, the gate
    reports, the booth artifacts and `ts-harvest/ref-era6.chk`, because `/usr/lib/tmpfiles.d/tmp.conf:11`
