@@ -13,6 +13,34 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 1 landed, `T6` ran the first RDP channel test, and the measured mitigation changes what the
+operator's firewall decision is a decision about (2026-11-26 08:55 JST, 2026-11-25 23:55 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `T6` (`Tails`, child `ses_deb314117ffe0igpIhi8XyQS6k`) landed at team
+`1d79b1c`, and I read it back from the remote rather than from the dispatch report: `git ls-remote origin
+refs/heads/main` answers `1d79b1cf31ce3c88f97310a8152c45836305223d`, `git verify-commit` is good against
+`F9261D151316FD60`, the commit carries the `DEMO-LOG` entry in its own subject line, and `git status
+--porcelain` answers 0 lines. Evidence lives in `TASK-0041 ## Implementation`, written by `Tails` in its own
+section. What the test established, stated as measured. The daemon presents its on-disk self-signed certificate
+verbatim, 826 DER bytes, CN `scmdraft2-map-creator`, self-issued, RSA-2048, no SAN, SHA-256 `84b12d76…bab4`,
+identical to the `grdctl status` fingerprint, it refuses TLS-without-NLA at `NEG_FAILURE` code 5, and it runs TLS
+1.3 AES-256-GCM. `/cert:ignore` accepts any certificate, proven against a lookalike attacker certificate, and
+discards chain validation (OpenSSL code 18), name matching, and any detection of a substituted endpoint. It does
+not discard encryption. A `/cert:fingerprint:sha256:84b1…bab4` pin works, and both `deny` and a wrong pin abort.
+Same-subnet exposure is measured rather than assumed, L2 adjacency plus dynamic ARP, and the X.224 preamble
+leaks `Cookie: mstshash=howard` in cleartext. One TLS-terminating relay in an active position got the client to
+accept its certificate silently but carried 0 bytes and no credential, with a passthrough control proving the
+relay itself works. The mechanism, NLA channel binding against relay fidelity, is named unresolved and handed to
+`O1`. The mitigation is prototyped and measured, RDP over the host-key-pinned SSH tunnel plus the certificate
+fingerprint pin, both at rc 0 with no `/cert:ignore`, so no 3389 packet crosses the LAN. Target state unchanged
+(`ss` shows no 3389 connection, the firewall rule intact, `lock-enabled` still `false`) and controller residue
+cleaned, 29 credential and key files removed with the scan returning 0. **Consequence for the operator block,
+recorded as `T6`'s measurement and not as my ruling.** If the tunneled path is adopted for the booth, the
+booth's network requirement becomes SSH 22 reachability to the target rather than 3389 reachability, and the rich
+rule restricting 3389 to `192.168.1.102` stops being the blocker `P3` measured. My pre-booth recommendation is
+unchanged for 2026-11-28, run the booth from `192.168.1.102`, because the tunneled path has never been tested at
+a venue network and two days is not enough to make it so. `O1` rules on the certificate question next, and the
+tunnel posture goes into its `## Security` section. Next dispatch is `LIVE QUEUE 8` item 2, `O1`.
+
 **`LIVE QUEUE 7` consumed, `LIVE QUEUE 8` opened, the TASK-0041 residual block is the dispatchable work, and
 the booth blockers are separated into dispatchable and operator-owned (2026-11-26 07:24 JST, 2026-11-25 22:24
 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO`).** Inherited state was re-verified in this session
@@ -786,7 +814,7 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   old 142281 child projection is not a quantity the instrument produces any more, the gate was rewritten at
   `f1907ab`, and the margin re-fit is operator-owned. One at a time is load-bearing: `D1` and `K1` shared one
   working tree in `LIVE QUEUE 6` and produced the mixed-attribution commits `12e7928` and `93ddaf6`.
-   1. `Tails` as `T6`. `TASK-0041 ## Implementation`. `Omega` finding 2, the `/cert:ignore` self-signed RDP
+   1. `LANDED 2026-11-25 23:55 UTC (2026-11-26 08:55 JST) as `T6`, team `1d79b1c`, see `## Status`.` `Tails` as `T6`. `TASK-0041 ## Implementation`. `Omega` finding 2, the `/cert:ignore` self-signed RDP
    certificate, has never had an RDP channel test run against it, and it is `K1`'s release blocker 3 for the
    2026-11-28 booth. Run the first channel test on the target at `192.168.1.99` from this controller at
    `192.168.1.102`: name the certificate the daemon actually presents, what `/cert:ignore` accepts and what it
