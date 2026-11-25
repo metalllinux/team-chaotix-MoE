@@ -233,19 +233,44 @@ else
   note "gcc or freerdp-client3 absent, remote build asserts skipped"
 fi
 
-# Credential leak scan: the target SSH password must not appear anywhere in
-# the checkout. The secret is read from ~/AI/secrets at run time as a grep
-# pattern only; its content is never printed. Blank lines are stripped so an
-# empty pattern cannot match everything. Skipped when the file is absent.
-if [ -f "${HOME}/AI/secrets/scm_draft_pass.md" ]; then
-  if grep -RIF --exclude-dir=.git -f <(grep -v '^[[:space:]]*$' "${HOME}/AI/secrets/scm_draft_pass.md") . >/dev/null 2>&1; then
-    fail "target credential found in repository contents (AGENTS.md section 4)"
+# Credential leak scan: neither target credential may appear anywhere in the
+# checkout. Both secret files are read from ~/AI/secrets at run time as a grep
+# pattern only; their content is never printed. Blank lines are stripped so an
+# empty pattern cannot match everything, and a file that yields no pattern is a
+# failure rather than a silent pass. An absent secret file FAILS the gate: a
+# scan that skips is the state Omega recorded in `## Security` finding 14, where
+# the effective local gate would pass a real leak by not running.
+for secret in scm_draft_pass.md scm_draft_rdp_pass.md; do
+  secret_file="${HOME}/AI/secrets/${secret}"
+  [ -f "$secret_file" ] \
+    || fail "secret file absent, the credential scan cannot run: $secret_file"
+  [ -n "$(grep -v '^[[:space:]]*$' "$secret_file")" ] \
+    || fail "secret file holds no non-blank line to scan for: $secret_file"
+  if grep -RIF --exclude-dir=.git -f <(grep -v '^[[:space:]]*$' "$secret_file") . \
+       >/dev/null 2>&1; then
+    fail "target credential from ${secret} found in repository contents (AGENTS.md section 4)"
   fi
   PASS
-  note "credential leak scan OK"
-else
-  note "scm_draft_pass.md absent, credential leak scan skipped"
+done
+note "credential leak scan OK (both target credentials)"
+
+# Host key pinning: no tool under scripts/ may ask for a connection whose host
+# key is unpinned, and the demo target's pinned keys must be published where
+# rt-lib reads them. `## Security` R2 finding 1: with verification switched off,
+# sshpass hands the target password to whoever answers for 192.168.1.99.
+if grep -rn 'StrictHostKeyChecking' scripts/ \
+     | grep -qvE 'StrictHostKeyChecking=(yes|accept-new)'; then
+  fail "a file under scripts/ requests an SSH connection with an unpinned host key"
 fi
+grep -q 'StrictHostKeyChecking=yes' "$RT/rt-lib" \
+  || fail "rt-lib no longer requires a verified host key"
+grep -q 'UserKnownHostsFile' "$RT/rt-lib" \
+  || fail "rt-lib no longer names a known-hosts file to verify against"
+[ -f "$RT/known_hosts" ] || fail "scripts/remote/known_hosts missing (pinned target host keys)"
+[ "$(grep -cE '^192\.168\.1\.99 (ssh-ed25519|ecdsa-sha2-nistp256|ssh-rsa) AAAA' "$RT/known_hosts")" -eq 3 ] \
+  || fail "scripts/remote/known_hosts does not carry all three pinned keys for 192.168.1.99"
+PASS
+note "host key pinning asserts OK (no unpinned SSH posture under scripts/)"
 
 # The remote-desktop skill page exists where opencode discovers project
 # skills (.opencode/skills, verified 2026-11-22 with

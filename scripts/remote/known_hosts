@@ -1,0 +1,23 @@
+# Pinned host keys for the TASK-0042 demonstration target, 192.168.1.99.
+#
+# A host public key is not a credential. It is the thing that proves who is
+# answering port 22, so it is published here and read by scripts/remote/rt-lib
+# through UserKnownHostsFile with StrictHostKeyChecking=yes. The credential in
+# ~/AI/secrets is never handed to a connection whose key is not in this file.
+#
+# Seeded 2026-11-25 from the operator's own ~/.ssh/known_hosts entry for
+# 192.168.1.99, and re-checked against the live target in the same pass:
+#   ssh-keyscan -t ed25519,ecdsa-sha2-nistp256,rsa 192.168.1.99
+# diffed against this file after sorting and comment-line stripping: identical
+# for all three keys. Fingerprints as recorded by `ssh-keygen -l` on this file:
+#   ED25519  SHA256:S81ZRoHpyZgZAPPZ0UKNKaIL+Rp33Pes2Dc9dZfk1R0
+#   RSA      SHA256:UPQQkc+zZIVM2flYhxT0Q9qEzdZDjc9vWoauXyh9AVc
+#   ECDSA    SHA256:hQKRUU6XD0olZFFH/X/1GiBpN/GdftXae6NcU9Fn+nY
+# Honest bound on the trust origin: the seeded entry was recorded by earlier
+# connections made while verification was off, so it is the operator's own
+# record rather than an out-of-band attestation. If the target's host key ever
+# changes for a legitimate reason, read the new key on the target itself and
+# re-publish this file.
+192.168.1.99 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG5/fH96iHOqxpvEXNzZ2G2QPMGsFpTc7lOpRVDvLAG2
+192.168.1.99 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCVtENBvUCK0n4f9LTJuGo4ic4j52uvS0ddAIa0HPgIt363EIqLkhQPXazsvB6HfFr42T4Z3x2dCnIsmDxENId/zMqADpHeucjEgXcSHqt5OXfQeq+mnS8tiZFZXXbqHTMGppq5L2GpAVt8wppGgP6nfdCKO+kwbHwo4W53ykE6Zwh3amb0MF2R6ThEFZvxXGwolOWQO7d136A0iHURMdCbi3N3eof+NDDbYSqCFe1hDLUhPsi/OsINqXeWDwzzWoOmEfrfixRNI4qGPlbbONmN6OGGos9k6Ez1I7XRid7/WxzDLuHCq/2YuWBwbZROz9Netd50dLmualIbBZsL+5+nPfADwDOA/IxCVrCIqrptyUxnQtRdQ60J3pUvkf5a0IuYKDRtmLOHSEn4V+4PTyDKsmdHdi2f/52Yv59VeIdN6kj2JSS4LH+k8usptEN9YVYeemeIFEllvN3c5REhjJXJ8JgWXQTpY4DEaWjaP4bR2oYXHnj1yEoXu/Izv/bAwg0=
+192.168.1.99 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP5Pzvemvvi1xpoZJKcmc/Y0To9H/ugKJHDApPWWHnjf19BPLCsJGWM5vYBAZYGBVbUCcPw+ldzDAkuqp9lQfVk=

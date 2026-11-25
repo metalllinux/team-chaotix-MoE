@@ -26,7 +26,16 @@ RT_TARGET_UID="${RT_TARGET_UID:-1000}"                     # target session owne
 RT_SCREENSHOT_BIN="${RT_SCREENSHOT_BIN:-/usr/bin/gnome-screenshot-tool}"  # shipped by gnome-shell 49
 RT_RDP_W="${RT_RDP_W:-1920}"                               # desktop geometry advertised to the server
 RT_RDP_H="${RT_RDP_H:-1080}"
-RT_SSH_OPTS=(-o StrictHostKeyChecking=no -o ConnectTimeout=10)
+# Host key pinning (TASK-0042 `## Security` R2 finding 1). With verification switched off, any host on
+# the path could answer for 192.168.1.99, and `sshpass -f` then handed it the target SSH password.
+# Verification is on, and it reads the pinned keys the repository publishes at scripts/remote/
+# known_hosts first, so the demo target authenticates against a checked-in key. The operator's own
+# known_hosts follows in the same list so the tools still reach hosts they already know (test VMs).
+RT_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # directory holding rt-lib itself
+RT_SSH_KNOWN_HOSTS="${RT_SSH_KNOWN_HOSTS:-${RT_LIB_DIR}/known_hosts}"
+# Verified on this host (OpenSSH_9.9p1): a comma inside one -o UserKnownHostsFile is taken as a
+# literal file name, so the two files are passed as two -o options, which OpenSSH treats as a list.
+RT_SSH_OPTS=(-o StrictHostKeyChecking=yes -o UserKnownHostsFile="${RT_SSH_KNOWN_HOSTS}" -o UserKnownHostsFile="${HOME}/.ssh/known_hosts" -o ConnectTimeout=10)
 
 RT_DRY=0                                                   # 1 when --dry-run was given
 RT_HOST="${RT_HOST:-}"                                     # target host, empty until parsed
