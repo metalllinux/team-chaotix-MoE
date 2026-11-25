@@ -13,6 +13,41 @@
 
 ## Status
 
+**`LIVE QUEUE 6` running, `T2` and `T3` landed on `TASK-0041`, `T4` in flight (2026-11-25 11:58 UTC,
+20:58 JST, `Robotnik` session `ses_ded91638cffe1PedTvitwlfONJ`).** Inherited state verified in this session,
+team `main` read from the remote at `7781512` (`git ls-remote origin refs/heads/main`), booth `main` read from
+the remote at `b56d1df` (`git ls-remote` through `/home/howard/AI/booth-2026/git-askpass-tc.sh`),
+`git status --porcelain` returns 0 lines, selftest green at 106 with the pre-push gate asserting the count
+against the `MIN_CHECKS=100` floor. `TASK-0044` closed, all 13 DoD rows ticked. `P3` was not dispatched, this
+session runs on 2026-11-25 and the dry run tests venue network reachability rather than this controller's
+`192.168.1.102` home network, so it stays queued for a session on or after 2026-11-26.
+`T2` (`Omega`, child `ses_ded8c6452ffex5s20vfoU3BXFH`) wrote `TASK-0041 ## Security` at `:860`, findings 1, 3
+and 8 closed, finding 2, the `/cert:ignore` self-signed RDP certificate, open with no RDP channel test run,
+and hygiene item 1, `~/AI/secrets/scm_draft_pass.md` at mode 644, open as an operator `chmod 600`. `T3` (`Big`,
+child `ses_ded8546d4ffeLv79m8KKWaSl10`) wrote `TASK-0041 ## Test Results` and pushed `067509b` through the
+pre-push gate at 106 checks, re-executed the packaging claims (61 to 83 at `b906f00`, chain 86/103/105/105/106)
+and proved the offline rule by running the 24-assert remote block inside `unshare -rn` with `192.168.1.99`
+unreachable. **`Big`'s named silent drop, the guarded build sub-block is 5 asserts and a missing `gcc` or
+`freerdp` takes 106 to 101 while the run stays green, plus 4 of 6 dry-run asserts relying on tool self-report
+and a loose `UI_DEV_CREATE|1800`.** Decision recorded rather than asked, that harness defect joins `K9` in one
+`Tails` dispatch rather than costing a dispatch of its own, because `K9` is a one-edit brief and the pair is
+two edits, inside the three-edit dispatch limit, and the drop is the false-completion class this team gates
+against. `T4` (`Charmy`, child `ses_ded6eff2affeLV5VNE7zoa8OYb`) is in flight, fourth and last in the chain,
+`T5` void. Standing rulings carried into every brief, `R4`'s verdict is FAIL on the booth repo as published at
+`7c4fa16`, no dispatch presents it as publishable, it stays private, and the public flip is the operator's
+ruling on `C2` and `C3`; booth `main` reads `b56d1df` and that does not change the verdict. Gates so far,
+`--session ses_ded91638cffe1PedTvitwlfONJ`, `PASS` at 79409, 90942, then 93648 of 262144, 35.7 percent, and the
+`session stops delegating as the child projection nears the 142281 stop line.
+
+`T4` (`Charmy`, child `ses_ded6eff2affeLV5VNE7zoa8OYb`) closed the `TASK-0041` review chain at `PASS`, verdict
+written at `TASK-0041:942-981`. Both `scripts/licence-check` passes exit 0, team repo at `067509b` and a booth
+clone refreshed to `b56d1df`. `C1` resolved in the team repo, `C6` landed by `K7`, `C2` and `C3` stand open as
+operator rulings, `R4`'s FAIL verdict on `7c4fa16` stands, and two policy exceptions are recorded, LGPL-2.1-or-later
+and GPL-2.0-only WITH Linux-syscall-note. So `T1` to `T4` have all run and `T5` is void, and the chain's open
+items are `Omega`'s finding 2, the `/cert:ignore` self-signed RDP certificate with no channel test run, hygiene
+item 1, the mode 644 secret, and `Big`'s named not-run set. `K9` (`Tails`, child `ses_ded640888ffeaAW8NTZTCw5gdL`)
+is in flight with the `T1` nit and the selftest guarded-build fix.
+
 **`LIVE QUEUE 5` started, `P3` held to 2026-11-26, and the queue runs from item 2 `K7` (2026-11-25 08:49
 UTC, 17:49 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** Inherited state, all four figures
 verified in this session rather than inherited from the entry below. Team `main` read from the remote at
