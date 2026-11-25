@@ -106,7 +106,7 @@ def agent_card() -> dict:
     return {
         "name": TEAM_NAME,
         "description": (
-            "Team Chaotix: a twelve-role autonomous software development team "
+            "Team Chaotix: an eleven-role autonomous software development team "
             "built on opencode. Each skill is a team role. Address a task "
             "with a leading @<role> token (default @robotnik); the rest of "
             "the text is the task brief. The final task's "

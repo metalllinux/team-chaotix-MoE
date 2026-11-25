@@ -22,7 +22,7 @@ fail() { printf 'selftest FAIL: %s\n' "$*" >&2; exit 1; }
 for f in $(find scripts team tests -type f | sort); do
   first="$(head -1 "$f")"
   case "$first" in
-    *"/bin/bash"*)
+    *"/bin/bash"* | *"/usr/bin/env bash"*)
       bash -n "$f" || fail "bash syntax: $f"
       PASS
       ;;
@@ -38,7 +38,7 @@ note "bash + python syntax OK"
 if command -v shellcheck >/dev/null 2>&1; then
   for f in $(find scripts team tests -type f | sort); do
     case "$(head -1 "$f")" in
-      *"/bin/bash"*)
+      *"/bin/bash"* | *"/usr/bin/env bash"*)
         shellcheck -S warning "$f" || fail "shellcheck: $f"
         PASS
         ;;

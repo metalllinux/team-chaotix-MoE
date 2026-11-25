@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-NAME="${1:?usage: vm-create-rocky.sh <name> [vcpus=4] [ram_mb=8192] [disk_size=30G]"}
+NAME="${1:?usage: vm-create-rocky.sh <name> [vcpus=4] [ram_mb=8192] [disk_size=30G]}"
 VCPUS="${2:-4}"
 RAM="${3:-8192}"
 DISK_SIZE="${4:-30}"
