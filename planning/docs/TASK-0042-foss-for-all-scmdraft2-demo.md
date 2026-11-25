@@ -31,6 +31,19 @@ calls, worst jump 5331, dispatcher projection 46151, child projection 73841 of 2
 142281 child projection that TASK-0043 records for the dispatch whose real child request reached 262242 is
 the stop line for this session, and dispatching stops when the projection nears it.
 
+**`K7` landed, `C1` and `C6` closed, and the booth repo stays private (2026-11-25 09:30 UTC, 18:30 JST,
+`Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `K7` (`Tails`, child `ses_dee194a0dffejPpvisfvXygGBS`)
+landed `R4` findings `C1` and `C6`. `C1`, MIT root plus SPDX MIT headers on the five imported C files and a
+root `NOTICE` that carries them, at team `cc2dd06` with booth copies at `b56d1df`. `C6`, a booth-repo `NOTICE`
+naming StormLib `d60b7e6d`, Natural Earth `v5.1.2` and `f1890d9f`, the UNLICENSE `34c96bba`,
+`rocky-logos-100.5-3.el10`, FreeRDP `3.32.2`, SCMDraft 2, Blizzard and Ar3sgice, each at the ref actually
+used, with the booth MANIFEST regenerated to 790 paths. `K7` reports `scripts/licence-check` exit 0 on the
+team repo and exit 0 against the booth clone refreshed to the remote, `tests/selftest.sh` at 105,
+`tests/config_gate.py` exit 0, and names as not run: CI, Sparky, shellcheck, `d2_verify.py`, upstream
+re-fetches, booth binary compiles. `C2` and `C3` untouched, as ruled. Written in `## Implementation` at
+`doc` stamp 09:22 UTC. `R4`'s FAIL verdict on the booth repo as published at `7c4fa16` stands, the repo stays
+private, and the public flip remains the operator's ruling on `C2` and `C3`. `R3b` is next after `K8`.
+
 **`R3` and `R4` landed, `R4` rules FAIL on the booth repo as published, and this session hands off
 (2026-11-25 05:30 UTC, 14:30 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).** Gate at 05:28,
 `scripts/dispatch-gate --session ses_deff17f39ffeWIFPjsEoOfhXQ0`, `PASS`, peak 77008 over 20 calls, child
