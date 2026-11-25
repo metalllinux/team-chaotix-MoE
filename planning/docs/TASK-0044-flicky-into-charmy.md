@@ -937,10 +937,10 @@ was dispatched, there is nothing deployable in this task.
 | Item | Value |
 |---|---|
 | Unpushed local commit found | `2a68f78 docs(planning): ...`, `git log origin/main..HEAD` showed it as the one commit ahead of `81142c7`. Pushed as part of this push |
-| This entry | one commit, GPG-signed EDDSA, `docs(t0044 F7): ...` |
+| This entry | `4e9ad0e`, one commit, GPG-signed, `git log --show-signature` reports `Good signature from "Team Chaotix <howard.a.vanderwal@protonmail.com>" [ultimate]`, EDDSA `D553FBE4B47020B2033E9594F9261D151316FD60` |
 | Pre-push gate | `scripts/hooks/pre-push` ran `tests/selftest.sh` on the push, `SELFTEST: 103 checks passed` |
-| Push | `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` |
-| Remote read-back | `git ls-remote origin refs/heads/main` after the push |
+| Push | `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, `81142c7..4e9ad0e  main -> main`, exit 0, carries `2a68f78` and `4e9ad0e` |
+| Remote read-back | `git ls-remote origin refs/heads/main` returns `4e9ad0e433cb3138fc46384dcd414e253fa469f7`, equal to local `git rev-parse HEAD`. `git status -sb` shows `main...origin/main` with no ahead or behind |
 
 **Open outside this task, not blockers for it.** `Espio` still owes the `## Archive` prune of the legacy
 licence-audit headings, `E1` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. The booth and
