@@ -13,6 +13,34 @@
 
 ## Status
 
+**`R3` and `R4` landed, `R4` rules FAIL on the booth repo as published, and this session hands off
+(2026-11-25 05:30 UTC, 14:30 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).** Gate at 05:28,
+`scripts/dispatch-gate --session ses_deff17f39ffeWIFPjsEoOfhXQ0`, `PASS`, peak 77008 over 20 calls, child
+projection 126588 of 262144, 48.3 percent, 15693 below the 142281 projection TASK-0043 records for the
+dispatch whose real child request reached 262242. Nine dispatches have run here. **Operator action, start a
+fresh `Robotnik` session in `/home/howard/AI/projects/team-chaotix-moe` and run `LIVE QUEUE 5` at the head
+of `## Next Actions`, which carries the whole remaining queue with paste-ready briefs.** Nothing is
+mid-flight. `R3` reproduced the baselines from disk, 86 at `482aed5^`, 103 at `81142c7`, 105 post-`K6`, and verified the durable-runner claims against the files, `booth_loop.py`
+`e11778d1` identical to booth `7c4fa16` and `ref-era6.chk` exact, while naming that `V1` and `P1`
+target-side claims stay unverified. `R3` also found `Omega` findings 12 and 13 still unfixed, and a harness
+defect of its own to fix, `tests/selftest.sh` counterpart `.github/workflows/team-selftest.yml:51`
+truncates a three-digit count to one digit and would fail a green run, the `MIN=70` floor sits 35 below the
+real count, and the local gate asserts no count at all. `R4` ran both gate passes at exit 0 and proved the
+operator's exclusion rule at booth `7c4fa16`, 789 paths, 0 game-data matches, 0 PE, 0 ISO9660, 0 ZIP magic
+bytes, one name-only match on a planning doc path. **`R4` verdict is FAIL.** Findings `C1` and `C6` are
+code, headers and NOTICE against the MIT root, and a booth-repo NOTICE, and go to `Tails` as `K7`. Findings
+`C2`, the Rocky trademark, and `C3`, the Blizzard-derived tileset renders, are the operator's to rule on,
+and the plain consequence is that **the booth repo public flip is not cleared.** It stays private, and the
+visibility change remains an operator action.
+**Clock correction, `Big`'s finding 5 is right and my entry is the defect.** The `## Status` entry stamped
+04:05 UTC was written before `K6`'s own stamps, so it predates the work it records by 9 to 17 minutes.
+Convention restated for every agent, stamp an entry at the time it is written, never at the time the work it
+describes began, and name the clock.
+Open hygiene that is not code, `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section
+4, `/tmp/opencode/t0042/rdp-args` remains as named residue at mode 600, `/home/howard/AI/booth-2026` is
+still directory mode 755, and `Omega` finding 2, the RDP `/cert:ignore` against a self-signed certificate on
+the machine the audience stands next to, is untouched because no RDP channel test has run.
+
 **`F6` to `F8`, `F7` close TASK-0044, and `K6` closes the open `R2` host-key and secret-file findings
 (2026-11-25 04:05 UTC, 13:05 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).** `F6` aligned the
 README to the eleven-agent roster at `3367f21`. `F8` landed the three review follow-ups at `482aed5`,
@@ -479,6 +507,74 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
 ---
 
 ## Next Actions
+
+- [ ] LIVE QUEUE 5 FOR THE FRESH `Robotnik` SESSION (2026-11-25 05:30 UTC, 14:30 JST, owner
+  `ses_deff17f39ffeWIFPjsEoOfhXQ0` handing off after nine dispatches). Read `## Status` in this doc, first
+  four entries, and this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
+  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 4` below is consumed through its item 6,
+  `P2` and `P4` to `P5` landed, `F6` `F7` `F8` landed and closed TASK-0044, `K6` landed, `R3` landed, and
+  `R4` landed with a FAIL verdict. Run in this exact order, one dispatch at a time, each in its own fresh
+  child session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
+  invocation, and treat `PASS` as necessary and not sufficient. House rules are the ones written at the head
+  of `LIVE QUEUE 3`, with three substitutions, push with
+  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the durable runner tree
+  and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the selftest baseline is 105 checks,
+  not 86. Stamp entries at the time they are written and name the clock.
+   1. `P3` `Tails`, the venue dry run the plan carries as item 17, scheduled 2026-11-26 and it does not run
+   before that date because it tests the venue network rather than this controller's home network. Brief,
+   paste verbatim. "Read the `## Status` entries of 2026-11-25 in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Run the venue dry run. Confirm the target at
+   `192.168.1.99` and the 3389 listener are reachable from the network this controller actually holds on
+   venue, confirm the pinned host keys in `scripts/remote/known_hosts` still match `ssh-keyscan` output, and
+   run one measured six-map cycle in rebuild mode from `/home/howard/AI/booth-2026/t0042/booth_loop.py`,
+   recording the per-map overhead and the cycle total against 2231.57 s. If any step fails, record the
+   fallback in `## Status` rather than improvising at the booth, and state plainly whether the 2026-11-28
+   booth can run the loop from a laptop that does not hold `192.168.1.102`."
+   2. `Tails` as `K7`, the `R4` licence fix, ahead of every documentation step. Brief, paste verbatim. "Read
+   `## License (Charmy)` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, findings `C1` and `C6`
+   only. Land both, at most three file edits per turn. `C1`, the imported MIT and Apache-2.0 components need
+   their copyright headers and a `NOTICE` record at the root that actually carries them, and `C6`, the booth
+   repo needs a `NOTICE` naming each upstream with the ref actually used. Run `scripts/licence-check` on the
+   team repo and against the booth clone refreshed to the remote, record both exit codes, run
+   `tests/selftest.sh` and `python3 tests/config_gate.py` against the 105-check baseline, and name every
+   check that did not run. Do not rule on `C2` or `C3`, those are the operator's."
+   3. `Tails` as `K8`, the `R3` findings, one file edit per turn. Brief, paste verbatim. "Read `## Test
+   Results` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Land four items. 1, `Omega` finding
+   12, bind the PR body to `env:` at `.github/workflows/planning-doc-gate.yml:29` instead of interpolating
+   it into a `run:` body on a public repo, and fix the same class at `deploy.yml:40` `:44` `:86` `:87`. 2,
+   `Omega` finding 13, pin every `actions/checkout` ref with the tag in a trailing comment and remove the
+   pseudo-pin at `static-checks.yml:24`. 3, the harness defect `Big` owns, `.github/workflows/team-selftest.yml:51`
+   truncates a three-digit check count to one digit and would fail a green run, and the `MIN=70` floor sits
+   35 below the real count, so restate the floor to a value that is above the minimum meaningful suite and
+   below 105, and say what you chose and why. 4, make the local pre-push gate assert the check count rather
+   than only greenness. Run `bash -n` on every script you touch, run `tests/selftest.sh` and
+   `python3 tests/config_gate.py`, record before and after counts against 105, and name every check that did
+   not run."
+   4. `Big` as `R3b`, re-read after `K7` and `K8`. Brief, paste verbatim. "Read `## Test Results` and
+   `## License (Charmy)` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Confirm the `K7` and
+   `K8` fixes executed, that both `scripts/licence-check` runs exit 0, that the selftest count and the CI
+   floor agree, and that no workflow now interpolates untrusted input into a `run:` body. Name every check
+   that did not run. Write in `## Test Results`."
+   5. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth
+   artifacts, and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule
+   on. The booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private
+   until that ruling lands, its visibility flip is an operator action, and `R4` did not clear it. Also the
+   operator's `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section 4, and `Omega`
+   finding 2, the RDP `/cert:ignore` against a self-signed certificate, stays open with no RDP channel test
+   run.
+   6. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 10 of
+   `LIVE QUEUE 3`, restated against the 105-check baseline and the four-stage chain. `T5` is void.
+   7. `G1` to `G4`, the TASK-0043 review chain, per item 11 of `LIVE QUEUE 3`, then the `Tails` gate fix
+   dispatch that has still never run. `G5` is void.
+   8. `Vector` as `D1`, per item 12 of `LIVE QUEUE 3`, now reviewing and extending the booth `README.md`
+   already rewritten at `e3e2e5a` and corrected at `e841bc6` rather than writing that prose from scratch, and
+   carrying `R4`'s FAIL verdict, the public flip not cleared, and the durable-path prerequisites.
+   9. `Knuckles` as `K1`, per item 13 of `LIVE QUEUE 3`, keeping the booth repo private because `R4` rules
+   FAIL, and keeping the after-event target steps named in `## Release`, the COPR and `crb` disable inverses,
+   the RDP credential rotation, the `lock-enabled` re-lock, and the target `/tmp` capture cleanup.
+   10. `Espio` as `E1`, per item 14 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4` and the superseded rows
+   below into `## Archive` and keeping the standing contradictions listed there.
 
 - [ ] LIVE QUEUE 4 FOR THE FRESH `Robotnik` SESSION (2026-11-23 01:05 UTC, 10:05 JST, owner
   `ses_dfa49b1f9ffeFR3Hj0IC38MUzW` handing off after five dispatches). Read `## Status` in this doc and
@@ -5267,14 +5363,72 @@ No target contact, so everything target-side is unread by me, the seventeen `Scm
 
 *Owner: `Charmy`. Fourth in the review chain. Every license is verified at the upstream source repository and the ref used, never from a copy in this repo.*
 
-**Project license:** — appropriate | finding
+**R4 dispatch, written 2026-11-25 05:22 UTC (14:22 JST).** `Charmy`, fourth and last in the TASK-0042 review chain, the team's single licence owner per TASK-0044, so this one pass carries the licence review and the retired fifth reviewer's audit scope. The legacy `## License Audit (Flicky)` heading at doc:5281 below is retained history written before the 2026-11-22 22:05 UTC roster change. I did not edit it, and `Espio` folds it at `E1`.
+
+**Gate**
+
+`scripts/licence-check .` in `/home/howard/AI/projects/team-chaotix-moe` (exit 0) and `scripts/licence-check /home/howard/AI/booth-2026/repo` (exit 0). Both runs are readable and both report `PASS`. Team repo declarations read by the gate, `LICENSE MIT repo_license`, `planning/docs/TASK-0039-agent-gpg-icon-feature-catch.md MIT header`, `tests/test_licence.py MIT header`. Booth declarations read by the gate, `LICENSE MIT repo_license`.
+
+**Outcome:** PASS, for both gate runs.
+
+The booth clone is refreshed to the remote, not a stale copy. Command `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git fetch origin --prune` in `/home/howard/AI/booth-2026/repo`, then `git ls-remote origin refs/heads/main` answers `7c4fa1658276c5de9b85d70f09952b98171d7f27`, identical to `git rev-parse HEAD` in that clone, and `git status --porcelain` returns 0 lines. The brief names a clone under `/tmp/opencode/t0042`; that path is age-cleaned and superseded per `## Status`, so the durable clone is the one read, and the stale `/tmp/opencode/t0042/booth-repo` and `booth-verify*` clones (top of `booth-repo` reads `e3e2e5a`) were not used.
+
+**Project license:** MIT in both repos (`LICENSE`, "MIT License", "Copyright (c) 2026 Howard", read in each working tree). Appropriate for team-originated code with no copyleft upstream inherited, with finding C1 that three places in the team repo declare Apache-2.0 for that same code.
 
 **Imported code**
 
 | Component | Source (repo @ ref) | License (verified at) | Obligations met | Status |
 |---|---|---|---|---|
+| `republic-of-korea` mask input, Natural Earth 10 m Admin-0 Countries | `nvkelso/natural-earth-vector` @ tag `v5.1.2`, commit `f1890d9f152c896d250a77557a5751a93d494776` | Public domain. `LICENSE.md` read at that commit over HTTPS: "Everything here is public domain." | yes, and none are required ("No permission is needed to use Natural Earth. Crediting the authors is unnecessary"). `code/korea_10m.py:6-12` in the booth tree carries repo, tag, commit, dataset, blob sha `5ebc66e25fc1af01edaebe9375c546655e04cf1e`, 13287234 B, sha256 `239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255`, and the licence line. | pass |
+| Superseded 110 m Korea record, provenance of `maps/superseded/superseded-republic-of-korea-110m.scm` | `johan/world.geo.json` @ `master`, tree `34c96bba9c07d2ceb30696c599bb51a5b939b20f`, `countries/KOR.geo.json` | Public domain by dedication. `UNLICENSE` blob `cb93bd385ea436549d8278112f7944cc8f9873f8`, 1270 B, read at that tree: "free and unencumbered software released into the public domain". The repo's `README.md` quips "Legal status of this dataset: dubious?", which is the author's caveat, not a licence term. | yes, the dedication imposes nothing. Provenance is recorded in `## Status` and in the superseded map's record. | pass |
+| StarCraft Anthology installer ISO, the game-data source | archive.org item `starcraft-anthology-original-installer`, `https://archive.org/download/starcraft-anthology-original-installer/StarCraft_Anthology.iso`, item metadata read 2026-11-25 | No licence granted. `creator` and `publisher` are both "Blizzard Entertainment". `StarCraft_Anthology.iso` 1343639552 B, root contents `Installer.exe`, `Installer Tome.mpq`, `Installer Tome 2.mpq`. It is a preservation item of proprietary software, not a grant of any right. | n/a for obligations. Nothing from it is published, the ISO is on the target only (`MANIFEST.md:906`). | pass, posture in finding C3 |
+| Ar3sgice starcraft-tools mirror (Firegraft, GRPConv, GRPEdit, bmp2scx, SCMDraft archives) | `github.com/Ar3sgice/starcraft-tools` @ `master`, tree `00b5fb512d475420b8f50715978ad4a0394d2937`, 92 blobs listed | No licence upstream, verified by listing the tree at that ref: no `LICENSE`, no `COPYING`, no licence text file. `README.md` is 61 B, one descriptive line. The tree does contain `Scmdraft-0.9.07-2018.07.24.zip`, `Scmdraft-0.9.02-2017.10.26.zip`, `Scmdraft.rar`, `bmp2scx1.0.rar`, `firegraft093.zip`. | no, and none is due, because nothing from that mirror is in either repo. The house policy hard stop `no_licence` applies to redistribution of those binaries, so the mirror may be named as a source but its binaries may not be carried or published. | finding C4 |
+| StormLib, the MPQ container writer | `github.com/ladislav-zezula/StormLib` @ `d60b7e6d3501474f4d92c7b9c752a37e78385f67` | MIT. `LICENSE` blob `2cb432d4ec85706acfb1a606bcc010a70b96ed86`, 1108 B, "The MIT License (MIT), Copyright (c) 1999-2013 Ladislav Zezula", read twice: from the API tree at that commit, and from the controller clone `/tmp/opencode/t0042/StormLib`, whose `git rev-parse HEAD` is that same commit and whose `git rev-parse HEAD:LICENSE` reproduces the upstream blob hash. | yes. No StormLib source is vendored. `code/mkmpq.c` and `code/chkdump.c` in the booth tree are team-authored wrappers that include StormLib headers and link a locally built libstorm. The four compiled binaries are withheld (`PUBLISH-STATUS.md:137`). MIT's notice clause attaches to copies of StormLib, and no copy is distributed. | pass, with the record correction C5 |
+| Rocky Linux mark, the `rocky-logo` and `rocky-with-heart` masks | `rocky-logos-100.5-3.el10` on the controller, asset `/usr/share/icons/hicolor/scalable/apps/start-here.svg`, licence text `/usr/share/licenses/rocky-logos/COPYING` | Not an open source licence. `rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' rocky-logos` answers `rocky-logos-100.5-3.el10 licence=Licensed only for approved usage, see COPYING for details.` The COPYING grants use "only during the normal operation of software programs that call upon the Package. No other copyright or trademark license is granted herein." | no. `code/rocky_svg.py:1-8` names the asset and the package version, which is attribution, and attribution is not the obligation here. The obligation is that the grant does not cover publishing the mark. | finding C2 |
+| FreeRDP, what `scripts/rdp-input.c` and `scripts/rdp-pointer.c` link | `github.com/FreeRDP/FreeRDP` @ tag `3.32.2`, the version the distro package carries | Apache-2.0, `LICENSE` read at that tag. Distro identity re-verified by me on the controller, not copied from the NOTICE: `rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs` answers `freerdp-libs-3.32.2-1.el10_2 licence=Apache-2.0 AND HPND AND LGPL-2.1-or-later AND LicenseRef-Fedora-Public-Domain AND OFL-1.1`. | yes. `scripts/remote/NOTICE` names the package, version, licence field, that no FreeRDP source is vendored or compiled in, and that the binaries `rt-build` produces are never committed. Linking is dynamic against the unmodified distro library. | pass |
+| Kernel UAPI headers, what `scripts/remote/uinput-inject.c` compiles against | `torvalds/linux` @ `master`, `LICENSES/exceptions/Linux-syscall-note` | GPL-2.0-only WITH Linux-syscall-note for the uapi headers. The exception text read at that ref: "NOTE! This copyright does *not* cover user programs that use kernel services by normal system calls - this is merely considered normal use of the kernel, and does *not* fall under the heading of 'derived work'." | yes, the injector includes headers only, links libc alone, and its own licence stays the repo licence. | pass |
+| SCMDraft 2, the editor whose surface the captures show | `http://www.stormcoast-fortress.net/cntt/software/scmdraft`, page read 2026-11-25 | Not open source. The page states "All content copyright © 2001-2019 Stormcoast Fortress", lists SCMDraft 0.9.10 as the current release, and names a StarCraft installation as a requirement. No licence grant is published at that ref. | n/a. No executable is in either repo, proved by the sweep below. Its rendered output is the subject of finding C3. | finding C3 |
 
-**Verdict:** pass | findings
+**Exclusions sweep, the operator's rule of 2026-11-22 22:10 UTC.**
+
+Commit read: `7c4fa1658276c5de9b85d70f09952b98171d7f27`, which is what the remote holds at `refs/heads/main`, read as named above. Tree at that commit: `git ls-tree -r --name-only 7c4fa16 | wc -l` returns 789 paths.
+
+Game-data patterns. Command `git ls-tree -r --name-only 7c4fa16 | grep -inE 'anthology|\.iso$|starcraft|stardat|game\.exe|\.mpq$|bn\.chk|base-map|\.chk$|\.scx$|starcraft_mpq_io'`. Count 0, grep exit 1. The booth tree holds no StarCraft Anthology game file, no `.iso`, no `.mpq`, no `.chk`, no `.scx`, no `bn.chk`, no `base-map.scx`, no `starcraft_mpq_io.py`.
+
+Executable and archive patterns, the class the stormcoast URL publishes. Command `git ls-tree -r --name-only 7c4fa16 | grep -inE 'scmdraft|stormcoast|\.exe$|\.dll$|\.zip$|\.tar|\.7z$|\.bin$|era\.'`. Count 1, and the single matching path is `planning/TASK-0042-foss-for-all-scmdraft2-demo.md`, the planning doc's own path, matched only because the word `scmdraft` is in its file name. Zero paths end in `.exe`, `.dll`, `.zip`, `.tar`, `.7z` or `.bin`. No SCMDraft 2 executable from `http://www.stormcoast-fortress.net/cntt/software/scmdraft` is in the tree.
+
+Broad substring sweep, the one `## Status` recorded at the README rewrite. Command `git ls-tree -r --name-only 7c4fa16 | grep -inE 'exe|dll|mpq|iso|chk|scx'`. Count 7, all named: `captures/bmp2scx.png`, `captures/isom10.png`, `captures/isom10b.png`, `code/chk_analyze.py`, `code/chk_read.py`, `code/chkdump.c`, `code/mkmpq.c`. All seven are PNG captures or team-authored Python and C source. None is a binary.
+
+Magic-byte scan, so the naming sweep is not the only evidence. Scanned every one of the 789 blobs for a PE/MZ header at offset 0, an ISO9660 `CD001` primary volume descriptor at offset 32768, and a ZIP local header. Counts 0, 0, 0. Type census over the same 789 paths: 644 `image/png`, 70 `text/x-script.python`, 22 `text/plain`, 18 `application/json`, 16 `text/x-shellscript`, 13 `application/octet-stream`, 5 `text/x-c`, 1 `application/x-ndjson`. All 13 octet-stream blobs are `.scm` maps the team wrote, 6 under `maps/deliverable/`, 4 under `maps/superseded/`, 3 under `live-segment/maps/`.
+
+Ruling on the rule. It holds at the commit actually published. The operator's position is recorded plainly at doc:211-220, that the booth repo must hold no StarCraft Anthology game file and no SCMDraft 2 executable from that URL, and that the maps this team created plus everything in that repo at `1b14562` is acceptable as it stands. That is the operator accepting the current tree, and this sweep is the verification the DoD box at doc:471 asked for rather than a restatement of the acceptance.
+
+**Controller-side posture, outside git, named rather than hidden.** `find /tmp/opencode/t0042 /home/howard/AI/booth-2026 -maxdepth 3 -type f \( -iname '*.iso' -o -iname '*.exe' -o -iname '*.dll' -o -iname '*.zip' -o -iname '*.rar' -o -iname 'colorbase.bin' -o -iname 'chkoriginal.bin' \)` returns 2 paths, `count` 2. They are `/tmp/opencode/t0042/StormLib/storm.dll/storm.dll`, which is part of the MIT StormLib clone at the pinned commit and not a SCMDraft or mirror binary, and `/tmp/opencode/t0042/colorbase.bin`, a data file extracted from `bmp2scx1.0.rar` from the unlicensed Ar3sgice mirror (recorded at doc:1753, `colorbase.bin` 3855 B, withheld from the booth repo by `MANIFEST.md`). No ISO and no SCMDraft executable exists anywhere on the controller. Separately, `ls /tmp/opencode/t0042/ts-harvest/*.chk` and `ls /home/howard/AI/booth-2026/t0042/ts-harvest/*.chk` each return 164 `.chk` extracts read off the target's `~/game-data/sc1161/Starcraft/maps` (`DEMO-LOG.md:843`), including `ref-era6.chk` at 257441 B, sha256 `d7afd6a53cd3664a822485cffc21f8502e584e7738e35b9835840782c621057b`, and `(2)River Crossing.chk` at sha256 `5b23310cb6e76eb4c6405d35d008df5d26b90e1c79d987cc2ec9b33658132a57`. None is in a git-tracked path, so the house rule holds, and finding C3 states what they imply for the published maps.
+
+**Exceptions recorded.** Two, both lawful, neither a block, and neither visible to the gate because the gate reads declared licences, not the licence fields inside distro packages and not the headers a C file includes.
+
+1. `LGPL-2.1-or-later`, one term inside `freerdp-libs-3.32.2-1.el10_2`. On the house avoid list at `team/licenses/policy.yaml` with `severity: policy_exception`. Lawful because the team's tools link dynamically against the unmodified distro library and modify no FreeRDP source, which is the LGPL's own dynamic-linking case, and because the team takes the Apache-2.0 option the same package carries. Recorded, not silently passed.
+2. `GPL-2.0-only WITH Linux-syscall-note`, the licence of the kernel UAPI headers `scripts/remote/uinput-inject.c` includes. GPL-2.0-only is on the avoid list at `severity: policy_exception`. Lawful under the exception text quoted in the table above, which states that normal system-call use is not derived work. Recorded.
+
+**Findings. Each one with the fix Tails must make, and the two that need the operator.**
+
+C1, licence declaration conflict inside the team repo, Tails. `scripts/rdp-pointer.c` carries the header line `License: Apache-2.0 (links against libfreerdp3 / libfreerdp-client3, Apache-2.0)`, `scripts/rdp-input.c` inherits that claim from rdp-pointer, `scripts/remote/NOTICE` states the team C tools are "Apache-2.0, under the repository root licence (LICENSE at repo root)", and `team/licenses/policy.yaml` states "Team Chaotix itself is Apache-2.0". The root `LICENSE` is MIT. Three claims and the file disagree. Nothing imported imposes copyleft, StormLib is MIT, FreeRDP is taken under Apache-2.0, Natural Earth is public domain, the 110 m record is dedicated, so either direction is lawful and the fix is to pick one and align, my recommendation MIT at the root with MIT headers in `scripts/rdp-input.c`, `scripts/rdp-pointer.c` and `scripts/remote/uinput-inject.c` (which carries no licence header at all, a missing-attribution finding), then the NOTICE and policy lines restated to match. Do not relicense any inherited copyleft, there is none here.
+
+C2, the Rocky Linux mark is published in the booth tree, operator decision. The booth tree holds `maps/deliverable/rocky-logo.scm`, `maps/deliverable/rocky-with-heart.scm`, 13 `booth-artifacts/*rocky-logo*` and `*rocky-with-heart*` renders, and 20-plus `captures/` frames of the same mark as the editor draws it. The mask geometry is rasterized from the shipped distro SVG (`code/rocky_svg.py:1-8`), and the licence that ships with that asset grants use "only during the normal operation of software programs that call upon the Package. No other copyright or trademark license is granted herein." A public GitHub repository that publishes renders of the mark is not that use. The three lawful alternatives, in my recommended order, (a) keep the repo private as it is, (b) publish with the two Rocky-mark maps and their renders and captures removed, `MANIFEST.md` naming the removal, (c) obtain the Rocky Linux Foundation's logo usage approval before publishing. I do not grant the exception, this is the operator's call, and it is written here for `Robotnik` to fold into `## Status` because it is not my section to edit.
+
+C3, the published captures and maps are renders of Blizzard content, operator decision, and this is the plain ruling on the public flip. Facts first. `PUBLISH-STATUS.md:156` states it itself, "The captures and booth artifacts that landed are downscaled renders of Blizzard tileset tones." The era-6 reference the four silhouette maps and the live seed are built from is a Blizzard campaign map's CHK with the `ERA ` word patched to 6 (`DEMO-LOG.md:845`), and 164 `.chk` extracts of Blizzard maps sit on the controller outside git (`DEMO-LOG.md:843`). The captures are frames the SCMDraft 2 editor drew, and SCMDraft 2 itself publishes no licence grant at all (`All content copyright © 2001-2019 Stormcoast Fortress`). The maps the team wrote are its own authorship, and their terrain arrays are the team's masks, but the container skeleton they reuse comes from a Blizzard map. Ruling stated plainly: the exclusion rule is satisfied and the gate passes, and that is not the same as the captures clearing a public flip. Public visibility of 341 `captures/` files plus 207 `live-segment/captures/` files plus 73 `booth-artifacts/` files is a distribution act covering renders of Blizzard tileset art, renders of a closed editor's UI, and the Rocky mark, and C2 and C3 must both be resolved by the operator before the flip. The operator's acceptance recorded 2026-11-22 22:10 UTC covers the tree's contents against the two named classes, and it does not read as a decision on public distribution of those renders.
+
+C4, the Ar3sgice mirror carries no licence file upstream, verified at tree `00b5fb512d475420b8f50715978ad4a0394d2937`, and the team downloaded one of its binaries (`bmp2scx1.0.rar`, extracted at doc:1753). Nothing from it is published, so the house hard stop `no_licence` is not engaged in any repo. The standing rule that follows for `D1`: name the mirror as a source with its ref, and carry no binary from it. `colorbase.bin` stays withheld.
+
+C5, record correction, mine to make because it is a licence fact and the record contradicts itself. `doc:744` records StormLib as "MIT, `github.com/ladislav-zezula/StormLib` at `d60b7e6d3501474f4d92c7b9c752a37e78385f67`". `doc:1796` records StormLib as "Freeware (not open-source)". At the ref actually used the repo carries `LICENSE`, blob `2cb432d4ec85706acfb1a606bcc010a70b96ed86`, and that text is the MIT License. `doc:744` is right and `doc:1796` is wrong for that ref. No other agent's section is edited here, this line is the correction.
+
+C6, the booth repo has no NOTICE file. It publishes 94 code files, 13 maps, 548 capture files and 73 artifacts, and its only licence file is the root MIT `LICENSE`. StormLib is named in `README.md`, `MANIFEST.md` and `PUBLISH-STATUS.md` and the pinned commit is not stated in the repo. Fix for Tails, add a booth-repo `NOTICE` naming StormLib MIT at `d60b7e6d3501474f4d92c7b9c752a37e78385f67`, Natural Earth public domain at tag `v5.1.2` commit `f1890d9f152c896d250a77557a5751a93d494776`, the 110 m record's `UNLICENSE` dedication, `rocky-logos-100.5-3.el10` with its usage restriction quoted, and the SCMDraft 2 and StarCraft facts, then regenerate the `MANIFEST.md` row for it. This one is documentation hygiene, not a breach, and it is what a public repo would need.
+
+**Checks that did not run in this pass, named.** No re-verification of the upstream `rocky-logos` source repository, the package's own `COPYING` at version `100.5-3.el10` is the ref I read. No fetch of the archive.org ISO bytes, the item metadata is what I read. No licence check of `Firegraft`'s own freeware claim, the mirror's tree was read and it carries no licence file. Nothing against the target, and no claim about the target's game data beyond what `DEMO-LOG.md:843` records.
+
+**Verdict:** findings. The gate outcome is PASS on both repos and the exclusion rule holds at `7c4fa16`, and the pass is not clean. Open: C1 header and NOTICE and policy alignment plus the missing header on `scripts/remote/uinput-inject.c`, and C6 booth `NOTICE`, both for `Tails`. Blocked on the operator: C2 the Rocky mark, and C3 the renders, both of which decide whether the booth repo may go public, and the visibility flip is the operator's action in any case. Until C2 and C3 are answered and C1 and C6 land, `K1` keeps the booth repo private, which is the current state and is the safe one.
+
+VERDICT: FAIL C2 Rocky Linux trademark renders published in the booth tree with a grant that covers only normal operation of the calling program, C3 published captures and maps are renders of Blizzard tileset art and of an unlicensed editor with the era-6 skeleton taken from a Blizzard map, C1 team repo declares Apache-2.0 in three places against an MIT root LICENSE and uinput-inject.c has no header, C6 booth repo has no NOTICE naming StormLib MIT at d60b7e6d3501474f4d92c7b9c752a37e78385f67. Gate PASS on both repos and the operator's 2026-11-22 22:10 UTC exclusion rule verified at 7c4fa16 with 0 game-data matches and 0 executables over 789 paths.
 
 ---
 
@@ -5292,12 +5446,52 @@ No target contact, so everything target-side is unread by me, the seventeen `Scm
 
 *Owner: `Big`. Verdicts, never raw log dumps.*
 
+### R3 test read (2026-11-25 04:53 UTC, 13:53 JST, `Big`, third in this review chain)
+
+**What I read in this doc.** `## Status`, `Shadow`'s `R1` entry at doc:5026, and `Omega`'s `## Security` at doc:5102 to doc:5261. Nothing else. No target contact, no network contact, no credential value read or printed, modes and hashes read by path only.
+
 | Check | What it exercises | Result | Notes |
 |---|---|---|---|
+| `bash tests/selftest.sh` at HEAD `8f3415f` | the whole local gate | PASS | `SELFTEST: 105 checks passed`, exit 0. Log `/tmp/opencode/big-r3-selftest.log`. One named skip, `shellcheck absent, skipped` |
+| `python3 tests/config_gate.py` | roster, thinking levels, permissions, chain, licence ownership, template, A2A | PASS | six notes, exit 0 |
+| `bash tests/selftest.sh` in a `git archive` of `482aed5^` | the pre-`F8` baseline | PASS | `86 checks passed`, exit 0. Reproduces the 86 figure |
+| `bash tests/selftest.sh` in a `git archive` of `81142c7` (`F8` landed at `482aed5`, this is its Implementation commit) | the widened bash syntax gate | PASS | `103 checks passed`, exit 0. Delta +17, so the 17 `bash -n` checks `F8` names actually execute now |
+| check-count delta `81142c7` to `3e43d2a` (`K6`) | the 103 to 105 claim | PASS | `git diff --stat` shows `tests/selftest.sh +45/-11`, `known_hosts +23`, `rt-lib +11`. The credential scan went from one `PASS` to a two-iteration loop plus one new host-key pinning `PASS`, net +2, so 105 at HEAD is `K6`'s tree plus a docs-only commit (`8f3415f` touches `planning/` only) |
+| `scripts/remote/known_hosts` and `rt-lib` | `R2` finding 1 closed | PASS | published, mode 644, 23 lines carrying exactly 3 key lines for 192.168.1.99, `rt-lib` now `-o StrictHostKeyChecking=yes` with two `-o UserKnownHostsFile`. `grep -c StrictHostKeyChecking=no` returns 0 in `rt-lib` and in the durable `booth_loop.py` |
+| durable runner tree at `/home/howard/AI/booth-2026/t0042` | the 2026-11-25 `## Status` durability claims | PASS | `booth_loop.py` 56132 B at `sha256 e11778d117fa7bf49e3cf3962b32e4b9983af0941c64ab3891f8859fee6b17d2`, identical to `code/booth_loop.py` in the local booth clone at `7c4fa16` (signed `G`, 13:18:24 JST). `ts-harvest/ref-era6.chk` `sha256 d7afd6a53cd3664a822485cffc21f8502e584e7738e35b9835840782c621057b`, exact match to the recorded value. Mask modules `rocky.py`, `glyph.py`, `korea.py`, `korea_10m.py`, `rocky_svg.py`, `tux.py` present. `build_ts.py`, `mask_png.py`, `t0042-run-dos.sh`, `mkmpq` (built, 611552 B), `rdp-input`, `stormlib/`, `d2_verify.py`, `s1c_manifest.py` present. `/home/howard/AI/booth-2026/git-askpass-tc.sh` mode 700, four non-comment lines, reads the token from `~/AI/secrets/token.md` at run time, no secret material in the file |
+| read-back claims | `## Status` repo state | PARTIAL | against files on disk, `origin/main` reads `3e43d2a` as the entry states, and the booth clone carries `89269c6` (11:57) under `7c4fa16`. The newest local commit `8f3415f` (13:28 JST) is one ahead of that ref, so its push state is unverified, and I made no network contact to check either read-back at GitHub |
+| `s1a-run-log.jsonl` | that the booth cycles ran rather than being asserted | PASS | 163080 B, 503 step rows across 9 loop ids (`S1aL1` 52, `S1bAL1` 51, `S1b300L1` 88, `S1b150L1` 88, `S1cSmokeL1` 28, `S1c300L1` 88, `P2SMOKEL1` 16, `P2L1` 88, `preflight` 4), 297 rows carrying their own `inverse`, and 1 non-PASS row, the `S1aL1` transfer FAIL that `DEMO-LOG.md:1732` records as the aborted first pass. The log contradicts nothing and carries its own failure |
+| `P2_run.log` | the `P2b` re-measurement from the durable path | PASS | `cycle_cost_seconds": 2231.57`, per-map `overhead_excluding_display` 43.88, 43.92, 43.95, 44.0, 44.3, 44.41, matching the recorded ranges. mtime 10:27 JST matches the `DEMO-LOG` entry stamped `2026-11-25 01:27 UTC (10:27 JST)` |
+| capture-set counts | `S1a`, `S1b`, `S1c`, `P1` artifact claims | PASS | `S1aL1` 31, `S1bAL1` 30, `S1b150L1` 52, `S1b300L1` 52, `S1c300L1` 52, `S1cSmokeL1` 17, `p1-*.png` 15. The 15 confirms `R1` finding 6, the dispatch brief's "eleven `P1` captures" is wrong, and `S1c300L1` and `S1cSmokeL1` exist only controller-side, exactly as `PUBLISH-STATUS.md` discloses |
+| commit signatures | the packaging record | PASS with the `R2` correction confirmed | `git log -1 --format='%G? %GK'` gives `N` for `8e75aac`, `d26ef2b`, `5f9947d`, and `G F9261D151316FD60` for `b906f00` and `1eea4ec`. `git log -60` gives 57 `G` against 3 `N`. `commit.gpgsign` is `true` locally and globally |
+| `V1` negative controls, `P1` game launches, all target-side state | the playability and validation boxes | UNVERIFIED by me | target-side only, I made no contact. The `DEMO-LOG` entries exist, at team-repo `DEMO-LOG.md:2192`, `:2235`, `:2261` (`V1`) and `:2321`, `:2341`, `:2367`, `:2414`, `:2465` (`P1`), and the cited `:2418` line does carry the env-prefixed flatpak line `R1` names |
+| Sparky / Sparrow | the Rocky Linux layer this task owes | NOT RUN | `command -v raku sparrow sparky` returns nothing. No Sparky dispatch exists in this task's queue |
+| CI, all 8 workflows, 11 jobs | every workflow-defined gate | NOT RUN | no runner is registered and the repo is public (AGENTS.md section 6). Zero executed checks |
+| `.github/workflows/planning-doc-gate.yml:29` | `Omega` finding 12 | FAIL, open | see ruling below |
+| `actions/checkout` pinning across the 8 workflows | `Omega` finding 13 | FAIL, open, understated | see ruling below |
+| selftest gate for run-body interpolation | the assert `Omega` asked finding 12 for | NOT IMPLEMENTED | `grep -n 'github.event' tests/selftest.sh` returns nothing |
 
-**Checks requested vs run:** N requested, N executed.
+**Checks requested vs run:** 16 verification items in the brief, 13 executed by me against files on disk, 3 unresolvable without the contact the brief forbids (`V1` controls, `P1` launches, the two GitHub read-backs).
 
-**Verdict:**
+**Ruling on `Omega` finding 12, the PR body interpolated into a `run:` body.** I confirm the finding exactly as written, and it is unfixed at HEAD. `.github/workflows/planning-doc-gate.yml:29` is still `pr_body="${{ github.event.pull_request.body }}"` inside a `run:` block, verified by `sed -n '29p'` and by `grep -rn 'github.event' .github/workflows`, which returns that one line. The severity stands at high with the same honest bound `Omega` gave, GitHub does not register a self-hosted runner on a public repo, so the job has no runner to land on today, and that is the only thing between this line and execution on the operator's machine. My addition to the ruling: the fix is not only a line change, it is also the missing gate. `Omega` asked for a selftest assert that no `run:` body contains a `github.event.*` expression, that assert does not exist (row above), so the class is unguarded as well as unfixed, and the repo going private would remove the sole precondition without any local gate noticing. Two further instances of the same interpolation class that the finding does not name, `deploy.yml:40`, `:44`, `:86` and `:87` place `workflow_call` and `workflow_dispatch` inputs directly into `run:` bodies (`${{ inputs.confirm }}` sits inside a shell `[ ... ]` test, which is the same substitution mechanism), and AGENTS.md section 6 requires inputs to be bound to `env:`. `licence-check.yml:50` shows the compliant form already in this repo. My call, bind `PR_BODY` and the `deploy.yml` inputs to `env:` and add the grep assert to `tests/selftest.sh` in one `Tails` pass, before any visibility flip. This is a code finding, it goes to `Tails`.
+
+**Ruling on `Omega` finding 13, `actions/checkout` unpinned.** I confirm it and I widen it. Unpinned `actions/checkout@v4` occurs at 7 sites, `deploy.yml:54`, `deploy.yml:75`, `planning-doc-gate.yml:23`, `secret-scan.yml:25`, `secret-scan.yml:41`, `test-runner.yml:63`, and `test-runner.yml:86`. `Omega` named six and missed `test-runner.yml:86`. An eighth case is a pseudo-pin, `static-checks.yml:24` reads `uses: actions/checkout@v4 # SHA: 08c6903`, a comment is not a pin and a 7-hex-digit fragment cannot be resolved, so that site reads compliant and is not. `secret-scan-self.yml` adds no site of its own but inherits the unpinned ref through `uses: ./.github/workflows/secret-scan.yml`. Only `licence-check.yml:40` and `team-selftest.yml:28` carry the pinned form `actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2`. Severity stays low, mutable tag on GitHub's own org with no runner to execute it, and the fix is mechanical, copy the two compliant lines. `Tails` work.
+
+**Harness bug I found, mine to fix, not a code bug.** The count floor in `.github/workflows/team-selftest.yml:44` to `:55` does not work. `grep -Eo '[0-9]+ checks passed' | grep -o '^[0-9]'` keeps the first digit only, so a run reporting `105 checks passed` yields `COUNT=1`, and `[ 1 -lt 70 ]` is true, so the step would print `selftest reported 1 checks; expected at least 70` and exit 1 against a passing suite. I reproduced it on the literal string. Two consequences. Had CI ever run, this step would have failed every green run since the count crossed 100, and any count whose leading digit is 7 or higher would pass the floor whatever its true size. The floor is also stale, `MIN=70` against a 105 baseline, 35 checks of slack. And the floor lives only in a CI job that has never executed, while the effective local gate, `scripts/hooks/pre-push` (present, mode 755, `core.hooksPath` set), runs `tests/selftest.sh` and asserts nothing about the count, since `tests/selftest.sh:286` only prints it. So the AGENTS.md section 18 claim that CI asserts a minimum check count is currently unenforced end to end. Fix, `grep -Eo '^[0-9]+'` instead of `grep -o '^[0-9]'`, raise `MIN` to a value near the baseline, and move the count assert into `tests/selftest.sh` so the gate that actually runs is the one that asserts.
+
+**Matrices and silent drops.** There is no matrix in this repo's CI, `grep -rn 'matrix\|fail-fast' .github/workflows` returns nothing across all 8 workflows and 11 jobs, so nothing dropped out of a matrix, and the `fail-fast: false` house rule has no object here. What did drop is coverage of a different kind. The Sparky layer has never run for TASK-0042 and its prerequisite, Raku, is not installed. The `docker-test-runner`, `libvirt-vm-setup` and `sparky-test-runner` custom actions exist in `.github/actions/` and have never been exercised. `shellcheck` is absent on this host, so the shell lint is skipped locally and its CI job has never run. The `R4` exclusion sweep, the verbatim 2026-11-14 flatpak re-run `R1` named as the cheapest open check, `d2_verify.py` against the tree `K6` published, per-category `MANIFEST.md` byte sums, `gh-get.sh` re-provisioning, a real `/tmp` age-clean test, and every target-side read in `Omega`'s not-run list have not run.
+
+**Timestamp ruling.** The `## Status` entry of 2026-11-25 04:05 UTC (13:05 JST) does not survive the rule. It reports `K6` landed and names `3e43d2a` and `7c4fa16`, and those commits are dated 13:22:18 and 13:18:24 JST by `git log --format='%ad'`, `K6`'s own `DEMO-LOG` entry is stamped 04:14 UTC (13:14 JST), and its `## Implementation` header at doc:4231 is stamped 04:20 UTC (13:20 JST). The Status entry is 9 to 17 minutes ahead of every clock that can verify it, and it names no clock source, so the same defect `R1` finding 3 recorded on 2026-11-22 is live again on 2026-11-25. The `P5` half of that same block does pass the check, its 12:15 JST stamp sits after `e94962f` at 12:00:42 and `001d2cb` at 12:02:18, and its "selftest green at 86 checks" is arithmetically correct at that moment because `F8` landed at 12:24 JST. `DEMO-LOG` entries and commit times carry their own clock and reproduce. Treat the bare `## Status` stamps as unverified and take the commit and `DEMO-LOG` clocks as the record's only checkable time.
+
+**What a booth-day run would have to assert to prove itself.** Nine things, each with the artifact that proves it. One, `booth_loop.py` exits 0 with the durable preflight chain green, `preflight_rebuild` returning `FAIL` exits 4 and `preflight_target_run_script` exits 5, so a passing cycle is an exit code, not a log line. Two, rebuild mode resolves `ts-harvest/ref-era6.chk` from the durable path and rebuilds all six maps to their recorded SHA-256 before transfer, then re-matches them on the target after, which is the property that makes the loop self-verifying. Three, the cycle writes its own `s1a-run-log.jsonl` rows carrying per-step inverses and its `cycle_cost_seconds`, and the run log must be kept out of `/tmp`, since `/tmp` is age-cleaned at 10 days and `3ea5164` records that captures, builds, run logs and the build-step mask imports land there rather than in the durable tree. Four, the pinned known-hosts file is written mode 600 at cycle start and is absent from `work/` after the cycle, proving the `atexit` cleanup ran. Five, teardown proves `NO_SCM_RUNNING` by `pgrep` on the target. Six, the failure path is demonstrated, a flipped key returns rc 255 with nothing landed on the target and no credential sent, which `K6` recorded and I cannot reproduce without the target. Seven, an independent reader reads the open frames and the framed content frames, because `R1` measured every one of the 14 open frames as 6 distinct colours and 0.02 to 0.06 percent glyph tone, so a claim that the map appears on open is false on the published captures. Eight, the record names, for each timestamp it writes, which clock that timestamp came from. Nine, no present-tense StarCraft claim, per the `R1` blocker and the option (c) wording the DoD box now carries.
+
+**Checks that did not run in this pass, named.** No CI job, no Sparky run, no docker run, no `shellcheck` run, no target contact, so every target-side claim in this task remains the builder's, no GitHub contact, so both read-back claims are checked against local refs only, no `gitleaks` run, no run of the `R4` exclusion sweep, no re-run of the verbatim 2026-11-14 flatpak command, no execution of the flipped-key negative test, and no licence ruling, that belongs to `Charmy` behind me.
+
+**Record-integrity observation for `Vector` and `Knuckles`.** Two `DEMO-LOG.md` files exist, the team repo copy at 2550 lines and the booth repo copy at 2233 lines at `7c4fa16`. The `V1`, `P1` and `P2b` entries live only in the team copy, and every line citation in this doc resolves against the team copy, not the published booth copy. A reader of the booth repo cannot follow the citations. The published copy should either carry those entries or say which copy the citations name.
+
+**Open hygiene items I re-verified by path only.** `/tmp/opencode/t0042/rdp-args` still exists at mode 600, 79 B. `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section 4, with `~/AI/secrets` at 700 as the thing that actually protects it, which is `Omega` finding 10 and one operator command. `/home/howard/AI/booth-2026` and `/home/howard/AI/booth-2026/t0042` are both mode 755, and `find /home/howard/AI/booth-2026 -maxdepth 2` for a credential-shaped name returns only `git-askpass-tc.sh`.
+
+**Verdict:** the execution record holds. Every cycle measurement, capture count, manifest figure, durable-path file and commit-signature claim I could reach from disk reproduces, the selftest baseline claims reproduce exactly at all three points (86 at `482aed5^`, 103 at `81142c7`, 105 at HEAD, each exit 0), and the run log carries its own failure honestly rather than being scrubbed. Two real failures stand, both in the harness and the CI definition, not in the maps or the runner. `Omega` finding 12 is unfixed and its requested guard does not exist, and finding 13 is unfixed and understated by one real site plus one pseudo-pin, `Tails` work. The CI check-count floor is broken in a way I would have caught only by running it on a real number, it truncates 105 to 1 and would fail a green run, the local gate asserts no count at all, and that assert is mine to fix. Nothing in this read changes the booth readiness ruling. The task is not done, `R4`, `T1` to `T4`, `G1` to `G4`, `D1`, `K1` and `E1` remain, and the Sparky layer has not been run at all.
 
 ---
 
