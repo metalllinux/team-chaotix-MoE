@@ -4687,6 +4687,64 @@ Clock for this entry from `date -u` at write time, 2026-11-25 09:41 UTC, 18:41 J
 
 ---
 
+### P3 venue dry run (2026-11-26 01:10 UTC, 10:10 JST, `Tails`, dispatch P3)
+
+**Verdict.** One full six-map cycle in rebuild mode completed from the durable path `/home/howard/AI/booth-2026/t0042/booth_loop.py` at 300 s display window, cycle total 2231.62 s against the 2231.57 s baseline (delta +0.05 s, 0.002 percent), per-map non-display overhead 43.90 to 44.42 s, zoom_set 14.52 to 15.05 s, all six maps rebuilt to their recorded SHA-256 and verified on both controller and target, teardown `NO_SCM_RUNNING` on every map. All six deliverable originals at `~/scmdraft-maps/` match their recorded SHA-256 with unchanged sizes after the cycle.
+
+**Venue reachability is unverified and must stay recorded as unverified.** This dispatch runs on the home network at `192.168.1.102` on `virbr0`. It is not at the venue. The target `192.168.1.99` is reachable from this network by ping (RTT 0.515 to 0.554 ms, 0 percent loss, 3 packets, `ping -c 3 -W 2 192.168.1.99`), TCP 3389 is open from this address (`bash /dev/tcp/192.168.1.99/3389` succeeds), and SSH port 22 is open. The target firewall carries a firewalld rich rule, `rule family="ipv4" source address="192.168.1.102" port port="3389" protocol="tcp" accept`, confirmed by `sudo firewall-cmd --list-all` on the target. Port 3389 is not in the general `ports` list and is accepted only from `192.168.1.102`. At the venue the controller laptop will not hold `192.168.1.102`. Therefore the 3389 listener is unreachable from a venue laptop under the current firewall rule, and the venue dry run does not resolve that unknown because it cannot be run from a venue address on 2026-11-26. The dry run confirms the loop itself is sound on the durable path; it does not confirm the venue network.
+
+**Host key verification.** `ssh-keyscan -t ed25519,ecdsa-sha2-nistp256,rsa 192.168.1.99` returned three keys; `diff` against `scripts/remote/known_hosts` with comment and banner lines stripped: identical for all three. Fingerprints: ED25519 `SHA256:S81ZRoHpyZgZAPPZ0UKNKaIL+Rp33Pes2Dc9dZfk1R0`, RSA `SHA256:UPQQ+c+zZIVM2flYhxT0Q9qEzdZDjc9vWoauXyh9AVc`, ECDSA `SHA256:hQKRUU6XD0olZFFH/X/1GiBpN/GdftXae6NcU9Fn+nY`. SSH connects with `StrictHostKeyChecking=yes` and `GlobalKnownHostsFile=/dev/null` against only the pinned file, and authentication succeeds. The keys have not changed since the `K6` pin at `3e43d2a`.
+
+**Fallback for the 2026-11-28 booth from a laptop that does not hold `192.168.1.102`.**
+
+The loop requires two network channels to the target: SSH (port 22) for scp transfer and remote commands, and RDP (port 3389) via `rdp-input` for GUI event injection on the seat0 panel. SSH is unrestricted (`services: ssh` in the public zone). RDP port 3389 is source-restricted to `192.168.1.102`.
+
+| Fallback | Mechanism | Status |
+|---|---|---|
+| (a) Operator adds a firewall rule for the venue address | `sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="<venue-ip>" port port="3389" protocol="tcp" accept'` on the target, then reload | Operator action, venue IP unknown, not yet applied |
+| (b) Operator broadens the existing rule to the venue subnet | Same firewalld rich rule with a CIDR source, or move 3389 into the general `ports` list (opens 3389 to all sources, larger blast radius) | Operator action, security trade-off is the operator's call |
+| (c) SSH tunnel for RDP | `ssh -L 3389:127.0.0.1:3389 howard@192.168.1.99` to forward the RDP port over SSH, then point `rdp-input` at `127.0.0.1:3389` instead of `192.168.1.99:3389` | Design change not implemented in `booth_loop.py`, requires code modification and re-test, not ready by 2026-11-28 |
+| (d) Published mode from a booth clone | `booth_loop.py --source published --clone <clone> --maps <six>`, transfers pre-built maps via SSH and opens them with Wine over SSH only, no RDP injection needed for transfer or open but display frames and paint steps still require RDP injection | Partial fallback, the open and display steps need RDP for input injection, so this alone does not remove the dependency |
+| (e) Operate from the home network | Run the controller at home at `192.168.1.102` and display the target's screen at the booth by another means (VNC viewer, second display, recording) | Operator call, changes the booth demonstration model |
+
+The honest answer to whether the 2026-11-28 booth can run the loop from a laptop that does not hold `192.168.1.102`: **no, not under the current firewall configuration**. The 3389 source restriction blocks the RDP channel the loop uses for every injected keyboard, mouse, and GUI event. Fallback (a) or (b) is an operator firewall decision the operator has not yet made. Fallback (c) is a code change that has not been designed, tested, or landed. The named step-stops apply: the firewall shape is `Omega` finding 4 open item, and the SSH-tunnel alternative is a design change recorded but not started.
+
+**Per-map measured costs.**
+
+| Map | build | sha_verify | transfer | open | zoom_set | display_window | teardown | overhead | total | frames |
+|---|---|---|---|---|---|---|---|---|---|---|
+| foss-for-all | 0.05 | 0.00 | 0.50 | 25.61 | 15.03 | 312.00 | 2.87 | 44.06 | 356.06 | 4 |
+| rocky-logo | 0.05 | 0.00 | 0.50 | 25.51 | 15.02 | 318.05 | 2.86 | 43.94 | 361.99 | 6 |
+| rocky-with-heart | 0.05 | 0.00 | 0.51 | 25.44 | 15.05 | 318.06 | 2.85 | 43.90 | 361.96 | 6 |
+| tux | 0.07 | 0.00 | 0.51 | 25.48 | 14.97 | 318.06 | 2.88 | 43.91 | 361.97 | 6 |
+| republic-of-korea | 0.58 | 0.00 | 0.52 | 25.87 | 14.52 | 309.55 | 2.88 | 44.37 | 353.92 | 3 |
+| i-love-korea | 0.04 | 0.00 | 0.49 | 25.97 | 15.05 | 318.06 | 2.87 | 44.42 | 362.48 | 6 |
+
+Cycle steps (tmp_cleanup + disk_headroom): 1.25 s. Scratch paint: 71.99 s. Cycle cost: 2231.62 s. Maps total: 2158.38 s.
+
+**Against baselines.**
+
+| Metric | P3 dry run | P2b baseline | Delta |
+|---|---|---|---|
+| Cycle total | 2231.62 s | 2231.57 s | +0.05 s |
+| Per-map overhead range | 43.90 to 44.42 s | 43.88 to 44.41 s | within +0.01 s |
+| zoom_set range | 14.52 to 15.05 s | 14.44 to 15.09 s | within measurement noise |
+| Teardown | 2.85 to 2.88 s | 2.85 to 2.88 s | identical |
+| SHA-256 gate | 6/6 PASS | 6/6 PASS | identical |
+| Target state after | NO_SCM_RUNNING, 6 originals intact | NO_SCM_RUNNING, 6 originals intact | identical |
+
+**Checks run.** Target ping (3 packets, 0 percent loss). TCP 3389 listener open from `192.168.1.102`. `ssh-keyscan` three-key output diffed against `scripts/remote/known_hosts`, identical. SSH auth with `StrictHostKeyChecking=yes` and pinned file, succeeds. Preflight (rebuild mode, injector, mkmpq, ref_chk, target run script SHA) all PASS. Six maps built from mask code plus `ref-era6.chk`, each SHA-256 verified on controller before transfer and on target after transfer, all 12 checks PASS. Six maps opened in SCMDraft 2 under Wine with OCR title verification. Display window measured at 309.55 to 318.06 s across maps with 3 to 6 frames. Scratch paint on `live-demo-ice` completed (12 steps, 71.99 s, palette derived from OCR, WCAG contrast median 6.267, min 1.2). Teardown `NO_SCM_RUNNING` on every map and at cycle end. Deliverable originals re-read after the cycle: all six SHA-256 match their recorded values. Disk headroom: 66567131136 B free before, 66557136896 B after, delta 9994240 B (captures in `/tmp` on target, consistent with the 7195615 B per-cycle figure from S1c). Selftest 110 checks (baseline 110). Team `main` at `4627f23`, `git ls-remote` read-back identical. Booth `main` at `19ab5afa`, `git ls-remote` read-back identical. `git status --porcelain` empty.
+
+**Checks not run, named.** No contact from a venue network address; venue reachability of 3389 from a non-`192.168.1.102` source is untested because this dispatch runs at home. No published-mode smoke test from a booth clone. No endurance or multi-cycle run. No loop-drift measurement at one cycle per mode. Per-frame WCAG, combo readout, EDID or autocorrelation re-measure not run. `d2_verify.py` not run. No independent reader of the 90 captures written by this cycle. No CI jobs (no runner registered). No Sparky or Raku. No `shellcheck`. The `R4` exclusion sweep has not run.
+
+**Competing priorities.** Home-network measurement against venue-network measurement. The cycle cost measurement is valid on the durable path and proves the runner tree is self-sufficient, but the venue network unknown (3389 firewall reachability) is not closed by this dispatch because the dispatch cannot run from a venue address. The alternative, deferring the whole dry run to 2026-11-28 at the venue, was rejected because a failure discovered at the booth is worse than a failure discovered two days early. The honest record states which half is proven and which half is not.
+
+**Residue.** Seven `Scm*.tmp` backups remain in `/home/howard/.wine-scmdraft/drive_c/Maps/` on the target from the six map opens (r002: left in place for the operator). `/tmp` on the target carries the cycle's capture PNGs, approximately 10 MB, bounded and not touched by cycle cleanup. All six deliverable originals unchanged. No binary or credential in any git-tracked path.
+
+**Landing.** No code change in this dispatch. No commit. No push. This entry is a measurement record.
+
+---
+
 ## Review
 
 *Owner: `Shadow`. Read-only — findings only, no edits. Severity order, blockers first.*
