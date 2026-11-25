@@ -33,7 +33,7 @@ approved:
       when: >-
         Patent exposure matters, or the project collaborates with vendors.
         Same shape as MIT plus an explicit patent grant. Team Chaotix
-        itself is Apache-2.0.
+        itself is MIT (MIT LICENSE at repo root), not Apache-2.0.
     - spdx: BSD-3-Clause
       when: >-
         Attribution and non-endorsement matter.

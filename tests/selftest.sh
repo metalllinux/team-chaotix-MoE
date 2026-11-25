@@ -109,7 +109,7 @@ CHECKS=$((CHECKS + ${TESTS:-0}))
 note "pytest OK (${TESTS:-?} tests)"
 
 # --- licence gate on this repo ---------------------------------------------
-# The repo itself must pass its own gate (Apache-2.0 root).
+# The repo itself must pass its own gate (MIT root).
 scripts/licence-check > /dev/null || fail "licence-check on this repo"
 PASS
 note "licence-check OK"

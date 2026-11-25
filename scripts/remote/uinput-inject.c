@@ -1,5 +1,13 @@
 /* rt_uinput.c - TASK-0042 dispatch P1: kernel-level /dev/uinput injection helper.
  *
+ * Copyright (c) 2026 Howard.
+ * SPDX-License-Identifier: MIT
+ * Team-authored code under the repository root licence (MIT, LICENSE at
+ * repo root). Compiles
+ * against kernel UAPI headers only; the Linux syscall note places normal
+ * userspace use of those headers outside derived work, and the injector
+ * links no userspace library beyond libc.
+ *
  * Creates short-lived virtual input devices through /dev/uinput and replays a
  * command file, so injected events enter at the kernel input layer rather than
  * through gnome-remote-desktop's compositor-level virtual device.

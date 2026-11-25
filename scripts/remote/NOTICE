@@ -7,10 +7,11 @@ and by the licence gate (scripts/licence-check, CI Licence Check workflow).
 --- The team's own sources -----------------------------------------------
 
 scripts/rdp-input.c, scripts/rdp-pointer.c, scripts/remote/uinput-inject.c
-and the shell tools in scripts/remote/ are team-authored, Apache-2.0, under
-the repository root licence (LICENSE at repo root). Each C file carries its
-own licence header. No part of these tools is copied from upstream sources;
-they call public FreeRDP 3 client APIs written by the team.
+and the shell tools in scripts/remote/ are team-authored, MIT, under
+the repository root licence (MIT, LICENSE at repo root). Each C file carries
+its own SPDX-License-Identifier: MIT header. No part of these tools is copied
+from upstream sources; they call public FreeRDP 3 client APIs written by the
+team.
 
 --- What the RDP tools link against --------------------------------------
 
@@ -28,8 +29,12 @@ Verified package identity on the controller, 2026-11-22, command
             AND LicenseRef-Fedora-Public-Domain AND OFL-1.1
 
 Upstream FreeRDP (https://github.com/FreeRDP/FreeRDP) is dual-licensed
-Apache-2.0 or GPL-2.0+. The team's tools take the Apache-2.0 option, which
-matches the repository licence and the licence headers in both C files. The
+Apache-2.0 or GPL-2.0+. The team's tools link against the package under its
+Apache-2.0 option. That option governs the library the tools link against.
+The team's own sources stay MIT under the repository root licence, which is
+what their SPDX-License-Identifier: MIT headers declare, because a dynamic
+link against a library under a different permissive licence does not
+relicense the sources. The
 LGPL-2.1+ and HPND terms inside the distro package are satisfied by dynamic
 linking against the unmodified distro library, which is what gcc does here.
 No FreeRDP source is modified, so no GPL derivative is created.

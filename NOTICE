@@ -1,0 +1,50 @@
+NOTICE -- licence record for the Team Chaotix repository.
+
+The team's own code in this repository is MIT, Copyright (c) 2026 Howard,
+under the root LICENSE (MIT, read at repo root). Each team-authored C file
+carries its own SPDX-License-Identifier: MIT header. No copyleft is
+inherited by this repository's code. Written on finding C1 of Charmy's
+TASK-0042 review (`## License (Charmy)` in
+planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md), which found three
+places declaring Apache-2.0 for team code against the MIT root LICENSE. The
+declaration now reads MIT everywhere: root LICENSE, the C headers in
+scripts/rdp-input.c, scripts/rdp-pointer.c and scripts/remote/uinput-inject.c,
+scripts/remote/NOTICE, and team/licenses/policy.yaml.
+
+This file records the third-party components the repository's code links
+against or includes, each with the upstream ref actually used.
+scripts/remote/NOTICE carries the full review of the remote visual-control
+tooling and is referenced by scripts/remote/rt-build.
+
+--- FreeRDP (link only, Apache-2.0 option) ----------------------------------
+
+scripts/rdp-input.c and scripts/rdp-pointer.c link dynamically against
+libfreerdp3 and libfreerdp-client3 from the distro package
+freerdp-libs-3.32.2-1.el10_2, identity verified by
+`rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs`.
+Upstream https://github.com/FreeRDP/FreeRDP at tag 3.32.2 is dual-licensed
+Apache-2.0 or GPL-2.0+ and the team takes the Apache-2.0 option. No FreeRDP
+source is vendored, compiled in, or distributed by this repository; the
+binaries scripts/remote/rt-build produces are never committed. Copyright of
+FreeRDP rests with the FreeRDP project authors.
+
+--- Linux kernel UAPI headers (include only) --------------------------------
+
+scripts/remote/uinput-inject.c compiles against kernel UAPI headers
+(uinput.h, input.h and friends), distributed in torvalds/linux at master
+under GPL-2.0-only WITH Linux-syscall-note. The exception text at
+LICENSES/exceptions/Linux-syscall-note states that user programs using
+kernel services by normal system calls are not derived work. The injector
+includes headers only and links no userspace library beyond libc.
+
+--- StormLib and Natural Earth (booth demonstration tree, not this repo) ----
+
+The MIT StormLib library (Copyright (c) 1999-2013 Ladislav Zezula,
+https://github.com/ladislav-zezula/StormLib at commit
+d60b7e6d3501474f4d92c7b9c752a37e78385f67, whose LICENSE blob
+2cb432d4ec85706acfb1a606bcc010a70b96ed86 is the MIT License) and the
+public-domain Natural Earth dataset (https://github.com/nvkelso/natural-earth-vector
+at tag v5.1.2, commit f1890d9f152c896d250a77557a5751a93d494776) are used by
+the booth demonstration repository's code, not by the code in this
+repository. Their licence record, including the rocky-logos, StarCraft and
+SCMDraft 2 facts, is the NOTICE file of that repository.

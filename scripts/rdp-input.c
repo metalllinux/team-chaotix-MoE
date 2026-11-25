@@ -21,7 +21,13 @@
  *     keyup   <scancode>   raw RDP scancode release only
  *     wait  <ms>           hold the connection open for ms milliseconds
  *
- * License: Apache-2.0 (links against libfreerdp3 / libfreerdp-client3, Apache-2.0).
+ * Copyright (c) 2026 Howard.
+ * SPDX-License-Identifier: MIT
+ * Team-authored code under the repository root licence (MIT, LICENSE at
+ * repo root). It links
+ * against libfreerdp3 / libfreerdp-client3, which carry their own Apache-2.0
+ * licence; that link is dynamic against the unmodified distro library, and no
+ * FreeRDP source is vendored or compiled in.
  * Build: gcc -o rdp-input rdp-input.c $(pkg-config --cflags --libs freerdp-client3)
  */
 
