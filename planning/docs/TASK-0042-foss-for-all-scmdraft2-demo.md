@@ -13,6 +13,18 @@
 
 ## Status
 
+**`P5` landed, the record and push tooling is durable, and the askpass path in the queued briefs is
+superseded (2026-11-25 03:15 UTC, 12:15 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).**
+`d2_verify.py` and `s1c_manifest.py` are at `/home/howard/AI/booth-2026/t0042/`, the askpass helper is at
+`/home/howard/AI/booth-2026/git-askpass-tc.sh` mode 700 with no secret material in it, verified by a
+manifest run at 788 rows with 0 stale, a fresh clone through the durable helper, and `d2_verify.py` exit 0.
+Booth `main` read back at `89269c6`, team `main` read back at `001d2cb` with `e94962f`, both signed,
+pre-push selftest green at 86 checks. **Every later dispatch uses
+`GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh`**, the `/tmp/opencode/git-askpass-tc.sh` path
+named in `LIVE QUEUE 3` and `LIVE QUEUE 2` below is superseded and `Espio` folds those rows at `E1`.
+Still not run, a real `/tmp` age-clean, `d2_verify.py` against the tree just published, per-category
+MANIFEST byte sums, and `gh-get.sh` re-provisioning.
+
 **`P4` landed, the durable booth path is self-sufficient, and the push and verify tooling is the next
 blocker (2026-11-25 03:10 UTC, 12:10 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).** `P4`
 (`Tails`) closes the blocker `Tails` found in `P2b`. `build_ts.py` derives `HERE` from `__file__`; `mkmpq`
@@ -458,7 +470,10 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   and landed at `e22bb3c`. Run in this exact order, one dispatch at a time, each in its own fresh child
   session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
   invocation, and treat `PASS` as necessary and not sufficient. The house rules written at the head of
-  `LIVE QUEUE 3` apply unchanged to every item below and are not repeated.
+  `LIVE QUEUE 3` apply unchanged to every item below and are not repeated, with one substitution, push with
+   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the `/tmp` path named
+   in the older blocks below is age-cleaned and superseded, and the durable runner tree and verification
+   tooling are both at `/home/howard/AI/booth-2026/t0042`.
    0. PRIORITY PREP, two dispatches ahead of the numbered items, from the booth-day readiness ruling in
    `## Status`. `P2` is **COMPLETE 2026-11-24 01:40 UTC, done by `Robotnik` under the recorded deviation**,
    durable copy at `/home/howard/AI/booth-2026/t0042` with `ts-harvest/ref-era6.chk` at
