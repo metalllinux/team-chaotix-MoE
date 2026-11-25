@@ -13,6 +13,38 @@
 
 ## Status
 
+**`LIVE QUEUE 7` consumed, `LIVE QUEUE 8` opened, the TASK-0041 residual block is the dispatchable work, and
+the booth blockers are separated into dispatchable and operator-owned (2026-11-26 07:24 JST, 2026-11-25 22:24
+UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO`).** Inherited state was re-verified in this session
+rather than inherited. Team `refs/heads/main` reads `147048a8fd933171900ab8734664e2f19d538623`
+(`git ls-remote origin refs/heads/main`), booth `refs/heads/main` reads
+`19ab5afa17f6a83849e740061bf8355c1d34f3b1` (`git ls-remote` through
+`/home/howard/AI/booth-2026/git-askpass-tc.sh`), `git status --porcelain` answers 0 lines in the team clone at
+`/home/howard/AI/projects/team-chaotix-moe` and in the booth clone at `/home/howard/AI/booth-2026/repo`, and
+`bash tests/selftest.sh` answers `SELFTEST: 110 checks passed (floor 100)` at exit 0. `TASK-0043` closed at 10
+of 10 DoD rows, `TASK-0044` closed at 13 of 13, `TASK-0042` not DONE at 5 of 23 per `K1`. **`LIVE QUEUE 7` is
+consumed as read.** Its item 1 `E1` and item 2 `K2` landed, its item 3 `TASK-0041` residuals are not dispatched
+and become `LIVE QUEUE 8` items 1 to 5, its item 4 was obeyed before dispatch by reading `## Release` and `##
+Definition of Done` in this doc, and its item 5 operator block is restated below. Gate at 22:24 UTC, `PASS`,
+measured in-flight prompt 37742 over 11 assistant rows, 14.4 percent of 262144, warn 245760, block 258048.
+**Stop rule restated for this session and every later one.** The gate was rewritten at `f1907ab` and measures
+the cumulative in-flight prompt against WARN 245760 and BLOCK 258048 from numeric store fields only, so the
+retired 142281 child projection is no longer a quantity the instrument produces and is not dispatched against.
+Dispatch only on `PASS`, stop delegating on `WARN`, pass `--session` with this session's own id every time, and
+the margin re-fit stays operator-owned per `Omega`. **What `K1`'s blocker list at `## Release` looks like from
+here, mapped to who can move it.** Blocker 3, `Omega` finding 2, the RDP `/cert:ignore` against a self-signed
+certificate with no RDP channel test ever run, is the blocker a dispatch can actually move in the two days left
+before the booth, and it is `LIVE QUEUE 8` item 1. Blocker 2, the `P3` firewall finding, is operator-owned and
+recorded below. Blocker 1, `C2` and `C3`, is operator-owned. Blocker 4, the mode 644 secret, is an operator
+`chmod`. Blocker 5, booth readiness and the documentation set, is `LIVE QUEUE 8` items 4 and 5. **Recorded
+ruling on the `P3` firewall finding, as an operator action rather than a dispatch.** The target rich rule at
+`192.168.1.99` accepts 3389 from `192.168.1.102` only, so on 2026-11-28 either the booth runs from the machine
+that holds `192.168.1.102` (this controller, verified as `192.168.1.102` in `TASK-0041:28`) or that rule is
+widened for the venue network before the event. I choose the first as the recommended posture, booth from the
+machine that already holds the address, because widening a source-restricted RDP rule two days out is the
+larger blast radius and `P3` proved the loop end to end from `192.168.1.102` at 2231.62 s. The widening remains
+available to the operator if the venue network differs. No agent dispatched against it.
+
 **`LIVE QUEUE 7` opened, `K2` and `E1` landed, the dispatchable queue is empty, and the rest is `TASK-0042` DoD
 work plus operator rulings (2026-11-26 02:11 JST, 2026-11-25 17:11 UTC, `Robotnik` session
 `ses_ded91638cffe1PedTvitwlfONJ`).** `K2` (`Knuckles`, child `ses_dec7e69a1fferUokkJQDkXEvIN`) closed `TASK-0043`
@@ -735,7 +767,58 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
 
 ## Next Actions
 
-- [ ] LIVE QUEUE 7 FOR THE FRESH `Robotnik` SESSION (2026-11-26 01:16 JST, 2026-11-25 16:16 UTC, owner
+- [ ] LIVE QUEUE 8 FOR THE FRESH `Robotnik` SESSION (2026-11-26 07:24 JST, 2026-11-25 22:24 UTC, owner
+  `ses_deb3a56eeffe06pHzALs15GYCO`). Read `## Status` in this doc, first three entries, and this block only,
+  nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0041-remote-visual-control.md` and in `planning/docs/TASK-0043-dispatch-gate.md`. Read `##
+  Release` and `## Definition of Done` in this doc before dispatching anything against `TASK-0042`. House rules
+  are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
+  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
+  committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
+  selftest baseline is 110 checks, being 106 before the gate fix at `f1907ab` and 110 after it. Stamp every entry
+  at the moment it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Each
+  child writes its own section in the planning doc it is working on and reports back in at most five short lines.
+  **Standing ruling in every brief.** `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent
+  may present that repo as publishable, it stays private, and the visibility flip is the operator's ruling on `C2`
+  and `C3`; booth `main` at `19ab5af` changes nothing about that verdict. **Dispatch discipline.** One dispatch at
+  a time, in its own fresh child session, `scripts/dispatch-gate --session <your own session id>` before every
+  one, never the bare invocation, dispatch only on `PASS`, stop on `WARN` at 245760 measured in-flight prompt. The
+  old 142281 child projection is not a quantity the instrument produces any more, the gate was rewritten at
+  `f1907ab`, and the margin re-fit is operator-owned. One at a time is load-bearing: `D1` and `K1` shared one
+  working tree in `LIVE QUEUE 6` and produced the mixed-attribution commits `12e7928` and `93ddaf6`.
+   1. `Tails` as `T6`. `TASK-0041 ## Implementation`. `Omega` finding 2, the `/cert:ignore` self-signed RDP
+   certificate, has never had an RDP channel test run against it, and it is `K1`'s release blocker 3 for the
+   2026-11-28 booth. Run the first channel test on the target at `192.168.1.99` from this controller at
+   `192.168.1.102`: name the certificate the daemon actually presents, what `/cert:ignore` accepts and what it
+   discards, whether the same-subnet path is interceptable, and what the booth-day mitigation is. Read the three
+   hygiene items at `TASK-0041 ## Status:22-25` first and do not change target state beyond what `DEMO-LOG.md`
+   already records with an inverse. Write the commands and the evidence in `TASK-0041 ## Implementation` and add
+   the `DEMO-LOG.md` entry for the test itself.
+   2. `Omega` as `O1`. `TASK-0041 ## Security`. Rule on finding 2 against `T6`'s evidence, and on the 3389
+   listener, the three hygiene items, and the `lock-enabled` posture, naming the booth-day recommendation.
+   3. `Tails` as `T7`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9` recorded without
+   fixing: 4 of 6 dry-run asserts rely on tool self-report, and `UI_DEV_CREATE|1800` is too loose. Negative
+   controls required, selftest baseline 110 checks.
+   4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
+   secrets rule and the packaged `gnome-screenshot-tool` path. Do not touch the booth clone in the same dispatch
+   as any other agent.
+   5. `Knuckles` as `K3`. `TASK-0041 ## Release`. Read back `b906f00`, `1eea4ec`, `3e43d2a` and `9190b04` from the
+   remote, verify signatures, state the `DEMO-LOG.md` coverage of the packaging steps, and report the `TASK-0041`
+   DoD state without ticking any box.
+   6. `Espio` as `E2`. Prune this doc for real. It measured 5796 lines at the start of `E1`'s session and 6057
+   after it, because `E1` marked the consumed bodies in place instead of moving them, so move the `LIVE QUEUE 3`
+   to `LIVE QUEUE 7` consumed bodies into `## Archive`, keep the standing contradictions, the `R4` FAIL, and the
+   `C2` and `C3` rulings, and leave `LIVE QUEUE 8` live. `Espio` has no shell permission, so the dispatcher
+   commits the record.
+   7. `Operator actions, record and do not dispatch.` `C2` and `C3` unruled, so the booth repo
+   `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private. **The `P3` firewall
+   decision, with a date attached.** The target rich rule restricts 3389 to `192.168.1.102`, so either the booth
+   runs from the machine that holds that address or the rule is widened for the venue, and 2026-11-28 is two days
+   out; `Robotnik`'s recorded recommendation is to run the booth from `192.168.1.102` and not widen the rule.
+   `~/AI/secrets/scm_draft_pass.md` is still mode 644 against `AGENTS.md` section 4 and needs `chmod 600`. The
+   `lock-enabled` re-lock before the event is the operator's posture call. `agentsmd promote` is operator-owned.
+
+<!-- LIVE QUEUE 7 consumed, see ## Archive --> - [ ] LIVE QUEUE 7 FOR THE FRESH `Robotnik` SESSION (2026-11-26 01:16 JST, 2026-11-25 16:16 UTC, owner
   `ses_ded91638cffe1PedTvitwlfONJ`). Read `## Status` in this doc, first three entries, and this block only,
   nothing else in this doc. Read `## Status` and `## Next Actions` in `planning/docs/TASK-0041-remote-visual-control.md`
   and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 6` is consumed through its item 9, `D1`, `K1` and
