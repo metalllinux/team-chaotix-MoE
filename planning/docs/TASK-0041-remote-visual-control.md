@@ -806,6 +806,55 @@ distro freerdp headers.
 
 *Owner: `Shadow`. Read-only — findings only, no edits. Severity order, blockers first.*
 
+### Correction to the packaging record's unsigned-commit claim
+
+**Severity:** nit (factual record error, no code impact)
+**Where:** `planning/docs/TASK-0041-remote-visual-control.md:791-793`
+**Problem:** The Implementation record states "The commit is unsigned" for `b906f00` and names it as continuing "the unsigned run." Both commits ARE signed.
+**Failure scenario:** A reader (Knuckles at item 16, or the operator auditing signatures) reads the record and believes the chain is unsigned, potentially blocking or misrouting the release step.
+**Evidence:** `git verify-commit b906f00` returns `gpg: Good signature from "Team Chaotix" [ultimate]` against EDDSA key `D553FBE4B47020B2033E9594F9261D151316FD60` (short `F9261D151316FD60`). Same for `1eea4ec`, `e3b33bc`, `0485c2d`, and `3e43d2a`. The earlier chain the record names (`8e75aac`, `d26ef2b`, `5f9947d`) IS unsigned (verify-commit exit 1, no signature). The packaging commits broke the unsigned run, they did not continue it.
+**Suggested direction:** `Tails` replaces the four lines at `:791-793` with a corrected statement: the packaging pass commits are signed against `F9261D151316FD60`, the unsigned chain ended before `b906f00`. `Omega` verified both signatures (dispatch brief confirms).
+
+---
+
+### Modifier-chord limit does not block any packaging DoD row
+
+The `## Status` paragraph at `:18` states "Modifier chords remain an open packaging question for item 9." That note predates the packaging landing. `rt-key` covers chords through raw RDP scancode keydown/keyup pairs (AT set 1), and TASK-0042 proved `Ctrl+T`, `Ctrl+U`, `Ctrl+D`, `Ctrl+S` against SCMDraft 2 through that exact path (`scripts/rdp-input.c`, verbs `keydown`/`keyup`/`key`/`keyx`). The DoD keyboard row (row 2) requires "one command types a known marker string into a GUI app" which `rt-type` satisfies, and the packaging row (row 5) requires the loop be packaged. Both are satisfied. The Status paragraph is a stale open-question marker that `Espio` or `Robotnik` can close. No packaging row is left unsatisfiable.
+
+---
+
+### DoD rows 5 through 8 and 12 are satisfied
+
+| DoD row | Criterion | Evidence |
+|---|---|---|
+| 5 | Four paths packaged as team tooling with a documented visual loop | `scripts/remote/` carries `rt-shot`, `rt-ocr`, `rt-type`, `rt-key`, `rt-click`, `rt-status`, `rt-uinput`, `rt-build`, `rt-lib`. `SKILL.md` documents the act/capture/read/decide loop. |
+| 6 | Skill or docs page with the secrets rule in prose | `.opencode/skills/remote-desktop/SKILL.md` carries the binding secrets paragraph. Discovery proven by the `opencode api` call recorded at `:762-768`. |
+| 7 | Selftest asserts with an increased check count | 22 new offline asserts landed at `b906f00`. The K6 host-key hardening at `3e43d2a` added 2 more asserts (103→105). K8 added 1 more (105→106). Current run: `SELFTEST: 106 checks passed (floor 100)`. Before/after counts 61→83 recorded at `:744-746`. |
+| 8 | Repo-wide grep for both secrets returns no match | The selftest scan at `tests/selftest.sh:253-264` covers both `scm_draft_pass.md` and `scm_draft_rdp_pass.md`, fails on absent file or blank file, and passes at 106. The packaging-pass "not run" list at `:781-786` correctly named that the rdp credential scan was then selftest-only; since K6 the scan covers both credentials as an assert, and it passes. |
+| 12 | DEMO-LOG records each step against the target | Items 1, 2, 3, 4, 5, 6, 7, 12 each have a DEMO-LOG entry with commands and inverses. Items 9-11 are packaging-only and touched no target, so no entry is required. |
+
+---
+
+### No DoD row demands the retired fifth reviewer
+
+DoD row 9 was restated in place 2026-11-23 00:10 UTC (`:59`) to name `Shadow`, `Omega`, `Big`, `Charmy`. Plan rows 13 and 14 at `:171-172` still carry `Flicky`; those are `Amy`'s section and per AGENTS.md section 2 rule 7 (retired headings stay), `Robotnik`'s ruling at `:14` is the correction, and `Espio` folds them at `E1`. The `## License Audit (Flicky)` section heading at `:832` is a retained legacy heading. `Charmy` writes in its own section. No DoD row is unsatisfiable by the retirement.
+
+---
+
+### Checks that did not actually run in this review pass
+
+1. No packaged tool exercised against the live target. `rt-shot`, `rt-type`, `rt-key`, `rt-click`, `rt-status`, `rt-uinput` were read and dry-run reviewed only. The live-target round trip is proven by items 4-7 evidence, inherited, not re-proven.
+2. `shellcheck` is absent on this controller, so the new selftest code was not shellcheck-verified.
+3. No standalone `grep -R -F -f ~/AI/secrets/scm_draft_rdp_pass.md .` was issued in this pass. The selftest credential scan (which covers both secrets) ran as part of the 106-check pass.
+4. The `scripts/licence-check` gate was not re-run in this pass. The gate last ran green at K7 (TASK-0042 `## License (Charmy)`), and the packaging commits add no new third-party code, only team-authored sources with SPDX headers. `Charmy` at `T4` owns the re-run.
+
+---
+
+### Verdict
+
+No blocker. No should-fix. The packaging satisfies TASK-0041 DoD rows 5, 6, 7, 8, and 12. The one finding is a factual correction to the Implementation record (unsigned-commit claim), severity nit, landable by `Tails` in one edit to `:791-793`.
+
+Written 2026-11-25 10:12 UTC (2026-11-25 19:12 JST).
 ---
 
 ## Security

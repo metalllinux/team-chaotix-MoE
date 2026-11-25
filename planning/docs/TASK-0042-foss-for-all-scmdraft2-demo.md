@@ -31,6 +31,35 @@ calls, worst jump 5331, dispatcher projection 46151, child projection 73841 of 2
 142281 child projection that TASK-0043 records for the dispatch whose real child request reached 262242 is
 the stop line for this session, and dispatching stops when the projection nears it.
 
+**`T1` landed, the queue runs through item 6's first dispatch, and this session hands off at the projection
+stop line (2026-11-25 10:20 UTC, 19:20 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `LIVE QUEUE
+5` items 2, 3 and 4 landed, `K7` at team `cc2dd06` and booth `b56d1df`, `K8` at team `326bab3`, `R3b` verified
+both at `doc:5602`, and item 6 began with `T1` (`Shadow`, child `ses_dedd8a942ffeSL7vEj84LuEPET`), verdict
+written in TASK-0041 `## Review` at `:805-857`, no blocker and no should-fix, DoD rows 5 to 8 and 12 satisfied
+by the packaging at `b906f00`, `1eea4ec` and `3e43d2a`, and the modifier-chord limit closed by `rt-key` rather
+than left open. One nit finding, TASK-0041 `:791-793` claims `b906f00` is unsigned while `git verify-commit`
+confirms it and `1eea4ec` are signed against key `F9261D151316FD60`, a one-line `Tails` record replacement,
+queued as `LIVE QUEUE 6` item 5. **Gate at 10:15 before the `T2` dispatch, `scripts/dispatch-gate --session
+ses_dee1f1699ffesLbRe54qYG4oOk`, `PASS`, peak 75052 over 20 calls, worst jump 15553, dispatcher projection
+90605, child projection 144968 of 262144, 55.3 percent.** 144968 sits above the 142281 projection TASK-0043
+records for the dispatch whose real child request reached 262242, so `PASS` here is necessary and not
+sufficient and this session dispatches nothing further. Stated honestly, the 15553 worst jump is this
+dispatcher's own read of the `LIVE QUEUE 2` brief block, which is the same inflation TASK-0043's third data
+point names, a 74135 jump contributed by the dispatcher's own planning-doc reads, so the reading is inflated in
+cause and still above the stop line, and the stop rule applies either way. Nothing is mid-flight, no child is
+running, and the working tree holds only this record. Queue ownership verified before the first dispatch,
+`session_v2` for `agent='robotnik'` ordered by `time_updated` puts this session newest at 10:02 and the previous
+dispatcher last moved at 08:15, so no competing dispatcher exists and none needed interrupting. `P3` stays held
+to 2026-11-26, today is 2026-11-25, and the dry run tests venue network reachability rather than this
+controller's `192.168.1.102` home network. Standing rulings carried forward. `R4`'s verdict is FAIL on the booth
+repo as published at `7c4fa16`, no dispatch may present it as publishable, the repo stays private, and the
+public flip is the operator's ruling on `C2` and `C3`; booth `main` now reads `b56d1df`, which carries the `C6`
+`NOTICE` and does not change that verdict. The operator's `~/AI/secrets/scm_draft_pass.md` is still mode 644
+against AGENTS.md section 4, and `Omega` finding 2, the RDP `/cert:ignore` against a self-signed certificate,
+stays open with no RDP channel test run. **Operator action, start a fresh `Robotnik` session in
+`/home/howard/AI/projects/team-chaotix-moe` and run `LIVE QUEUE 6` at the head of `## Next Actions`, which
+carries the whole remaining queue with paste-ready briefs, starting at `T2`.**
+
 **`R3b` landed, `K7` and `K8` verified against the tree and both remotes, baseline confirmed at 106
 (2026-11-25 10:05 UTC, 19:05 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `R3b` (`Big`, child
 `ses_dede7984effeQPIioDgWVaL8V6`) wrote `## Test Results` at `doc:5602` and pushed `78da9d1`, signature `G`,
@@ -570,6 +599,99 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
 ---
 
 ## Next Actions
+
+- [ ] LIVE QUEUE 6 FOR THE FRESH `Robotnik` SESSION (2026-11-25 10:20 UTC, 19:20 JST, owner
+  `ses_dee1f1699ffesLbRe54qYG4oOk` handing off at the projection stop line). Read `## Status` in this doc,
+  first four entries, and this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0041-remote-visual-control.md`, in `planning/docs/TASK-0043-dispatch-gate.md` and in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`. `LIVE QUEUE 5` below is consumed through its item 6's first
+  dispatch, `K7`, `K8` and `R3b` landed, and `T1` landed with no blocker and one nit. Run in this exact order,
+  one dispatch at a time, each in its own fresh child session, `scripts/dispatch-gate --session <your own
+  session id>` before every one, never the bare invocation, and treat `PASS` as necessary and not sufficient.
+  The stop line for a dispatcher is the 142281 child projection TASK-0043 records for the dispatch whose real
+  child request reached 262242, and the handing-off session read 144968 at 10:15. House rules are the ones at
+  the head of `LIVE QUEUE 3`, with three substitutions, push with
+  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the durable runner tree and
+  verification tooling are `/home/howard/AI/booth-2026/t0042`, and the selftest baseline is 106 checks, being
+  105 before `K8` and 106 after it. Stamp every entry at the time it is written, in UTC with the JST equivalent
+  in parentheses, the host clock is `JST +0900`. Standing ruling in every brief, `R4`'s verdict is FAIL on the
+  booth repo as published at `7c4fa16`, no agent may present that repo as publishable, it stays private, and the
+  visibility flip is the operator's ruling on `C2` and `C3`. `R5`, `T5` and `G5` are void and do not run.
+   1. `P3` `Tails`, the venue dry run the plan carries as item 17, and it does not dispatch before 2026-11-26
+   because it tests venue network reachability rather than this controller's home network. Brief, paste
+   verbatim. "Read the `## Status` entries of 2026-11-25 in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Run the venue dry run. Confirm the target at
+   `192.168.1.99` and the 3389 listener are reachable from the network this controller actually holds on venue,
+   confirm the pinned host keys in `scripts/remote/known_hosts` still match `ssh-keyscan` output, and run one
+   measured six-map cycle in rebuild mode from `/home/howard/AI/booth-2026/t0042/booth_loop.py`, recording the
+   per-map overhead and the cycle total against 2231.57 s. If any step fails, record the fallback in `## Status`
+   rather than improvising at the booth, and state plainly whether the 2026-11-28 booth can run the loop from a
+   laptop that does not hold `192.168.1.102`."
+   2. `Omega` as `T2`, second in the TASK-0041 review chain. Brief, paste verbatim. "Read `## Status` and
+   `## Next Actions` in `planning/docs/TASK-0041-remote-visual-control.md` and the `## Implementation` record
+   for items 9 to 11 in that doc, plus `Shadow`'s `T1` verdict at `:805-857` of that doc. Rule on the three open
+   hygiene items in TASK-0041 `## Status`, the mode 644 secret at `~/AI/secrets/scm_draft_pass.md`, the
+   pre-existing world-readable grd credentials file on the target and its backup copy, and the `lock-enabled`
+   gsettings change. Read `Omega`'s own TASK-0042 `## Security` findings 1, 2, 3 and 8 against
+   `scripts/remote/rt-lib`, and say which are closed by `K6` at `3e43d2a` and which stay open, naming finding 2,
+   the `/cert:ignore` self-signed RDP certificate, as open because no RDP channel test has run. Write your
+   verdict in `## Security` of the TASK-0041 doc and name every check that did not run."
+   3. `Big` as `T3`, third in the chain. Brief, paste verbatim. "Read `## Status` and `## Next Actions` in
+   `planning/docs/TASK-0041-remote-visual-control.md` and the `## Implementation` record for items 9 to 11 in
+   that doc. Verify that the checks the packaging record claims actually executed rather than being asserted,
+   that the pre-push selftest baseline holds at 106, that the new remote-desktop asserts do not require
+   `192.168.1.99` to be online, and what a booth-day run would have to assert to prove itself. Name any matrix
+   or check that silently dropped, name the check-count delta you measured rather than inherited, and name every
+   check that did not run. Write your verdict in `## Test Results` of the TASK-0041 doc."
+   4. `Charmy` as `T4`, fourth and last in the chain, carrying the retired fifth reviewer's audit scope. Brief,
+   paste verbatim. "Read `## Status` and `## Next Actions` in
+   `planning/docs/TASK-0041-remote-visual-control.md`, the `## Implementation` record for items 9 to 11 there,
+   and your own `## License (Charmy)` findings `C1` and `C6` as landed by `K7` in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Audit each upstream against the ref actually used,
+   FreeRDP `3.32.2` behind `scripts/rdp-input.c` and `scripts/rdp-pointer.c` against the `scripts/remote/NOTICE`
+   record, `scripts/remote/uinput-inject.c` and its kernel UAPI header use, StormLib `d60b7e6d`, Natural Earth
+   tag `v5.1.2` commit `f1890d9f`, the UNLICENSE `34c96bba`, `rocky-logos-100.5-3.el10`, and the Ar3sgice
+   starcraft-tools mirror which carries no licence file. Run `scripts/licence-check` on the team repo and against
+   a booth clone refreshed to the remote at `b56d1df`, record both exit codes, and state plainly that `R4`'s
+   FAIL verdict on the repo as published at `7c4fa16` stands and that the public flip is the operator's ruling
+   on `C2` and `C3`. A gate run or a sweep you cannot read is a FAIL. Write your verdict in `## License
+   (Charmy)` of the TASK-0041 doc."
+   5. `Tails` as `K9`, the one nit `T1` opened, one file edit. Brief, paste verbatim. "Read `Shadow`'s `T1`
+   verdict at `:805-857` in `planning/docs/TASK-0041-remote-visual-control.md` and replace the false claim at
+   `:791-793` that `b906f00` is unsigned, `git verify-commit` confirms `b906f00` and `1eea4ec` are both signed
+   against key `F9261D151316FD60`. Run `git verify-commit` yourself for both and record the output. Run
+   `tests/selftest.sh` against the 106 baseline, record before and after counts, and name every check that did
+   not run. Commit signed."
+   6. `G1` to `G4`, the TASK-0043 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, one dispatch each in that
+   order, then the `Tails` gate fix dispatch that has still never run. `G5` is void. Tell every reviewer both
+   defects and the third data point verbatim, the false `PASS` at 54.3 percent with a peak of 86393 followed by
+   a real child request of 262242 tokens, the bare invocation selecting a dead session instead of the caller's,
+   and the `BLOCK` at 98.1 percent with a 74135 worst jump contributed by the dispatcher's own planning-doc
+   reads. Each reviewer reads `## Status` and `## Next Actions` in `planning/docs/TASK-0043-dispatch-gate.md`
+   and writes its own section in that doc. The fix dispatch then lands what the chain agrees on, measure what a
+   child actually inherits, cumulative transcript size or the dispatcher's own last request size read from the
+   session store, rather than extrapolating from a peak window, resolve the caller's own session id rather than
+   guess from agent name, and treat concurrent dispatches from two dispatcher sessions as a signal. Record that
+   the handing-off session read 144968 at 10:15 on 2026-11-25 with a 15553 jump that came from its own planning
+   doc reads, which is the inflation the fix must remove.
+   7. `Vector` as `D1`, per item 8 of `LIVE QUEUE 3`, now reviewing and extending the booth `README.md` already
+   rewritten at `e3e2e5a` and corrected at `e841bc6` rather than writing that prose from scratch, and carrying
+   `R4`'s FAIL verdict, the public flip not cleared, and the durable-path prerequisites at
+   `/home/howard/AI/booth-2026/t0042`.
+   8. `Knuckles` as `K1`, per item 9 of `LIVE QUEUE 3`, keeping the booth repo private because `R4` rules FAIL on
+   it as published at `7c4fa16`, and keeping the after-event target steps named in `## Release`, the COPR and
+   `crb` disable inverses, the RDP credential rotation, the `lock-enabled` re-lock, and the target `/tmp` capture
+   cleanup.
+   9. `Espio` as `E1`, per item 10 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4`, `LIVE QUEUE 5` and this block
+   once consumed into `## Archive`, folding the superseded `/tmp/opencode/git-askpass-tc.sh` rows, and keeping the
+   standing contradictions listed there.
+   10. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth
+   artifacts, and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule on. The
+   booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private until that ruling
+   lands and its visibility flip is the operator's action. The operator's `~/AI/secrets/scm_draft_pass.md` is
+   still mode 644 against AGENTS.md section 4. `Omega` finding 2, the RDP `/cert:ignore` against a self-signed
+   certificate, stays open with no RDP channel test run. `/tmp/opencode/t0042/rdp-args` remains as named residue
+   at mode 600 and `/home/howard/AI/booth-2026` is still directory mode 755.
 
 - [ ] LIVE QUEUE 5 FOR THE FRESH `Robotnik` SESSION (2026-11-25 05:30 UTC, 14:30 JST, owner
   `ses_deff17f39ffeWIFPjsEoOfhXQ0` handing off after nine dispatches). Read `## Status` in this doc, first
