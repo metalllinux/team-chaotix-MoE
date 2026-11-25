@@ -13,6 +13,38 @@
 
 ## Status
 
+**`TASK-0041` closed out, `K9` landed, and the `TASK-0043` chain is running (2026-11-25 12:27 UTC, 21:27 JST,
+`Robotnik` session `ses_ded91638cffe1PedTvitwlfONJ`).** `K9` (`Tails`, child `ses_ded640888ffeaAW8NTZTCw5gdL`)
+landed at team `9190b04`, signature verified, replacing the false unsigned claim at `TASK-0041:791-793` with
+`git verify-commit` evidence against `F9261D151316FD60`, and changing the guarded-build else branch in
+`tests/selftest.sh` from `note` to `fail`, proven by a negative control that exits 1 with `gcc` hidden. Selftest
+106 before and 106 after, the guard is dormant on this host where `gcc` and `freerdp` are present, which is the
+point of the control. Two items `Big` named and `K9` recorded without fixing, 4 of 6 dry-run asserts rely on tool
+self-report and `UI_DEV_CREATE|1800` is too loose, carried as open in `TASK-0041 ## Implementation`. `G1`
+(`Shadow`, child `ses_ded5a0380ffeDb9bEmw2iQqBCJ`) wrote `TASK-0043 ## Review` at 12:22 UTC, verdict not shippable
+as a safety gate, three blockers, the fitted inherit ratio, `pick_session` ordering that can select a dead
+session, and the max-jump term inflating the projection with the dispatcher's own planning-doc reads, plus one
+should-fix that the code's real thresholds are WARN 222822 and BLOCK 249036 rather than 142281. **Recorded
+disagreement, `Shadow`'s should-fix contradicts the operator's standing stop rule, and this session keeps
+dispatching against the 142281 child projection because that line is the operator's ruling and the more
+conservative one.** Both readings are in the record and `Shadow`'s is what the fix dispatch is being told to
+reconcile. `G2` (`Omega`, child `ses_ded54223dffew4seMJF5BLXLB9`) is in flight. Gate at 12:26, `PASS`, peak 61672
+over 20 calls, worst jump 3543, child projection 104344 of 262144, 39.8 percent. Planning record pushed signed at
+`3db919d` with the pre-push hook asserting 106 against the floor of 100.
+
+`TASK-0043` review chain complete, one dispatch each. `G2` (`Omega`, `ses_ded54223dffew4seMJF5BLXLB9`) clean on
+injection, credential exposure, network and supply chain, verdict advisory instrument rather than a boundary, with
+the constraint that the fix stays on numeric store fields. `G3` (`Big`, `ses_ded4f1736ffemNaiwoP6OkumiC`) ran a
+30-scenario synthetic-store probe at `/home/howard/AI/booth-2026/t0042/t0043_gate_probe.py`, proved exits 0, 3 and 4
+reachable by real reads with inclusive boundaries at 222822 and 249036, showed the jump term alone moves 112216
+tokens, and measured the real inherit ratio at 0.08 to 0.54 across 229 dispatches against the fitted 1.6, with
+ceiling hits in `tails` children and never in a `robotnik` dispatcher. Its harness FAIL is `tests/selftest.sh:147`,
+`[ rc -le 4 ]` accepting exit 2 and crash exit 1. `G4` (`Charmy`, `ses_ded297e32ffewofNkoAGG5b4Wu`) `PASS` at exit 0,
+CPython `v3.12.16` PSF v2, SQLite public domain, OpenCode `v2.4.1` MIT, no obligation from reading numeric store
+fields, and it named a tooling gap, the scanner's suffix gate at `team/licenses/core.py:224` never opens
+`scripts/dispatch-gate`. The `Tails` fix dispatch (`ses_ded1fd4c6ffewBjSzMCKu2NkX3`) is in flight against those four
+sections.
+
 **`LIVE QUEUE 6` running, `T2` and `T3` landed on `TASK-0041`, `T4` in flight (2026-11-25 11:58 UTC,
 20:58 JST, `Robotnik` session `ses_ded91638cffe1PedTvitwlfONJ`).** Inherited state verified in this session,
 team `main` read from the remote at `7781512` (`git ls-remote origin refs/heads/main`), booth `main` read from
