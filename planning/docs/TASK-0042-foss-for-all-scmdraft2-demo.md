@@ -31,6 +31,20 @@ calls, worst jump 5331, dispatcher projection 46151, child projection 73841 of 2
 142281 child projection that TASK-0043 records for the dispatch whose real child request reached 262242 is
 the stop line for this session, and dispatching stops when the projection nears it.
 
+**`R3b` landed, `K7` and `K8` verified against the tree and both remotes, baseline confirmed at 106
+(2026-11-25 10:05 UTC, 19:05 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `R3b` (`Big`, child
+`ses_dede7984effeQPIioDgWVaL8V6`) wrote `## Test Results` at `doc:5602` and pushed `78da9d1`, signature `G`,
+with the pre-push hook asserting 106 against the floor of 100. Verified, MIT SPDX headers and the root
+`NOTICE` present in both repos, ten pinned `actions/checkout` sites, zero interpolating `run:` bodies across
+8 workflows and 11 composite actions, and the interpolation guard proven falsifiable by a negative control
+that exits 1. Both `scripts/licence-check` runs exit 0, team repo and a booth clone refreshed to `b56d1df`.
+The 105 to 106 delta is measured from a `git archive` of pre-`K8` `9d9fc1e` rather than inherited, and the
+floor is one `MIN_CHECKS=100` constant read by `tests/selftest.sh`, the CI step and `scripts/hooks/pre-push`.
+Named as not run, all CI jobs, Sparky/Raku, shellcheck, the three VM and docker actions, the gitleaks binary,
+upstream pin-to-tag re-resolution, `d2_verify.py`, booth compiles, and every target-side check. No FAIL, and
+`R3`'s PARTIAL read-back row plus the harness defect `Big` owned are both closed. Next is the `TASK-0041`
+review chain, `T1` to `T4`.
+
 **`K8` landed, the `R3` CI findings are closed, and the selftest baseline moves to 106 (2026-11-25 09:50
 UTC, 18:50 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `K8` (`Tails`, child
 `ses_dedf8d22cffeGcx8SqTqAe60Tl`) landed four items at team `326bab3`, both commits signature-verified `G`,
