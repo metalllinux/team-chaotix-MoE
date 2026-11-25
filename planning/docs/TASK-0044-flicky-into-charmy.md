@@ -848,6 +848,106 @@ session and is excluded from my commit.
 
 *Owner: `Knuckles`.*
 
+**`F7` close-out, 2026-11-25 03:40 UTC (12:40 JST).** `Knuckles`, dispatched as `F7`.
+
+**DONE checklist verified:** partial. Every gate row is proven at HEAD. The branch-and-PR row is not
+satisfied as written, see the landing shape below.
+
+**Landing shape, recorded plainly.** `F1` already landed the implementation on `main`. There is no
+`feature/TASK-0044-*` branch locally or on the remote, `git ls-remote --heads origin` lists only `main`
+at `81142c7` and `task-0043-dispatch-gate`, because the `F1` dispatch brief told `Tails` to push
+`main`. No PR was opened and no merge commit exists, so there is no merge to verify and I created none
+retroactively. What closed this task is `F1` plus the review-driven follow-up commits, and what I
+verified is each follow-up commit's presence on the remote ref.
+
+**Verified from the remote, not from the dispatch report.**
+
+| Item | Command | Result |
+|---|---|---|
+| Remote tip | `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git ls-remote origin refs/heads/main` | `81142c7cf7c693a92915c21411cc43cbd570a273` |
+| `F6` landed | `git fetch origin main`, then `git merge-base --is-ancestor 3367f21 origin/main` | exit 0, ancestor of the remote ref |
+| `F8` landed | same, `git merge-base --is-ancestor 482aed5 origin/main` | exit 0, ancestor of the remote ref |
+| `F8` record landed | same, `81142c7` | exit 0, equal to the remote tip |
+| Signatures | `git log --show-signature -1 3367f21` and `-1 482aed5` | both `Good signature from "Team Chaotix <howard.a.vanderwal@protonmail.com>" [ultimate]`, EDDSA `D553FBE4B47020B2033E9594F9261D151316FD60` |
+| Signing policy | `git config commit.gpgsign` | `true`, `user.signingkey` the same key |
+
+**Commit chain that constitutes this release**, all on `main`, all GPG-signed.
+
+| Commit | Step |
+|---|---|
+| `ef06147` | `F1`, roster removal and the Charmy fold-in, 18 files, 590 insertions, 162 deletions |
+| `e22bb3c` | `F1b`, closes `Shadow` finding 1, `team/licenses/policy.yaml:20` and `:129` pointers |
+| `68babaf`, `8efdcf7` | `Robotnik`-owned records, `Shadow` finding 2 restatements and the `F3` to `F5` verdicts |
+| `3367f21` | `F6` `Vector`, README to the 11-agent roster plus the Charmy policy-ownership clause |
+| `482aed5` | `F8` `Tails`, `team/a2a/server.py:109`, the syntax-gate widening, `scripts/vm-create-rocky.sh:4` |
+| `81142c7` | `F8` `## Implementation` record |
+| this close-out | `F7` |
+
+**Gates I re-ran at HEAD `81142c7` before committing this entry.**
+
+| Gate | Command | Result |
+|---|---|---|
+| selftest | `bash tests/selftest.sh` | `SELFTEST: 103 checks passed`, exit 0 |
+| config gate | `python3 tests/config_gate.py` | exit 0, six notes, `roster OK (11 agents)` |
+| licence gate | `scripts/licence-check` | `(PASS)`, exit 0, 3 findings, all MIT |
+| roster | `ls .opencode/agents/ | wc -l`, `test -e .opencode/agents/flicky.md` | 11 files, `flicky ABSENT` |
+| name sweep | `git grep -c -i flicky -- .opencode AGENTS.md README.md planning/templates tests .github team scripts` | zero matches, exit 1. `git grep -i -n flicky | wc -l` is 196, all inside `planning/`, `DEMO-LOG.md` and the two `continue-prompt-task0038-*.md`, the accepted-history band `Shadow` ruled at `## Review` |
+| four-stage chain | `grep -n '→' AGENTS.md | grep -i charmy` answers `:127`, `:129`, `:497`. `README.md:132` and `:145`. `planning/templates/planning-doc.md:126`. `python3 -c "from team.graph.state import REVIEW_STAGES, STAGE_AGENT; ..."` answers `('review_shadow', 'review_omega', 'review_big', 'review_charmy')` with last-stage agent `charmy` | consistent, no stale fifth reviewer |
+| `F8` content present | `sed -n '109p' team/a2a/server.py`, `sed -n '25p;41p' tests/selftest.sh`, `sed -n '4p' scripts/vm-create-rocky.sh`, `bash -n scripts/vm-create-rocky.sh` | `an eleven-role autonomous`, the widened `*/usr/bin/env bash*` pattern in both loops, `]}\"` order correct, `bash -n` exit 0. This settles the item `## Docs` could not verify |
+| marker block | `git show 1cf0bc6:AGENTS.md | awk '/agentsmd:learned:start/,/agentsmd:learned:end/' | sha256sum`, and the same awk over HEAD | both `1b4d3c918162ad03584e1a42ec5408420538d0cdd41560686f740d13d40d32ca`, byte-unchanged, nothing promoted |
+| credentials | `git diff 1cf0bc6..81142c7 -- . ':(exclude)planning' > /tmp/opencode/t0044-f7.diff` then `grep -F -f ~/AI/secrets/scm_draft_pass.md` and the same with `~/AI/secrets/scm_draft_rdp_pass.md` | no match, exit 1 both |
+
+**DoD ledger.** `## Definition of Done` is `Robotnik`'s section, marked "Owner: `Robotnik`, and nobody
+else", and AGENTS.md section 2 rule 2 bars me from editing another agent's section, so I did not flip
+the boxes. Conflict named rather than resolved silently. The rows with the proof that backs each one,
+for `Robotnik` to apply.
+
+| Row | State | Proof |
+|---|---|---|
+| 1, agent files and Charmy's audit duties | proven | `ls .opencode/agents/`, flicky absent, `config_gate.py` asserts the duty strings |
+| 2, Charmy fourth and last, one licence section | proven | `config_gate.py` asserts `fourth and last` and the single `## License` line |
+| 3, name sweep with surviving count reported | proven | zero in the forbidden paths, 196 total, band enumerated above |
+| 4, four-stage chain in every contract file | proven | the chain row of the gate table above |
+| 5, config gate asserts 11 agents and the duty, gate passes | proven | exit 0, six notes |
+| 6, permission block superset with before and after recorded | proven | `## Implementation` at `doc:221-247`, `Shadow` verified the blocks byte-identical at `doc:515` |
+| 7, Charmy records the gate outcome | proven, with a bound | Charmy recorded exit 0 `(PASS)` at HEAD `68babaf`, `doc:586-592`. That record predates `3367f21` and `482aed5`. The gate re-ran inside the `F8` selftest at `482aed5` and I re-ran it standalone at `81142c7`, both `(PASS)` exit 0, so the outcome holds at HEAD even though Charmy's own run predates the follow-ups |
+| 8, selftest via pre-push, counts against the 83 baseline, `MIN=70` | proven | 83 to 86 at `ef06147`, 86 to 103 at `482aed5`, my run at `81142c7` answers 103, the pre-push hook re-ran it on the push below, floor unchanged at `.github/workflows/team-selftest.yml:50` |
+| 9, no credential in the diff | proven | the credential row above, both greps exit 1 |
+| 10, marker block byte-unchanged, nothing promoted | proven | identical sha256 at `1cf0bc6` and HEAD |
+| 11, each reviewer reports with no unresolved blocker | proven | `Shadow` FAIL with two should-fix findings and no blocker, both closed (`e22bb3c`, and `68babaf` for the `Robotnik`-owned rows). `Omega` one medium accepted as the task's stated purpose and one low, that low fixed at `482aed5`. `Big` PASS. `Charmy` PASS |
+| 12, Vector updates README | proven | `3367f21`, `README.md:9` and `README.md:49-52`, verified from the remote |
+| 13, branch, PR, merge | **not satisfiable as written** | the work landed directly on `main` by dispatch instruction. Signed commits and remote verification, yes. Branch and PR, no. Recorded as a deviation, not ticked |
+
+**Checks that did not run.** The GitHub Actions workflows `Team Selftest` and `Licence Check` never ran
+for this task, the self-hosted runner is not registered on a public repo, AGENTS.md section 6, so the
+pre-push selftest is the effective gate. The shellcheck block at `tests/selftest.sh:38-50` did not run,
+`shellcheck` is absent on this host, and with the widened pattern it would contribute 17 lint passes
+once installed. No CI, review, or security check ran behind a PR, because no PR exists. Sparky, podman,
+and libvirt layers do not apply, this change is roster text, contract text, a graph stage tuple, and
+tests, with no runtime service and no UI. No contact with `192.168.1.99` in this pass. No deployment
+was dispatched, there is nothing deployable in this task.
+
+**Versioning.** No release tag exists in this repo (`git tag` is empty) and no DoD row asks for one.
+`team/__init__.py:15` stays at `2.0.0` and I did not bump it. Recorded for `Robotnik`, the removal of
+`review_flicky` from `REVIEW_STAGES` is a contract change any future tag should reflect, and
+`team/requirements.txt` still has no lockfile, which is `Charmy`'s recorded item at `doc:650-654`.
+
+**Push and read-back.**
+
+| Item | Value |
+|---|---|
+| Unpushed local commit found | `2a68f78 docs(planning): ...`, `git log origin/main..HEAD` showed it as the one commit ahead of `81142c7`. Pushed as part of this push |
+| This entry | one commit, GPG-signed EDDSA, `docs(t0044 F7): ...` |
+| Pre-push gate | `scripts/hooks/pre-push` ran `tests/selftest.sh` on the push, `SELFTEST: 103 checks passed` |
+| Push | `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` |
+| Remote read-back | `git ls-remote origin refs/heads/main` after the push |
+
+**Open outside this task, not blockers for it.** `Espio` still owes the `## Archive` prune of the legacy
+licence-audit headings, `E1` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. The booth and
+remote upstream audits are the carried `R4`, `T4`, `G4` scope in their own tasks. `TASK-0044` itself is
+closed at the release step.
+
+VERDICT: PASS the roster change is on the remote at 81142c7, all gates re-run at HEAD pass, 103 checks, and the DoD branch-and-PR row is recorded as a deviation because F1 landed on main by dispatch instruction
 ---
 
 ## Archive
