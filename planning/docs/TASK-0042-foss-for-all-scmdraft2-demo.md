@@ -13,6 +13,25 @@
 
 ## Status
 
+**`F6` to `F8`, `F7` close TASK-0044, and `K6` closes the open `R2` host-key and secret-file findings
+(2026-11-25 04:05 UTC, 13:05 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).** `F6` aligned the
+README to the eleven-agent roster at `3367f21`. `F8` landed the three review follow-ups at `482aed5`,
+widening the bash syntax gate so 17 `bash -n` checks that a dead case branch had been hiding actually run,
+which moves the selftest from 86 to 103, and fixing the `scripts/vm-create-rocky.sh:4` parse error. `F7`
+closed TASK-0044 with the remote read back at `8d71d94`, all 13 DoD rows ticked, and the branch-and-PR row
+recorded as a deviation. **The selftest baseline for every later dispatch is 103, then 105 after `K6`. The
+86 figure is stale.** `K6` published `scripts/remote/known_hosts` and switched `scripts/remote/rt-lib` to
+`StrictHostKeyChecking=yes`, the durable runner writes a mode 600 pinned file removed by `atexit`, a
+negative test with flipped keys returns `rc 255` with nothing on the target and no credential sent, the
+target-side grd credentials backup is now 600 inside 700 and verified `Permission denied` unprivileged, and
+`tests/selftest.sh` fails rather than skips on an absent secret file while asserting
+`StrictHostKeyChecking=no` appears nowhere under `scripts/`. Omega finding 8 was verified already closed by
+`P4`, so no `mktemp` plus `trap` change landed. Team `main` read back at `3e43d2a`, booth `main` read back
+at `7c4fa16` with `code/booth_loop.py` byte-identical to the durable copy at 56132 B. **Still open for the
+next dispatcher,** Omega finding 2, the `/cert:ignore` RDP self-signed certificate, untouched because no RDP
+channel test ran, Omega finding 10, `~/AI/secrets/scm_draft_pass.md` still mode 644, `/tmp/opencode/t0042/
+rdp-args` left as named residue at mode 600, and `/home/howard/AI/booth-2026` still directory mode 755.
+
 **`P5` landed, the record and push tooling is durable, and the askpass path in the queued briefs is
 superseded (2026-11-25 03:15 UTC, 12:15 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).**
 `d2_verify.py` and `s1c_manifest.py` are at `/home/howard/AI/booth-2026/t0042/`, the askpass helper is at

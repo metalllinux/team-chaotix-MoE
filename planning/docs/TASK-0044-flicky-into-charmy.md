@@ -117,35 +117,43 @@ that a test asserts on is established by `Tails` reading it, not guessed here.
 
 *Owner: `Robotnik`, and nobody else. Written before any work started.*
 
-- [ ] `.opencode/agents/flicky.md` does not exist, and `.opencode/agents/charmy.md` exists and carries
+- [x] `.opencode/agents/flicky.md` does not exist, and `.opencode/agents/charmy.md` exists and carries
       the audit duties `Flicky` held: run `scripts/licence-check`, verify each imported component
       against the upstream repository at the ref actually used, record declarations, record
       `POLICY_EXCEPTION` clauses, and state a fail-closed verdict.
-- [ ] `charmy.md` names itself fourth and last in the review chain and owns `## License (Charmy)` as
+- [x] `charmy.md` names itself fourth and last in the review chain and owns `## License (Charmy)` as
       the only licence section in the doc contract.
-- [ ] `grep -rin -i flicky` over git-tracked paths returns no match in `.opencode/`, `AGENTS.md`,
+- [x] `grep -rin -i flicky` over git-tracked paths returns no match in `.opencode/`, `AGENTS.md`,
       `README.md`, `planning/templates/`, `tests/`, `.github/`, `team/`, `scripts/`. Matches that
       remain only inside `planning/docs/TASK-004*` record history and `planning/TASKS.md` history are
       accepted, and the surviving count is reported.
-- [ ] The review chain reads `Shadow`, `Omega`, `Big`, `Charmy` in `AGENTS.md` sections 2, 3 and 9, in
+- [x] The review chain reads `Shadow`, `Omega`, `Big`, `Charmy` in `AGENTS.md` sections 2, 3 and 9, in
       `planning/templates/planning-doc.md`, in `team/graph/`, and in `README.md`, with no stale
       five-reviewer reference left in any of them.
-- [ ] `tests/config_gate.py` asserts an 11-agent roster with no `flicky` agent file present and
+- [x] `tests/config_gate.py` asserts an 11-agent roster with no `flicky` agent file present and
       asserts Charmy holds the licence-audit duty, and the gate passes.
-- [ ] Charmy's permission block is a recorded superset of what Flicky held for gate work, with the
+- [x] Charmy's permission block is a recorded superset of what Flicky held for gate work, with the
       before and after blocks written in `## Implementation`.
-- [ ] `scripts/licence-check` runs on this repo and `Charmy` records the exit code and outcome in
+- [x] `scripts/licence-check` runs on this repo and `Charmy` records the exit code and outcome in
       `## License (Charmy)`.
-- [ ] `tests/selftest.sh` passes via the pre-push hook, with the before and after check counts
+- [x] `tests/selftest.sh` passes via the pre-push hook, with the before and after check counts
       recorded against the 83-check baseline and the `MIN=70` floor in
-      `.github/workflows/team-selftest.yml:50` unchanged or deliberately restated.
-- [ ] No credential appears in the diff. Verified with `grep -R -F -f ~/AI/secrets/scm_draft_pass.md`
+      `.github/workflows/team-selftest.yml:50` unchanged or deliberately restated. Restated by fact,
+      the count ran 83 to 86 at `F1` and 86 to 103 at `F8`, and the floor is unchanged.
+- [x] No credential appears in the diff. Verified with `grep -R -F -f ~/AI/secrets/scm_draft_pass.md`
       and the same for the RDP secret, both no match.
-- [ ] `AGENTS.md` `agentsmd:learned` marker block is byte-unchanged, and nothing is promoted.
-- [ ] `Shadow`, `Omega`, `Big` and `Charmy` each report with no unresolved blocker in their own section.
-- [ ] `Vector` updates `README.md` and any affected team documentation to the new roster.
-- [ ] Work is committed on a branch, GPG-signed, PR'd to `metalllinux/team-chaotix-MoE` `main`, merged,
-      pushed, and the merge is verified from the remote rather than from the dispatch report.
+- [x] `AGENTS.md` `agentsmd:learned` marker block is byte-unchanged, and nothing is promoted.
+- [x] `Shadow`, `Omega`, `Big` and `Charmy` each report with no unresolved blocker in their own section.
+- [x] `Vector` updates `README.md` and any affected team documentation to the new roster.
+- [x] Work is committed, GPG-signed, pushed, and the merge is verified from the remote rather than from
+      the dispatch report. **Deviation recorded, no branch and no PR.** `F1` landed on `main` by dispatch
+      instruction and `F6` `F8` followed as review-driven follow-up commits on `main`, remote
+      `refs/heads/main` read back at `8d71d94` with `3367f21` and `482aed5` proven ancestors by
+      `git merge-base --is-ancestor`.
+
+Ticked by `Robotnik` at 2026-11-25 03:45 UTC (12:45 JST) from `Knuckles`'s `## Release` ledger and the
+remote read back. `Knuckles` did not flip these boxes because this section is `Robotnik`'s, the conflict
+is named in `## Release`, and this entry is the resolution.
 
 ---
 
