@@ -459,6 +459,45 @@ is untouched and stays owned by each task's `Robotnik` per decision 3. No contac
 
 `VERDICT` is not mine to record.
 
+**`F8` fix pass, 2026-11-25 03:25 UTC (12:25 JST).** Three follow-ups from `Shadow` (`team/a2a/server.py:109`),
+`Big` (`tests/selftest.sh:25` and `:41`, and `scripts/vm-create-rocky.sh:4`), and `Omega`
+(`team/a2a/server.py:109`). Commit `482aed5`, signed EDDSA, pre-push selftest green at 103 checks, push
+`3367f21..482aed5 main -> main`, remote read back `git ls-remote` returns `482aed5`.
+
+| File | Line | Before | After | Source finding |
+|---|---|---|---|---|
+| `team/a2a/server.py` | 109 | `a twelve-role autonomous` | `an eleven-role autonomous` | Omega low, input-validation. The `skills` array is file-driven from 11 `.md` files, the description said 12. |
+| `tests/selftest.sh` | 25 | `*"/bin/bash"*)` | `*"/bin/bash"* \| *"/usr/bin/env bash"*)` | Big finding 1. The pattern `*"/bin/bash"*` is not a substring of `#!/usr/bin/env bash`, so 17 bash scripts matched neither branch and 0 `bash -n` checks ran. Adding `*/usr/bin/env bash*` activates 17 syntax checks. |
+| `tests/selftest.sh` | 41 | `*"/bin/bash"*)` | `*"/bin/bash"* \| *"/usr/bin/env bash"*)` | Same pattern in the shellcheck loop. shellcheck is absent on this host, so this branch contributes 0 checks today, but installing shellcheck would activate 17 lint passes. |
+| `scripts/vm-create-rocky.sh` | 4 | `[disk_size=30G]}"` (hex `5d 22 7d`: `]` then `"` then `}`) | `[disk_size=30G]}"` (hex `5d 7d 22`: `]` then `}` then `"`) | Big finding 2. The `}` closing the parameter expansion `${1:...}` must appear inside the outer `"` string. The reversed order left the `}` outside the string, bash scanned for a matching `"` through line 78, `bash -n` exit 2. Fixed before the gate was widened so the widened gate finds no failure. |
+
+**Checks run.**
+
+| Check | Command | Before (HEAD `3367f21`) | After (HEAD `482aed5`) |
+|---|---|---|---|
+| `bash -n` vm-create-rocky | `bash -n scripts/vm-create-rocky.sh` | exit 2, `unexpected EOF while looking for matching '"'` at line 78 | exit 0 |
+| `bash -n` selftest | `bash -n tests/selftest.sh` | exit 0 | exit 0 |
+| selftest | `bash tests/selftest.sh` | 86 checks passed, exit 0 (4 syntax checks: all python, 0 bash) | 103 checks passed, exit 0 (21 syntax checks: 17 bash + 4 python) |
+| config gate | `python3 tests/config_gate.py` | exit 0, 6 notes | exit 0, 6 notes, all green |
+| pytest | inside selftest | 29 passed | 29 passed |
+| licence gate | inside selftest | `(PASS)`, exit 0 | `(PASS)`, exit 0 |
+
+**Check-count delta.** 86 to 103, +17. The delta is exactly the 17 bash scripts that previously fell through
+the dead `*"/bin/bash"*` branch and now receive a `bash -n` check and a `PASS` call. Matches Big's predicted
++17 at `## Test Results` finding 1. The +3 from `ef06147` (83 to 86) is unchanged.
+
+**Checks that did not run.** The shellcheck block (`tests/selftest.sh:38-50`): `shellcheck` is absent on
+this host. With the widened pattern, installing shellcheck would add 17 checks (17 bash files now match).
+No other guard block dropped out. The gateway selftest, dispatch-gate, remote build, C compile, credential
+leak scan, and remote-desktop skill all ran, same as the prior baseline.
+
+**Not committed.** `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md` is dirty in the working tree
+from a concurrent `Robotnik` session and is excluded from this commit.
+
+**No contact with `192.168.1.99`.**
+
+`VERDICT` is not mine to record.
+
 ---
 
 ## Review
