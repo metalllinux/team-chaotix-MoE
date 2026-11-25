@@ -240,7 +240,7 @@ if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/
   done
   note "scripts/remote input-tool dry runs OK"
 else
-  note "gcc or freerdp-client3 absent, remote build asserts skipped"
+  fail "gcc or freerdp-client3 absent; the 5 remote-build asserts cannot run (Big T3 finding 1)"
 fi
 
 # Credential leak scan: neither target credential may appear anywhere in the

@@ -788,9 +788,11 @@ pre-push selftest gate green at 83 checks.
    files including the new selftest code; the new code was written to warning-
    level-clean style (here-strings instead of `grep -q` pipelines, quoted
    expansions) but that is unverified by a shellcheck run.
-4. The commit is unsigned. The recent chain (`8e75aac`, `d26ef2b`, `5f9947d`) is
-   unsigned too and the review chain is already weighing a signed-versus-unsigned
-   chain; `b906f00` continues the unsigned run rather than silently diverging.
+4. The packaging-pass commits are GPG-signed against key `F9261D151316FD60`
+   (`git verify-commit b906f00` and `git verify-commit 1eea4ec` both return
+   `gpg: Good signature from "Team Chaotix" [ultimate]`). The unsigned chain
+   (`8e75aac`, `d26ef2b`, `5f9947d`) ended before `b906f00`; the packaging
+   commits broke it rather than continuing it. Corrected per `Shadow` T1.
 
 **Competing priorities.** The selftest asserts the packaged surface offline
 (dry runs, compile, inventory, leak scan) rather than a live-target round trip,
@@ -799,6 +801,50 @@ regression in the real RDP or uinput paths would not be caught by CI. The build
 assert compiles for real when the toolchain is present, which trades a few seconds
 of CI time for proof that all three C sources actually compile against the
 distro freerdp headers.
+
+### K9 fix pass (2026-11-25 12:15 UTC, 21:15 JST, `Tails`, dispatch `K9`)
+
+**Shadow T1 correction.** Replaced the false claim at `:791-793` that
+`b906f00` is unsigned. Both `b906f00` and `1eea4ec` are GPG-signed against
+EDDSA key `D553FBE4B47020B2033E9594F9261D151316FD60` (short `F9261D151316FD60`).
+Evidence (`git verify-commit b906f00` and `git verify-commit 1eea4ec`, both
+return `gpg: Good signature from "Team Chaotix" [ultimate]`). The unsigned
+chain (`8e75aac`, `d26ef2b`, `5f9947d`) ended before `b906f00`.
+
+**Big T3 silent-drop fix.** The guarded build sub-block at `tests/selftest.sh`
+(the `if command -v gcc … && pkg-config --exists freerdp-client3` branch)
+carries 5 PASS asserts. A toolchain absence previously hit `note "skipped"`
+and the suite stayed green at 101 (floor 100). Changed the else branch from
+`note` to `fail`, so a missing gcc or freerdp-client3 aborts the run with an
+explicit message. The 106-check floor slack no longer absorbs a silent 5-assert
+drop.
+
+**Before / after counts (both on this host, which has gcc and freerdp3):**
+before 106, after 106. The guard is dormant on this controller because the
+toolchain is present; the fix is for the runner-absent path.
+
+**Negative control.** With `PATH` stripped of `gcc` (`/tmp/opencode/neg-ctl-bin`),
+the guarded block exits 1 with `selftest FAIL: gcc or freerdp-client3 absent;
+the 5 remote-build asserts cannot run (Big T3 finding 1)`. Before the fix the
+same condition would have printed a note and continued to a green 101.
+
+**Named, not fixed (per Big T3):** (1) 4 of 6 dry-run asserts (`rt-type`,
+`rt-key`, `rt-click`, `rt-uinput`) rely on the tool self-reporting "dry run"
+via `grep -qi 'dry run'` rather than asserting the absence of a real host
+token. (2) `grep -Eq 'UI_DEV_CREATE|1800'` at `:219` is a loose alternation:
+a bare `1800` anywhere in `uinput-inject.c` satisfies it. Both are tighten-
+the-assert items for a future dispatch.
+
+**Checks that did not run in this dispatch.** shellcheck (absent on this
+controller). CI (no runner registered). Live-target round trip (out of scope
+per item 11). Gateway selftest in the negative-control PATH test (incidental
+port collision in the harness, unrelated to the fix). `scripts/licence-check`
+not re-run (Charmy T4 owns it). `git verify-commit` was run for the two
+commits named; the remaining packaging commits were not re-verified.
+
+**Standing posture.** `R4` verdict is FAIL on the booth repo as published at
+`7c4fa16`. The booth repo stays private. The public flip is the operator's
+ruling on `C2` and `C3`. Nothing in this pass changes that posture.
 
 ---
 
@@ -943,14 +989,42 @@ Written 2026-11-25 10:42 UTC (2026-11-25 19:42 JST).
 
 *Owner: `Charmy`. Fourth in the review chain. Every license is verified at the upstream source repository and the ref used, never from a copy in this repo.*
 
-**Project license:** — appropriate | finding
+**T4 dispatch, written 2026-11-25 12:04 UTC (21:04 JST).** `Charmy`, fourth and last in the TASK-0041 review chain, the team's single licence owner per TASK-0044, carrying the retired fifth reviewer's audit scope per `## Status` roster note. The legacy `## License Audit (Flicky)` heading below is retained history, per AGENTS.md section 2 rule 7. I did not edit it; `Espio` folds it at `E1`.
+
+**Gate**
+
+`scripts/licence-check .` in `/home/howard/AI/projects/team-chaotix-moe` at HEAD `067509b` (exit 0 PASS). Team repo declarations read by the gate: `LICENSE MIT repo_license`, `NOTICE ATTRIBUTION attribution`, `planning/docs/TASK-0039-agent-gpg-icon-feature-catch.md MIT header`, `scripts/rdp-input.c MIT header`, `scripts/rdp-pointer.c MIT header`, `scripts/remote/uinput-inject.c MIT header`, `tests/test_licence.py MIT header`.
+
+`scripts/licence-check .` in `/home/howard/AI/booth-2026/repo` at HEAD `b56d1dfbd2eb80c8b47fafaa516ac29a18b87662` (exit 0 PASS). Booth clone refreshed with `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git fetch origin --prune`; `git ls-remote origin refs/heads/main` returns `b56d1df`, identical to `git rev-parse HEAD`; `git status --porcelain` returns 0 lines. Booth declarations: `LICENSE MIT repo_license`, `NOTICE ATTRIBUTION attribution`, `MANIFEST.md MIT header`, `code/rdp-input.c MIT header`, `code/rdp-shot-probe.c MIT header`, `code/rdp-shot.c MIT header`.
+
+**Outcome:** PASS on both gate runs.
+
+**Project license:** MIT in the team repo (`LICENSE`, "MIT License", `Copyright (c) 2026 Howard`). Appropriate. Finding C1 from TASK-0042 is resolved in the team repo at `067509b`: `scripts/rdp-input.c`, `scripts/rdp-pointer.c`, and `scripts/remote/uinput-inject.c` all carry `SPDX-License-Identifier: MIT` headers naming the MIT root LICENSE, the root NOTICE records the correction, and `scripts/remote/NOTICE` restates the declaration as MIT everywhere. No copyleft is inherited.
 
 **Imported code**
 
 | Component | Source (repo @ ref) | License (verified at) | Obligations met | Status |
 |---|---|---|---|---|
+| FreeRDP, what `scripts/rdp-input.c` and `scripts/rdp-pointer.c` link | `FreeRDP/FreeRDP` @ tag `3.32.2`, distro package `freerdp-libs-3.32.2-1.el10_2` | Apache-2.0. `LICENSE` read at tag `3.32.2` over HTTPS (Apache License Version 2.0). Distro licence field re-verified on the controller: `rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs` answers `Apache-2.0 AND HPND AND LGPL-2.1-or-later AND LicenseRef-Fedora-Public-Domain AND OFL-1.1`, matching `scripts/remote/NOTICE`. | yes. `scripts/remote/NOTICE` names the package, version, licence field, the Apache-2.0 option the team takes, that no FreeRDP source is vendored or compiled in, and that `rt-build` binaries are never committed. Dynamic link only. | pass |
+| Kernel UAPI headers, what `scripts/remote/uinput-inject.c` compiles against | `torvalds/linux` @ `master`, `LICENSES/exceptions/Linux-syscall-note` | GPL-2.0-only WITH Linux-syscall-note. Exception text read at that ref: "NOTE! This copyright does *not* cover user programs that use kernel services by normal system calls - this is merely considered normal use of the kernel, and does *not* fall under the heading of 'derived work'." | yes. The injector includes headers only, links libc alone, and its SPDX header declares MIT under the repo root licence. | pass |
+| StormLib | `ladislav-zezula/StormLib` @ `d60b7e6d3501474f4d92c7b9c752a37e78385f67` | MIT. `LICENSE` blob `2cb432d4ec85706acfb1a606bcc010a70b96ed86`, "The MIT License (MIT), Copyright (c) 1999-2013 Ladislav Zezula", read at that commit. No StormLib source is in the team repo. StormLib is used by the booth demonstration tree only, named in the root NOTICE and the booth NOTICE. | yes. MIT's notice clause attaches to copies of StormLib; no copy is distributed from the team repo. | pass |
+| Natural Earth 10 m Admin-0 Countries, the booth mask input | `nvkelso/natural-earth-vector` @ tag `v5.1.2`, commit `f1890d9f152c896d250a77557a5751a93d494776` | Public domain. `LICENSE.md` blob `9dfbc3d55a4ab1dd758c253b2ee339888f632889` read at that commit: "Everything here is public domain." No obligations ("No permission is needed to use Natural Earth. Crediting the authors is unnecessary"). Named in the root NOTICE. | yes, and none required. | pass |
+| Superseded 110 m Korea record provenance | `johan/world.geo.json` @ commit `34c96bba9c07d2ceb30696c599bb51a5b939b20f`, `UNLICENSE` blob `cb93bd385ea436549d8278112f7944cc8f9873f8`, 1270 B | Public domain by dedication. UNLICENSE read at that blob: "free and unencumbered software released into the public domain". | yes. The dedication imposes nothing. | pass |
+| `rocky-logos-100.5-3.el10`, the Rocky mark | `/usr/share/licenses/rocky-logos/COPYING`, package identity `rpm -q rocky-logos` answers `rocky-logos-100.5-3.el10` | Not an open source licence. COPYING read on the controller: "You are granted the right to use the Package only during the normal operation of software programs that call upon the Package. No other copyright or trademark license is granted herein." The team repo publishes no use of the mark in any git-tracked path. | n/a in the team repo. C2 in TASK-0042 names the booth repo's publication of the mark and is the operator's ruling, unchanged by this pass. | pass in the team repo; C2 stands |
+| Ar3sgice starcraft-tools mirror | `github.com/Ar3sgice/starcraft-tools` @ `master`, tree `00b5fb512d475420b8f50715978ad4a0394d2937`, 92 blobs | No licence upstream, verified by listing the tree: no `LICENSE`, no `COPYING`, no licence text file. `README.md` 61 B, one descriptive line. The tree carries `Scmdraft-0.9.07-2018.07.24.zip`, `Scmdraft-0.9.02-2017.10.26.zip`, `Scmdraft.rar`, `bmp2scx1.0.rar`, `firegraft093.zip`. | yes, none are due, because nothing from that mirror is in the team repo. House hard stop `no_licence` applies to redistribution. C4 stands: name the mirror as a source, carry no binary from it. | pass in the team repo; C4 stands |
 
-**Verdict:** pass | findings
+**Exceptions recorded:** Two, both lawful, neither a block, and neither visible to the gate because the gate reads declared licences, not the licence fields inside distro packages and not the headers a C file includes.
+
+1. `LGPL-2.1-or-later`, one term inside `freerdp-libs-3.32.2-1.el10_2`. On the house avoid list at `team/licenses/policy.yaml` with `severity: policy_exception`. Lawful because the team's tools link dynamically against the unmodified distro library and modify no FreeRDP source, which is the LGPL's own dynamic-linking case, and because the team takes the Apache-2.0 option the same package carries. Recorded, not silently passed.
+2. `GPL-2.0-only WITH Linux-syscall-note`, the licence of the kernel UAPI headers `scripts/remote/uinput-inject.c` includes. GPL-2.0-only is on the avoid list at `severity: policy_exception`. Lawful under the exception text quoted in the table above. Recorded.
+
+**Checks that did not run in this pass, named.** No re-verification of the upstream `rocky-logos` source repository; the package's own `COPYING` at version `100.5-3.el10` is the ref read. No fetch of the archive.org StarCraft Anthology ISO bytes; the item metadata was read in R4. No licence check of Firegraft's own freeware claim; the mirror's tree was read and carries no licence file. Nothing against the target. No CVE lookup against `freerdp 3.32.2`. No CI runner registered; the local gate is the effective gate.
+
+**R4's FAIL verdict on the repo as published at `7c4fa16` stands.** R4 was a verdict on four findings (C1, C2, C3, C6), not a gate failure. At `b56d1df`, C1 (licence header conflict, C file headers, NOTICE alignment) and C6 (booth NOTICE) are landed in the booth tree by K7, the commit message states the fix, and the booth gate reads PASS. C2 (the Rocky Linux trademark renders) and C3 (renders of Blizzard tileset art and SCMDraft 2 output) are open and are the operator's ruling on the public flip. The booth repo stays private until C2 and C3 are resolved by the operator, which is the current and safe state. The public flip is the operator's action, not mine.
+
+**Verdict:** pass. Gate PASS (exit 0) on the team repo at `067509b` and on the booth clone at `b56d1df`. C1 is resolved in the team repo. C6 is landed in the booth tree. Both exceptions recorded. No open finding against the team repo's code, scripts, or data. C2 and C3 stand as open operator decisions on the booth repo's public visibility, not as findings against this repo.
+
+VERDICT: PASS Gate exit 0 on both repos, C1 resolved in the team repo at 067509b, C6 landed in the booth tree at b56d1df by K7, two policy exceptions recorded (LGPL-2.1-or-later and GPL-2.0-only WITH Linux-syscall-note), C2 and C3 stand as the operator's ruling on the booth repo's public flip.
 
 ---
 
