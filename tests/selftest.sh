@@ -15,6 +15,16 @@ cd "${ROOT}"
 CHECKS=0
 PASS() { CHECKS=$((CHECKS+1)); }
 
+# Minimum meaningful assertion count, the single home of the selftest floor
+# (TASK-0042 R3 harness fix; scripts/hooks/pre-push and the Team Selftest CI
+# job both read this constant rather than carrying their own). The suite is
+# 76 fixed PASS asserts plus the pytest count (29 at the 2026-11-25 baseline,
+# total 105). pytest is the only component that varies run to run, so 100
+# leaves 5 checks of slack for skipped or deselected tests while failing the
+# moment any meaningful block of asserts disappears. The previous floor was 70,
+# 35 below the real count, and it lived only in a CI job that has never run.
+MIN_CHECKS=100
+
 note() { printf 'selftest: %s\n' "$*"; }
 fail() { printf 'selftest FAIL: %s\n' "$*" >&2; exit 1; }
 
@@ -283,4 +293,46 @@ grep -q 'scripts/remote' "$SK" || fail "remote-desktop skill lost the tooling re
 PASS
 note "remote-desktop skill OK"
 
-printf 'SELFTEST: %s checks passed\n' "${CHECKS}"
+# --- no interpolation into run: bodies (Omega finding 12) -------------------
+# AGENTS.md section 6 binds every untrusted input to env:. The planning-doc
+# ruling on finding 12 asked for a gate on the class itself: no run: body in
+# any workflow or composite action may carry a ${{ ... }} expression. The
+# check parses the YAML and inspects only the run: keys, so env: bindings
+# (the compliant form) pass and a raw interpolation in any run body fails.
+python3 - <<'PYEOF'
+import glob
+import re
+import sys
+
+import yaml
+
+bad = []
+paths = sorted(
+    glob.glob(".github/workflows/*.yml") + glob.glob(".github/actions/*/action.yml")
+)
+for path in paths:
+    with open(path) as handle:
+        data = yaml.safe_load(handle)
+    steps = []
+    for job in (data.get("jobs") or {}).values():
+        steps.extend(job.get("steps") or [])
+    steps.extend((data.get("runs") or {}).get("steps") or [])
+    for step in steps:
+        body = step.get("run") or ""
+        if re.search(r"\$\{\{.*?\}\}", body, re.DOTALL):
+            name = step.get("name") or step.get("id") or "unnamed step"
+            bad.append("%s: step '%s' interpolates an expression into a run body" % (path, name))
+if bad:
+    print("selftest FAIL: " + "; ".join(bad), file=sys.stderr)
+    sys.exit(1)
+PYEOF
+PASS
+note "no run-body interpolation OK (workflows and composite actions)"
+
+# The suite asserts its own floor so a suite that stopped asserting cannot
+# read as green to any consumer, local hook or CI alike.
+if [ "${CHECKS}" -lt "${MIN_CHECKS}" ]; then
+  fail "selftest asserted only ${CHECKS} checks; the floor is ${MIN_CHECKS}"
+fi
+
+printf 'SELFTEST: %s checks passed (floor %s)\n' "${CHECKS}" "${MIN_CHECKS}"

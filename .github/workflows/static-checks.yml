@@ -21,7 +21,10 @@ jobs:
       contents: read
     steps:
       # Checkout with dependency cache for faster startup
-      - uses: actions/checkout@v4 # SHA: 08c6903
+      # Checkout, SHA-pinned with the tag in a trailing comment. The old line
+      # was a pseudo-pin (`@v4 # SHA: 08c6903`): a comment is not a pin and a
+      # 7-digit fragment cannot be resolved (Omega finding 13).
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       # Restore dependency cache
       - uses: ./.github/actions/setup-deps-cache

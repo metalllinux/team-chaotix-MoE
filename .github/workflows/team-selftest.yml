@@ -41,15 +41,28 @@ jobs:
         run: bash tests/selftest.sh
 
       # A suite that stopped asserting reads as green to a naive reader, so
-      # the check count itself is asserted.
+      # the check count itself is asserted. The floor lives in one place,
+      # the MIN_CHECKS constant in tests/selftest.sh, and is read from
+      # there rather than duplicated here.
       - name: Confirm the selftest asserted something
         shell: bash
         run: |
+          # Run the same gate again and capture its report.
           OUT="$(bash tests/selftest.sh)"
-          COUNT="$(printf '%s\n' "$OUT" | grep -Eo '[0-9]+ checks passed' | grep -o '^[0-9]' || true)"
-          MIN=70
+          # Keep the whole number. The previous pipeline kept only the first
+          # digit, so a 105-check run read as 1 and failed (TASK-0042 R3).
+          COUNT="$(printf '%s\n' "$OUT" | grep -Eo '[0-9]+ checks passed' | grep -Eo '^[0-9]+' || true)"
+          # Read the floor from the single constant. An absent constant is a
+          # failure, not an unchecked comparison.
+          MIN="$(sed -n 's/^MIN_CHECKS=\([0-9][0-9]*\)$/\1/p' tests/selftest.sh)"
+          if [ -z "${MIN}" ]; then
+            echo "::error::tests/selftest.sh carries no MIN_CHECKS floor"
+            exit 1
+          fi
+          # Fail on a missing or too-small count.
           if [ -z "${COUNT}" ] || [ "${COUNT}" -lt "${MIN}" ]; then
             echo "::error::selftest reported ${COUNT:-no} checks; expected at least ${MIN}"
             exit 1
           fi
-          printf 'selftest: %s checks passed\n' "${COUNT}"
+          # Report the count against the floor.
+          printf 'selftest: %s checks passed (floor %s)\n' "${COUNT}" "${MIN}"

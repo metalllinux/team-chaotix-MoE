@@ -6,8 +6,30 @@
 # Enable per clone (already set on the team machine):
 #   git config core.hooksPath scripts/hooks
 #
-# The push goes out only if the selftest is green on this checkout.
+# The push goes out only if the selftest is green AND the suite asserted at
+# least MIN_CHECKS checks, the floor constant in tests/selftest.sh. Greenness
+# alone would let a suite that stopped asserting pass (TASK-0042 R3 harness
+# fix: the count floor lived only in a CI job that has never run).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-exec bash "${ROOT}/tests/selftest.sh"
+
+# Run the gate, capturing its report for the count assert. tee keeps the
+# full output visible to whoever is pushing. pipefail plus set -e means a
+# failed selftest still blocks the push with the selftest's own failure.
+OUT="$(bash "${ROOT}/tests/selftest.sh" | tee /dev/stderr)"
+
+# Keep the whole number, not the leading digit (the R3 truncation bug).
+COUNT="$(printf '%s\n' "$OUT" | grep -Eo '[0-9]+ checks passed' | grep -Eo '^[0-9]+' || true)"
+
+# Read the floor from its single home instead of duplicating the constant.
+MIN="$(sed -n 's/^MIN_CHECKS=\([0-9][0-9]*\)$/\1/p' "${ROOT}/tests/selftest.sh")"
+
+# A missing count or a missing floor fails, it is not an unchecked comparison.
+if [ -z "${COUNT}" ] || [ -z "${MIN}" ] || [ "${COUNT}" -lt "${MIN}" ]; then
+  echo "pre-push BLOCKED: selftest reported ${COUNT:-no} checks; the floor is ${MIN:-unset}" >&2
+  exit 1
+fi
+
+# Report what the gate asserted.
+echo "pre-push: selftest asserted ${COUNT} checks (floor ${MIN})"

@@ -35,13 +35,19 @@ jobs:
     steps:
       # Verify the confirmation input matches
       - name: Verify confirmation
+        # workflow_dispatch inputs are untrusted. Bind them to env: and
+        # reference the env vars in the shell (Omega finding 12, AGENTS.md
+        # section 6). Never interpolate an input into the run body.
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+          DEPLOY_ENV: ${{ inputs.environment }}
         run: |
           # Require exact match to prevent accidental deployments
-          if [ "${{ inputs.confirm }}" != "DEPLOY" ]; then
+          if [ "${CONFIRM}" != "DEPLOY" ]; then
             echo "::error::Confirmation must be exactly 'DEPLOY'"
             exit 1
           fi
-          echo "Confirmed deployment to ${{ inputs.environment }}"
+          echo "Confirmed deployment to ${DEPLOY_ENV}"
 
   # GPG preflight: verify signing key is available
   gpg-preflight:
@@ -50,8 +56,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      # Checkout with cache
-      - uses: actions/checkout@v4
+      # Checkout, SHA-pinned with the tag in a trailing comment (Omega finding 13)
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       # Verify GPG key is available for signing
       - name: Check GPG availability
@@ -71,20 +77,25 @@ jobs:
       contents: write
     environment: ${{ inputs.environment }}
     steps:
-      # Checkout with cache
-      - uses: actions/checkout@v4
+      # Checkout, SHA-pinned with the tag in a trailing comment (Omega finding 13)
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       # Restore dependency cache
       - uses: ./.github/actions/setup-deps-cache
 
       # Run project-specific deployment
       - name: Deploy
+        # Bind the workflow_dispatch inputs to env: for the same reason as
+        # the confirm job (Omega finding 12, AGENTS.md section 6).
+        env:
+          DEPLOY_ENV: ${{ inputs.environment }}
+          PROJECT_PATH: ${{ inputs.project-path }}
         run: |
           # Deployment steps are project-specific
           # This workflow provides the safety gates
           # Project-specific deploy scripts go in the project directory
-          echo "Deploying to ${{ inputs.environment }}"
-          echo "Project path: ${{ inputs.project-path }}"
+          echo "Deploying to ${DEPLOY_ENV}"
+          echo "Project path: ${PROJECT_PATH}"
 
       # Post-deploy verification
       - name: Verify deployment
