@@ -31,6 +31,24 @@ calls, worst jump 5331, dispatcher projection 46151, child projection 73841 of 2
 142281 child projection that TASK-0043 records for the dispatch whose real child request reached 262242 is
 the stop line for this session, and dispatching stops when the projection nears it.
 
+**`K8` landed, the `R3` CI findings are closed, and the selftest baseline moves to 106 (2026-11-25 09:50
+UTC, 18:50 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `K8` (`Tails`, child
+`ses_dedf8d22cffeGcx8SqTqAe60Tl`) landed four items at team `326bab3`, both commits signature-verified `G`,
+pushed through the durable askpass. `Omega` finding 12 closed, the PR body and the four `deploy.yml`
+interpolations bound to `env:`, plus a new `tests/selftest.sh` section that fails on a literal `[$][{]`
+inside any `run:` key in a workflow or composite action, with a negative control that flags when the check
+itself stops working. `Omega` finding 13 closed, all ten `actions/checkout` sites now read
+`actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2`, the `static-checks.yml:24` pseudo-pin
+replaced, and the unpinned grep empty. The harness defect `Big` owned is fixed, the count is captured with
+`grep -Eo '^[0-9]+'` so a three-digit number survives, and the floor is `MIN_CHECKS=100` in `tests/selftest.sh`,
+`K8`'s stated reasoning, 76 fixed asserts plus 29 pytest at the 105 baseline with 5 checks of variance slack,
+which is 30 above the stale 70 and 5 below 105. That floor is read by both the CI step and
+`scripts/hooks/pre-push`, and the local gate now asserts the count rather than only greenness. **Baseline
+correction for every later dispatch in `LIVE QUEUE 5`, the count is 105 before `K8` and 106 after it.** Named
+as not run: CI jobs (no runner while the repo is public), Sparky/Raku, shellcheck, upstream re-resolution of
+the SHA to `v4.2.2` mapping, the pytest sub-count, and any target or booth contact. Booth `main` unchanged at
+`b56d1df`, still private under `R4`'s FAIL verdict on `7c4fa16`. `R3b` (`Big`) is next.
+
 **`K7` landed, `C1` and `C6` closed, and the booth repo stays private (2026-11-25 09:30 UTC, 18:30 JST,
 `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** `K7` (`Tails`, child `ses_dee194a0dffejPpvisfvXygGBS`)
 landed `R4` findings `C1` and `C6`. `C1`, MIT root plus SPDX MIT headers on the five imported C files and a
