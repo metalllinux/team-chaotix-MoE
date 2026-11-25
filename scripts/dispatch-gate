@@ -1,22 +1,47 @@
 #!/usr/bin/env python3
 # dispatch-gate -- the dispatcher's context ceiling, made mechanical.
 #
-# Why this exists. A subagent inherits the dispatcher's own session context.
-# In TASK-0042 two dispatches in a row failed with
+# Why this exists. A subagent dispatch is built on the dispatcher's session
+# context. In TASK-0042 two dispatches in a row failed with
 #   request (262191 tokens) exceeds the available context size (262144 tokens)
 # the identical figure both times, while every individual brief was short. The
-# brief was never the problem, the dispatcher's accumulated context was. AGENTS.md
-# learned rule r001 describes the symptom; this script is the pre-dispatch check
-# that stops it from being discovered by a failed dispatch instead of predicted.
+# brief was never the problem, the accumulated context was. AGENTS.md learned
+# rule r001 describes the symptom; this script is the pre-dispatch check that
+# stops it from being discovered by a failed dispatch instead of predicted.
 #
-# How the number is obtained. OpenCode stores one row per assistant message in
-# session_message, with data.tokens describing that call. For a chat call the
-# prompt size is input + cache.read + cache.write, which is what the endpoint
-# charges against the context window on the next request. The most recent
-# assistant message is therefore the best available estimate of what the next
-# dispatch will inherit.
+# How the number is obtained (TASK-0043 review-chain fix, 2026-11-25).
+# OpenCode stores one row per assistant message in session_message, and
+# data.tokens records what that call was charged. The prompt a call was
+# assembled from is input + cache.read + cache.write. The largest such value
+# across ALL of the session's assistant rows is the measured in-flight prompt:
+# the whole transcript at its fullest. That cumulative measure, not a peak over
+# a sampled window, is what the gate reads. The earlier version extrapolated a
+# 20-call peak and multiplied by an inherit ratio fitted to one incident; on
+# 229 real robotnik-to-worker dispatches the true child-first-request ratio is
+# 0.08 to 0.54 (median 0.18), so the fitted 1.6 modeled a quantity this store
+# does not support. The inherit ratio, the window sampler, and the worst-jump
+# spike term are gone. Numeric token fields only; message content is never
+# parsed or printed.
 #
-# Read-only by design. It opens the database in read-only mode and writes nothing.
+# Thresholds are absolute margins below the limit, not fractions of it. The
+# measured gap in the store between the largest request proven to succeed
+# (262113) and the smallest recorded to fail (262242) is 129 tokens, so no
+# fraction of the limit is honest about the boundary. The margin is declared
+# headroom for what the next dispatch adds on top of the measured transcript.
+# WARN_AT and BLOCK_AT at the default limit (245760 and 258048) are the same
+# two numbers written in .opencode/agents/robotnik.md as the dispatch stop
+# line, so the instrument and the rule are one control. Re-fitting the margins
+# against measured child sizes is operator-owned (AGENTS.md section 16,
+# TASK-0043 ## Security "what stays operator-owned").
+#
+# The session must be named. --session is required: a bare invocation used to
+# guess the caller's session from agent name plus time_updated, and measured a
+# dead overflowed session instead of the live one (TASK-0043 review finding 2).
+# Until the toolchain exposes the calling opencode session id to a script,
+# guessing is a usage error.
+#
+# Read-only by design. It opens the database in read-only mode, writes nothing,
+# and reads numeric token fields only.
 # Exit codes: 0 PASS, 3 WARN, 4 BLOCK, 2 usage or database unavailable.
 import argparse
 import json
@@ -25,7 +50,10 @@ import sqlite3
 import sys
 
 LIMIT_DEFAULT = 262144  # the model context limit every agent runs under
-WARN_FRACTION = 0.85
+WARN_MARGIN = 16384     # tokens of headroom below the limit before the answer becomes WARN
+BLOCK_MARGIN = 4096     # tokens of headroom below the limit before the answer becomes BLOCK
+ACTIVE_WINDOW_MS = 300_000  # a session updated this recently counts as concurrent activity
+MAX_CHILD_PROBES = 12   # bound: only the most recently active children are measured
 
 
 def db_path() -> str:
@@ -33,79 +61,145 @@ def db_path() -> str:
     return os.path.expanduser("~/.local/share/opencode/opencode.db")
 
 
-def pick_session(con: sqlite3.Connection, agent: str) -> str | None:
-    # Newest session by activity, optionally filtered to one agent.
-    sql = "SELECT id FROM session_v2"
-    args: tuple = ()
-    if agent:
-        sql += " WHERE agent=?"
-        args = (agent,)
-    sql += " ORDER BY time_updated DESC LIMIT 1"
-    row = con.execute(sql, args).fetchone()
-    return row[0] if row else None
+def row_prompt(raw: str) -> int | None:
+    # The in-flight prompt of one assistant call, from numeric token fields.
+    # Returns None for a row with no parseable tokens object. Content is never
+    # read (TASK-0043 ## Security finding 2, ## License (Charmy) derivation check).
+    try:
+        data = json.loads(raw or "{}")
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    tok = data.get("tokens") or {}
+    cache = tok.get("cache") or {}
+    try:
+        return (
+            int(tok.get("input") or 0)
+            + int(cache.get("read") or 0)
+            + int(cache.get("write") or 0)
+        )
+    except (TypeError, ValueError):
+        return None
 
 
-def prompt_estimate(con: sqlite3.Connection, session_id: str, window: int = 20) -> dict | None:
-    # The prompt actually assembled for a call is what the next dispatch inherits.
-    # The newest assistant row is often a partial row with zero tokens recorded, so
-    # measure the window of recent calls and report the peak, which is what the
-    # ceiling is really up against.
+def measure_session(con: sqlite3.Connection, session_id: str) -> dict | None:
+    # Cumulative in-flight measure over every assistant row of one session.
+    # peak_prompt is the largest prompt any call in the session was assembled
+    # from, i.e. the transcript at its fullest; total_prompt is the sum over
+    # rows, a transcript-mass signal only, not gated on.
     rows = con.execute(
-        "SELECT id, seq, data FROM session_message WHERE session_id=? AND type='assistant' ORDER BY seq DESC LIMIT ?",
-        (session_id, window),
+        "SELECT id, seq, data FROM session_message WHERE session_id=? AND type='assistant' ORDER BY seq",
+        (session_id,),
     ).fetchall()
     if not rows:
         return None
-    # The recorded prompt of a call is what that call was assembled from. Growth
-    # between consecutive calls is where the context actually goes, mostly tool
-    # results, and in TASK-0042 the unrecorded growth was the difference between a
-    # comfortable 160824 measured here and a dispatch that failed at 262191. So the
-    # estimate projects the peak forward by the observed per-call growth.
-    prompts = []
-    for mid, seq, raw in reversed(rows):
-        data = json.loads(raw or "{}")
-        tok = data.get("tokens") or {}
-        cache = tok.get("cache") or {}
-        prompts.append((seq, mid, int(tok.get("input") or 0) + int(cache.get("read") or 0) + int(cache.get("write") or 0)))
-    peak_seq, peak_mid, peak = max(prompts, key=lambda x: x[2])
-    growth = 0
-    if len(prompts) >= 2:
-        deltas = [prompts[i + 1][2] - prompts[i][2] for i in range(len(prompts) - 1)]
-        growth = max(deltas + [0])  # the worst single jump, not the average, because one large tool result is what breaks a dispatch
-    best = {
+    peak = 0
+    peak_seq: int | None = None
+    total = 0
+    with_tokens = 0
+    malformed: list[str] = []
+    for mid, seq, raw in rows:
+        prompt = row_prompt(raw)
+        if prompt is None:
+            # Row identity only, never the raw data (Security finding 2).
+            malformed.append(f"{mid}:{seq}")
+            continue
+        total += prompt
+        if prompt > 0:
+            with_tokens += 1
+        if prompt > peak:
+            peak, peak_seq = prompt, seq
+    return {
         "session_id": session_id,
-        "message_id": peak_mid,
-        "seq": peak_seq,
-        "samples": len(prompts),
+        "rows": len(rows),
+        "rows_with_tokens": with_tokens,
+        "malformed_rows": len(malformed),
+        "malformed_ids": malformed[:5],
         "peak_prompt": peak,
-        "per_call_growth": growth,
-        "projected_prompt": peak + growth,
-        "window": window,
+        "peak_seq": peak_seq,
+        "total_prompt": total,
     }
-    return best
+
+
+def child_signals(con: sqlite3.Connection, session_id: str, warn_at: int) -> dict:
+    # Children of this session, by parent_id, which the store records and the
+    # old gate never read. The ceiling is being touched inside long-running
+    # children (TASK-0043 Test Results), so a child already at the warn line is
+    # a signal: do not send it a follow-up.
+    kids = con.execute(
+        "SELECT id, agent, time_updated FROM session_v2 WHERE parent_id=? ORDER BY time_updated DESC LIMIT ?",
+        (session_id, MAX_CHILD_PROBES),
+    ).fetchall()
+    probes = []
+    for kid_id, agent, kid_updated in kids:
+        m = measure_session(con, kid_id)
+        if m is None:
+            continue
+        probes.append(
+            {
+                "session_id": kid_id,
+                "agent": agent,
+                "peak_prompt": m["peak_prompt"],
+                "rows": m["rows"],
+            }
+        )
+    worst = max(probes, key=lambda p: p["peak_prompt"], default=None)
+    return {
+        "children": len(kids),
+        "measured_children": len(probes),
+        "max_child_peak": worst["peak_prompt"] if worst else 0,
+        "max_child_id": worst["session_id"] if worst else None,
+        "child_at_warn": bool(worst and worst["peak_prompt"] >= warn_at),
+    }
+
+
+def concurrent_sessions(con: sqlite3.Connection, sid: str, now_ms: int, window_ms: int) -> list[str]:
+    # Sessions in the same project, other than this one and its own children,
+    # updated inside the active window. AGENTS.md section 3 dispatches
+    # sequentially through one inference slot; a second live dispatcher session
+    # means two dispatch chains are running at once, which the 2026-11-20
+    # duplicate-dispatch incident showed this gate could not see.
+    rows = con.execute(
+        "SELECT id FROM session_v2 WHERE project_id=(SELECT project_id FROM session_v2 WHERE id=?)"
+        " AND id != ? AND (parent_id IS NULL OR parent_id != ?) AND time_updated >= ?",
+        (sid, sid, sid, now_ms - window_ms),
+    ).fetchall()
+    return [r[0] for r in rows]
 
 
 def main() -> int:
     p = argparse.ArgumentParser(
         prog="dispatch-gate",
-        description="Estimate the dispatcher session context a subagent would inherit, and say whether a dispatch is safe.",
+        description="Measure the dispatcher session's cumulative in-flight prompt and say whether a dispatch is safe.",
     )
-    p.add_argument("--session", help="session id to measure. Omit to use --latest-agent.")
-    p.add_argument("--latest-agent", default="robotnik", help="agent for the newest session to measure, '' for any. Default robotnik.")
-    p.add_argument("--limit", type=int, default=int(os.environ.get("CHAOTIX_CONTEXT_LIMIT", LIMIT_DEFAULT)), help="context limit to measure against. Default 262144.")
-    p.add_argument("--warn-fraction", type=float, default=WARN_FRACTION, help="fraction of the limit at which the answer becomes WARN. Default 0.85.")
-    p.add_argument("--inherit-ratio", type=float, default=1.6, help="multiplier applied to the dispatcher's own prompt when estimating what a child inherits. Default 1.6 comes from TASK-0042, where a dispatcher measured 160824 here and the child request failed at 262191.")
-    p.add_argument("--block-fraction", type=float, default=0.95, help="fraction of the limit at which the answer becomes BLOCK. Default 0.95, because measurement undercounts and a failed dispatch costs a whole turn.")
-    p.add_argument("--window", type=int, default=20, help="how many recent assistant calls to measure, reporting the peak. Default 20.")
+    p.add_argument("--session", help="session id to measure: the calling dispatcher's own session. Required for every real read since TASK-0043 finding 2: a bare invocation used to guess it from agent name and could measure a dead session. Omitting it is a usage error (exit 2); only --dry-run may omit it.")
+    p.add_argument("--limit", type=int, default=int(os.environ.get("CHAOTIX_CONTEXT_LIMIT", LIMIT_DEFAULT)), help="context limit to measure against. Default 262144, or CHAOTIX_CONTEXT_LIMIT.")
+    p.add_argument("--warn-margin", type=int, default=WARN_MARGIN, help=f"tokens below the limit where the answer becomes WARN. Default {WARN_MARGIN}.")
+    p.add_argument("--block-margin", type=int, default=BLOCK_MARGIN, help=f"tokens below the limit where the answer becomes BLOCK. Default {BLOCK_MARGIN}.")
+    p.add_argument("--active-window", type=int, default=ACTIVE_WINDOW_MS, help="milliseconds; sessions updated this recently count as concurrent dispatcher activity. Default 300000.")
     p.add_argument("--json", action="store_true", help="machine-readable output.")
     p.add_argument("--dry-run", action="store_true", help="no database access, proves the interface only.")
     a = p.parse_args()
 
+    if not a.session and not a.dry_run:
+        # Finding 2: no guessing. The bare invocation is a usage error, not a selection.
+        p.error("--session is required (the calling dispatcher's own session id); only --dry-run may omit it")
+        return 2
+
+    if a.limit <= 0 or a.block_margin <= 0 or a.warn_margin <= a.block_margin or a.warn_margin >= a.limit:
+        print("dispatch-gate: margins must satisfy 0 < block-margin < warn-margin < limit", file=sys.stderr)
+        return 2
+
+    warn_at = a.limit - a.warn_margin
+    block_at = a.limit - a.block_margin
+
     if a.dry_run:
         # Interface proof with no machine state touched, so CI never needs the database.
-        est = {"session_id": "dry-run", "message_id": "dry-run", "seq": 0, "samples": 0,
-               "peak_prompt": 0, "per_call_growth": 0, "projected_prompt": 0, "window": a.window}
-        out = {"verdict": "PASS", "reason": "dry run, no database read", **est, "limit": a.limit}
+        est = {"session_id": "dry-run", "rows": 0, "rows_with_tokens": 0, "malformed_rows": 0,
+               "malformed_ids": [], "peak_prompt": 0, "peak_seq": None, "total_prompt": 0}
+        out = {"verdict": "PASS", "reason": "dry run, no database read", **est,
+               "limit": a.limit, "warn_at": warn_at, "block_at": block_at}
         print(json.dumps(out) if a.json else "dispatch-gate: PASS (dry run, nothing read)")
         return 0
 
@@ -121,45 +215,76 @@ def main() -> int:
         print(f"dispatch-gate: cannot open {path}: {exc}", file=sys.stderr)
         return 2
 
-    sid = a.session or pick_session(con, a.latest_agent)
-    if not sid:
-        print("dispatch-gate: no session found", file=sys.stderr)
-        return 2
-    est = prompt_estimate(con, sid, max(1, a.window))
+    est = measure_session(con, a.session)
     if est is None:
-        print(f"dispatch-gate: no assistant message for {sid}", file=sys.stderr)
+        print(f"dispatch-gate: no assistant messages for {a.session}", file=sys.stderr)
         return 2
 
-    est["limit"] = a.limit
-    est["inherit_ratio"] = a.inherit_ratio
-    est["child_projection"] = int(est["projected_prompt"] * a.inherit_ratio)
-    used = est["child_projection"]
-    if used >= int(a.limit * a.block_fraction):
+    kids = child_signals(con, a.session, warn_at)
+    now_ms = con.execute("SELECT CAST(strftime('%s','now') AS INTEGER) * 1000").fetchone()[0]
+    concurrent = concurrent_sessions(con, a.session, now_ms, a.active_window)
+
+    used = est["peak_prompt"]
+    est.update({"limit": a.limit, "warn_at": warn_at, "block_at": block_at,
+                "children": kids["children"], "measured_children": kids["measured_children"],
+                "max_child_peak": kids["max_child_peak"], "max_child_id": kids["max_child_id"],
+                "concurrent_sessions": concurrent})
+
+    signals = []
+    code = 0
+    if used >= block_at:
         est["verdict"] = "BLOCK"
-        est["reason"] = "a subagent inherits this context and the request would exceed the limit"
+        est["reason"] = f"measured in-flight prompt is within {a.limit - used} tokens of the limit; a dispatch built on this context would exceed it"
         code = 4
-    elif used >= int(a.limit * a.warn_fraction):
+    elif used >= warn_at:
         est["verdict"] = "WARN"
-        est["reason"] = "close enough to the limit that the next dispatch may fail"
+        est["reason"] = f"measured in-flight prompt is within {a.limit - used} tokens of the limit; the next dispatch may fail"
         code = 3
     else:
         est["verdict"] = "PASS"
-        est["reason"] = "room for a dispatch"
+        est["reason"] = "measured in-flight prompt has room for a dispatch"
         code = 0
 
+    if kids["child_at_warn"]:
+        # A long-running child already near the ceiling: the dispatch itself may
+        # be fine, but a follow-up into that child is the recorded failure mode
+        # (TASK-0043 Test Results: the ceiling is touched inside children).
+        signals.append(
+            f"a child session ({kids['max_child_id']}, {kids['max_child_peak']} peak) is at or above the warn line: send a fresh child, not a follow-up"
+        )
+        if code == 0:
+            est["verdict"] = "WARN"
+            est["reason"] = "dispatch is safe but a child of this session is already near the ceiling"
+            code = 3
+    if concurrent:
+        signals.append(
+            f"{len(concurrent)} other session(s) active in this project within {a.active_window} ms: concurrent dispatch chains detected ({', '.join(concurrent[:5])})"
+        )
+        if code == 0:
+            est["verdict"] = "WARN"
+            est["reason"] = "dispatch is safe but another dispatcher session is active; AGENTS.md section 3 dispatches sequentially"
+            code = 3
+
     if a.json:
+        est["signals"] = signals
         print(json.dumps(est))
     else:
         print(
-            "dispatch-gate: {v} session {s} peak {m} over {w} calls, worst jump {g}, dispatcher projection {d}, child projection {n} of {l} ({p:.1f}%). {r}".format(
-                v=est["verdict"], s=est["session_id"], m=est["peak_prompt"], w=est["samples"],
-                g=est["per_call_growth"], d=est["projected_prompt"], n=used, l=a.limit,
-                p=100.0 * used / a.limit if a.limit else 0.0, r=est["reason"],
+            "dispatch-gate: {v} session {s}, measured in-flight prompt {m} over {r} assistant rows ({t} with tokens), transcript sum {tot}, warn at {wa}, block at {ba}, limit {l} ({p:.1f}% of limit). {rs}".format(
+                v=est["verdict"], s=est["session_id"], m=used, r=est["rows"],
+                t=est["rows_with_tokens"], tot=est["total_prompt"], wa=warn_at, ba=block_at,
+                l=a.limit, p=100.0 * used / a.limit, rs=est["reason"],
             )
         )
+        if est["malformed_rows"]:
+            print(f"dispatch-gate: {est['malformed_rows']} assistant row(s) carried no parseable tokens, ids {', '.join(est['malformed_ids'])} (row data not read)")
+        if kids["children"]:
+            print(f"dispatch-gate: {kids['children']} child session(s) measured, largest child peak {kids['max_child_peak']} ({kids['max_child_id']})")
+        for sig in signals:
+            print(f"dispatch-gate: signal: {sig}")
         if code == 4:
             print("dispatch-gate: do not dispatch. Write the handoff into the planning doc's ## Status and continue in a fresh Robotnik session (AGENTS.md r001).")
-        elif code == 3:
+        elif code == 3 and not signals:
             print("dispatch-gate: dispatch at most one more item, then hand off.")
     return code
 

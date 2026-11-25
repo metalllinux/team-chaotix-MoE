@@ -18,11 +18,13 @@ PASS() { CHECKS=$((CHECKS+1)); }
 # Minimum meaningful assertion count, the single home of the selftest floor
 # (TASK-0042 R3 harness fix; scripts/hooks/pre-push and the Team Selftest CI
 # job both read this constant rather than carrying their own). The suite is
-# 76 fixed PASS asserts plus the pytest count (29 at the 2026-11-25 baseline,
-# total 105). pytest is the only component that varies run to run, so 100
-# leaves 5 checks of slack for skipped or deselected tests while failing the
-# moment any meaningful block of asserts disappears. The previous floor was 70,
-# 35 below the real count, and it lived only in a CI job that has never run.
+# 81 fixed PASS asserts plus the pytest count (29 at the 2026-11-25 baseline,
+# total 110 after the TASK-0043 dispatch-gate fix; the header understated the
+# suite by one check before that fix). pytest is the only component that varies
+# run to run, so 100 leaves 10 checks of slack for skipped or deselected tests
+# while failing the moment any meaningful block of asserts disappears. The
+# previous floor was 70, 35 below the real count, and it lived only in a CI job
+# that has never run.
 MIN_CHECKS=100
 
 note() { printf 'selftest: %s\n' "$*"; }
@@ -125,10 +127,15 @@ PASS
 note "licence-check OK"
 
 # --- dispatch gate (dispatcher context ceiling) ---------------------------
-# A subagent inherits the dispatcher's own session context. TASK-0042 lost two
-# dispatches to "request (262191 tokens) exceeds the available context size
-# (262144 tokens)" while every brief was short, so the ceiling is checked here
-# rather than rediscovered by a failed dispatch.
+# A subagent dispatch is built on the dispatcher's own session context.
+# TASK-0042 lost two dispatches to "request (262191 tokens) exceeds the
+# available context size (262144 tokens)" while every brief was short, so the
+# ceiling is checked here rather than rediscovered by a failed dispatch.
+# TASK-0043 review-chain fix: the gate measures the cumulative in-flight prompt
+# (--session required, no inherit ratio, no window, no jump term), and the real
+# read assert treats exit 1 (crash) and exit 2 (broken store/usage) as failures
+# and checks the verdict and the measured peak as data, so a toothless or blind
+# gate can no longer run this suite green (Test Results FAIL 1, M3/M6).
 [ -x scripts/dispatch-gate ] || fail "scripts/dispatch-gate missing or not executable"
 PASS
 scripts/dispatch-gate --help > /dev/null || fail "dispatch-gate --help"
@@ -137,16 +144,90 @@ scripts/dispatch-gate --dry-run > /dev/null || fail "dispatch-gate --dry-run"
 PASS
 note "dispatch-gate interface OK"
 
-# The real read is optional, the session store may not exist in CI. Verdict exits
-# 0 PASS, 3 WARN, 4 BLOCK are all a working gate; only a 2 is a broken one.
+# Finding 2 negative control, this assert is its own control: a real read with
+# no --session must be a usage error (exit 2), not a guess at the caller's
+# session. A gate that still guesses returns a verdict, exit 0/3/4, and fails.
+set +e
+scripts/dispatch-gate --json > /dev/null 2>&1
+DG_BARE_RC=$?
+set -e
+[ "${DG_BARE_RC}" -eq 2 ] || fail "dispatch-gate real read without --session must exit 2 (usage error), got ${DG_BARE_RC}"
+PASS
+
+# The real read is optional, the session store may not exist in CI.
 if [ -f "${HOME}/.local/share/opencode/opencode.db" ]; then
-  set +e
-  scripts/dispatch-gate --latest-agent robotnik --json > /dev/null 2>&1
-  DG_RC=$?
-  set -e
-  [ "${DG_RC}" -le 4 ] || fail "dispatch-gate real read returned ${DG_RC}"
-  PASS
-  note "dispatch-gate real read OK (exit ${DG_RC})"
+  # Resolve a session id with assistant rows, read-only, so --session can be
+  # passed explicitly (the form the fix requires; nothing here relies on the
+  # gate selecting a session itself).
+  DG_SESSION="$(python3 - <<'PY'
+import os, sqlite3
+con = sqlite3.connect(f"file:{os.path.expanduser('~/.local/share/opencode/opencode.db')}?mode=ro", uri=True)
+row = con.execute("SELECT s.id FROM session_v2 s JOIN session_message m ON m.session_id=s.id AND m.type='assistant' GROUP BY s.id ORDER BY MAX(m.time_updated) DESC LIMIT 1").fetchone()
+print(row[0] if row else "")
+PY
+)"
+  if [ -n "${DG_SESSION}" ]; then
+    set +e
+    DG_OUT="$(scripts/dispatch-gate --session "${DG_SESSION}" --json 2>/dev/null)"
+    DG_RC=$?
+    set -e
+    # Exit 0/3/4 are a working gate. 1 is an unhandled crash, 2 a broken store
+    # or usage error: both fail here, which the old `-le 4` accepted.
+    case "${DG_RC}" in
+      0|3|4) PASS ;;
+      *) fail "dispatch-gate real read returned ${DG_RC} (1 crash, 2 broken store or usage error)" ;;
+    esac
+    # The verdict is data, not noise, and the measured peak must equal an
+    # independent read-only recomputation of the same quantity from the store.
+    # A blind gate (reads zero) or a toothless one (verdict never BLOCK/WARN
+    # against a peak above the line) trips one of these three asserts.
+    set +e
+    DG_JSON="${DG_OUT}" python3 - <<'PY'
+import json, os, sqlite3, sys
+out = json.loads(os.environ["DG_JSON"])
+sid = out["session_id"]
+db = os.path.expanduser("~/.local/share/opencode/opencode.db")
+con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+peak = 0
+for (raw,) in con.execute("SELECT data FROM session_message WHERE session_id=? AND type='assistant'", (sid,)):
+    try:
+        d = json.loads(raw or "{}")
+    except (json.JSONDecodeError, TypeError):
+        continue
+    t = d.get("tokens") or {}
+    c = t.get("cache") or {}
+    try:
+        p = int(t.get("input") or 0) + int(c.get("read") or 0) + int(c.get("write") or 0)
+    except (TypeError, ValueError):
+        continue
+    peak = max(peak, p)
+if out["peak_prompt"] != peak:
+    print(f"peak_prompt {out['peak_prompt']} != store recomputation {peak}", file=sys.stderr)
+    sys.exit(1)
+v, warn_at, block_at = out["verdict"], out["warn_at"], out["block_at"]
+if peak >= block_at and v != "BLOCK":
+    print(f"verdict {v} with peak {peak} >= block_at {block_at} must be BLOCK", file=sys.stderr)
+    sys.exit(1)
+if warn_at <= peak < block_at and v not in ("WARN", "BLOCK"):
+    print(f"verdict {v} with peak {peak} >= warn_at {warn_at} must be WARN or BLOCK", file=sys.stderr)
+    sys.exit(1)
+if v not in ("PASS", "WARN", "BLOCK"):
+    print(f"verdict {v} is not a working verdict", file=sys.stderr)
+    sys.exit(1)
+PY
+    DG_XC_RC=$?
+    set -e
+    if [ "${DG_XC_RC}" -eq 0 ]; then
+      PASS
+      PASS
+      PASS
+      note "dispatch-gate real read OK (exit ${DG_RC}, verdict $(printf '%s' "${DG_OUT}" | python3 -c 'import json,sys; print(json.load(sys.stdin)["verdict"])'), peak cross-checked against the store)"
+    else
+      fail "dispatch-gate verdict/peak cross-check failed against an independent store recomputation"
+    fi
+  else
+    note "session store has no assistant rows, dispatch-gate real read skipped"
+  fi
 else
   note "no session store, dispatch-gate real read skipped"
 fi

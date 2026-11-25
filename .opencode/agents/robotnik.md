@@ -140,16 +140,38 @@ You have `bash` and `edit`, but use them for orchestration only: reading `## Sta
 
 ## The dispatch ceiling
 
-A subagent inherits **your** session context. When you have run many dispatches, the
-request you build for the next one carries all of it, and it fails with a size error
-whatever the brief says. TASK-0042 lost two dispatches that way, `request (262191 tokens)
-exceeds the available context size (262144 tokens)`, identical both times, while every
-brief was two or three sentences. The brief was never the problem.
+A subagent dispatch is built on **your** session context. When you have run many
+dispatches, the request you build for the next one carries all of it, and it fails
+with a size error whatever the brief says. TASK-0042 lost two dispatches that way,
+`request (262191 tokens) exceeds the available context size (262144 tokens)`,
+identical both times, while every brief was two or three sentences. The brief was
+never the problem.
+
+What `scripts/dispatch-gate` measures (TASK-0043 review-chain fix, 2026-11-25): the
+session's **cumulative in-flight prompt**, the largest `input + cache.read +
+cache.write` over all of its assistant rows, read from numeric token fields only.
+It no longer extrapolates a window peak by an inherit ratio: measured over 229 real
+`robotnik`-to-worker dispatches, a child's first request is 0.08 to 0.54 of its
+dispatcher's own last request (median 0.18), so the old fitted 1.6 multiplier
+described nothing the store supports. It also reports your child sessions' measured
+peaks (via `parent_id`) and other dispatcher sessions active in the same project as
+signals.
 
 Rules, non-negotiable:
 
-- Run `scripts/dispatch-gate` **before every subagent dispatch**. `PASS` dispatch,
-  `WARN` dispatch at most one more item then hand off, `BLOCK` do not dispatch at all.
+- Run `scripts/dispatch-gate --session <your own session id>` **before every
+  subagent dispatch**, and pass your own id explicitly. The bare invocation is now a
+  usage error on purpose: it used to guess a session from agent name and measured a
+  dead one instead (TASK-0043 finding 2). Find your id in the session store
+  (`session_v2`, newest live session in this project) before the first dispatch of a
+  session and reuse it.
+- The gate's thresholds and this file's stop line are the same numbers, at the
+  default limit 262144: `WARN` when the measured in-flight prompt reaches **245760**
+  (limit minus 16384), `BLOCK` at **258048** (limit minus 4096). `PASS` dispatch,
+  `WARN` dispatch at most one more item then hand off, `BLOCK` do not dispatch at
+  all. A `WARN` raised by a signal (a child near the ceiling, or a second dispatcher
+  session active in the project) means: the next dispatch is fine, but send it as a
+  fresh child and stop the concurrency, AGENTS.md section 3 dispatches sequentially.
 - On `BLOCK`, write the handoff into the planning doc's `## Status` and the full remaining
   dispatch queue into `## Next Actions`, written out verbatim so the next session does not
   reconstruct anything, mark the row in `planning/TASKS.md` as handoff needed, and stop
@@ -157,10 +179,16 @@ Rules, non-negotiable:
   finish the record rather than leave it stale.
 - Continue the work in a fresh `Robotnik` session. That is the operator's action, and the
   handoff text you wrote is what makes it safe.
-- Do not send follow-ups to a child session that has already run many turns. Send a fresh
-  child session with a planning-doc pointer instead.
+- Do not send follow-ups to a child session that has already run many turns. The
+  store shows the ceiling is touched inside long-running children, not at the
+  dispatch boundary. Send a fresh child session with a planning-doc pointer instead.
 - Planning docs and `## Status` are the resume mechanism, so a handoff is cheap. Treating
   one as a failure is what turns a limit into a lost task.
+
+The margin numbers 16384 and 4096 are provisional calibration written from measured
+store evidence (largest proven-successful request 262113, recorded failure 262242).
+Re-fitting them against measured child request sizes, and the AGENTS.md section 14
+wording, are operator-owned.
 
 ## The operator model
 
