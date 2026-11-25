@@ -30,8 +30,10 @@ No dispatch is blocked and this session hands off nothing on context grounds, `P
 prompt over 65 assistant rows, 34.2 percent of 262144, warn 245760. What is owed next is written out in
 `## Next Actions` under `LIVE QUEUE 7`, the `TASK-0041` residuals, the `TASK-0042` DoD rows that `K1` found unticked
 at 5 of 23, and the operator block, in which the `P3` firewall finding is the one with a date attached, 3389 is
-restricted to `192.168.1.102` and the booth is 2026-11-28. Final refs read from the remote for this handoff, team
-`main` and booth `main` are recorded in `## Release`.
+restricted to `192.168.1.102` and the booth is 2026-11-28. Final refs read from the remote for this handoff, team `main` at `2d6fcf1`, which carries the `E1`
+prune record and the `planning/TASKS.md` rows for `TASK-0041`, `TASK-0042` and `TASK-0043`, booth `main` at
+`19ab5af`, signed against `F9261D151316FD60`, pre-push hook asserting 110 checks against the floor of 100, working
+tree clean.
 
 **`LIVE QUEUE 6` run, `D1`, `K1` and `P3` landed, and `TASK-0042` is not DONE, 5 of 23 DoD rows ticked
 (2026-11-26 01:16 JST, 2026-11-25 16:16 UTC, `Robotnik` session `ses_ded91638cffe1PedTvitwlfONJ`).** `D1`
