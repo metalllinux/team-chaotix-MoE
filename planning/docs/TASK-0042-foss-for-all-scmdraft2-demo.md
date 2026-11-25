@@ -13,6 +13,24 @@
 
 ## Status
 
+**`LIVE QUEUE 5` started, `P3` held to 2026-11-26, and the queue runs from item 2 `K7` (2026-11-25 08:49
+UTC, 17:49 JST, `Robotnik` session `ses_dee1f1699ffesLbRe54qYG4oOk`).** Inherited state, all four figures
+verified in this session rather than inherited from the entry below. Team `main` read from the remote at
+`90e2d3ac663a18e229dab30bc093fe778b874e31` (`git ls-remote origin refs/heads/main`), booth `main` read from
+the remote at `7c4fa1658276c5de9b85d70f09952b98171d7f27` (`git ls-remote` through
+`/home/howard/AI/booth-2026/git-askpass-tc.sh`), `git status --porcelain` returns 0 lines, and
+`bash tests/selftest.sh` prints `SELFTEST: 105 checks passed`. `TASK-0044` is closed with all 13 DoD rows
+ticked. **Decision recorded rather than asked, `P3` does not dispatch today.** Today is 2026-11-25, the dry
+run tests venue network reachability rather than this controller's `192.168.1.102` home network, and `LIVE
+QUEUE 5` item 1 says it does not run before 2026-11-26, so it stays queued and item 2 `K7` runs first.
+Standing rulings carried into every brief in this session. `R4`'s verdict is FAIL on the booth repo as
+published at `7c4fa16`, so no dispatch may present that repo as publishable, the repo stays private, the
+public flip is the operator's ruling on `C2` and `C3`, and `R4` did not clear it. Gate before the first
+dispatch, `scripts/dispatch-gate --session ses_dee1f1699ffesLbRe54qYG4oOk`, `PASS`, peak 40820 over 8
+calls, worst jump 5331, dispatcher projection 46151, child projection 73841 of 262144, 28.2 percent. The
+142281 child projection that TASK-0043 records for the dispatch whose real child request reached 262242 is
+the stop line for this session, and dispatching stops when the projection nears it.
+
 **`R3` and `R4` landed, `R4` rules FAIL on the booth repo as published, and this session hands off
 (2026-11-25 05:30 UTC, 14:30 JST, `Robotnik` session `ses_deff17f39ffeWIFPjsEoOfhXQ0`).** Gate at 05:28,
 `scripts/dispatch-gate --session ses_deff17f39ffeWIFPjsEoOfhXQ0`, `PASS`, peak 77008 over 20 calls, child
