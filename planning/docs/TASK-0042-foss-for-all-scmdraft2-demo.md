@@ -3953,6 +3953,131 @@ why `lock_display_devices` now fails on this target.
 
 **Inverse for this pass.** Booth repo, `git revert 1b14562 32194b4 11568ca` restores every file and every row, or by hand `git mv` each of the seven back into `booth-artifacts/`, revert the `PUBLISH-STATUS.md` section and its two rows, revert the two `DEMO-LOG.md` entries, and re-run `python3 /tmp/opencode/t0042/s1c_manifest.py booth-repo`. Team repo, revert my commit and the corresponding `DEMO-LOG.md` entry and restore the doc line from `95e69c9`. No credential, token or password appears in any argv, file, commit, log or planning doc, `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh` supplied both pushes with the credential read at run time by that helper. No game data, no SCMDraft or Wine binary and no third-party binary entered any git-tracked path, and no map on the target was read or written.
 
+### Dispatch P2b, the six-map rebuild cycle re-measured from the durable path, and the durability finding it exposes (2026-11-25 00:42 UTC / 09:42 JST, `Tails`, child session `OPENCODE_SESSION_ID=$OPENCODE_SESSION_ID`)
+
+This pass is the remaining half of `P2` named in the `PRIORITY PREP` block at doc:424-439, "one cycle has
+not yet been re-measured from that path." The move half landed at doc:16-45 (2026-11-24 01:40). The brief is
+the verbatim `P2` brief at doc:431-439, run one full six-map cycle in rebuild mode from the durable path
+`/home/howard/AI/booth-2026/t0042/booth_loop.py`, record per-map non-display overhead and the cycle total
+against the 2232.36 s baseline (doc:3311), and state plainly what the runner writes outside that durable path.
+
+**Finding that had to be closed before the cycle could run at all, `P2`'s move was incomplete for rebuild
+mode.** `booth_loop.py:59` sets `HERE` to the directory holding the script, and `load_mask` at
+`booth_loop.py:258-266` does `sys.path.insert(0, HERE)` then `import rocky` / `import glyph` to plan the
+display frames and measure the mask. `rocky.py:25-29` in turn imports `rocky_svg`, `tux`, `korea`,
+`korea_10m` and `glyph`. The durable copy Robotnik made at 2026-11-24 01:40 holds `booth_loop.py`,
+`build_ts.py`, `mask_png.py`, `t0042-run-dos.sh` and `ts-harvest/`, but it does NOT hold that mask code, so
+`python3 /home/howard/AI/booth-2026/t0042/booth_loop.py` from a bare durable path raised
+`ModuleNotFoundError: No module named 'rocky'` inside `frame_plan`, after transfer and open, mid-cycle on
+the target. A verified probe: `python3 -c "import sys; sys.path.insert(0,'/home/howard/AI/booth-2026/t0042'); import rocky"` answers `ModuleNotFoundError`. The booth `README.md` at booth `e3e2e5a` section 5 gives
+that exact durable-path command as the rebuild-mode booth command and lists no mask-code prerequisite, so a
+booth-day agent following the README would hit the same failure. This is the "map and mask code" the `P2`
+brief at doc:433-434 named and the move left out.
+
+**Completion, copy the six mask modules into the durable path.** `cp -f` of `rocky.py`, `glyph.py`,
+`korea.py`, `korea_10m.py`, `rocky_svg.py`, `tux.py` and `build_map.py` from `/tmp/opencode/t0042` into
+`/home/howard/AI/booth-2026/t0042`, each byte-identical to its `/tmp` source, verified by `sha256sum` pairs
+matching on all seven (`1cc46d99988c54fa`, `d4668da58ffd4749`, `3577aae8f8fcebc3`, `f0259c3292ef17d4`,
+`26e55f8b13c2a402`, `4bc50853f39341e1`, `b5b8f53fc6aa7f24`). After the copy `sys.path.insert(0, durable)`
+then `import rocky` resolves and `rocky.MASKS` lists all six deliverable keys plus the alternate mask keys.
+Controller-side only, non-git path, no target contact, no credential in any argv or file. This is a durable
+copy, not a git-tracked path; `/home/howard/AI/booth-2026` reports `fatal: not a git repository`
+(`git rev-parse --show-toplevel`), so the exclusion rule (no game data, no SCMDraft or third-party binary,
+no harvested reference CHK in a git-tracked path) is not engaged by copying mask code here.
+
+**Alternatives considered for making the durable runner runnable.**
+- Option A (chosen), copy the mask modules into the durable path so `load_mask(HERE)` resolves them, and
+  run the canonical booth command unchanged. Faithful to the `P2` brief ("the map and mask code"), finishes
+  the move, and makes the durable directory genuinely hold what the frame planner reads.
+- Option B, invoke the durable runner with `PYTHONPATH=/tmp/opencode/t0042`. Gets a measurement without
+  copying anything, but it makes the run depend on the very path the move exists to escape, and it does not
+  fix the booth README command. Rejected.
+- Option C, edit `booth_loop.py`'s `load_mask` to also insert `WORK_DIR` on `sys.path`. A code change to the
+  runner mid-measurement; the brief is a re-measurement, not a runner edit. Rejected for this pass.
+
+**Alternatives considered for the build step and the reference CHK, reported not silently patched.**
+Rebuild mode runs `build_ts.py` as a subprocess from `{HERE}/build_ts.py` (`booth_loop.py:655`), and the
+durable `build_ts.py` is byte-identical to `/tmp`'s (`3ca7535988ab9055`), but it hardcodes
+`sys.path.insert(0, "/tmp/opencode/t0042")` at `build_ts.py:22` and `HERE = "/tmp/opencode/t0042"` at
+`build_ts.py:25`, so the build imports `rocky`, `glyph` and `build_map` and runs the `mkmpq` binary from
+that hardcoded path regardless of where `build_ts.py` itself sits. The reference CHK itself is read from the
+durable path (`booth_loop.py:647`, `{HERE}/ts-harvest/ref-era6.chk`, `d7afd6a5...` verified). The open
+durability gap, the build step still reaches into `/tmp`, which is age-cleaned at 10 days
+(`/usr/lib/tmpfiles.d/tmp.conf:11`), so a booth-day rebuild run from an age-cleaned `/tmp` would fail at the
+build step even though the runner, the mask code and the reference CHK are durable. Fixing it means making
+`build_ts.py`'s `HERE` derive from `__file__` and copying `mkmpq` into the durable path, a runner/code change
+outside this re-measurement brief; it is recorded here as the follow-up, not applied. `mkmpq` is left in
+`/tmp` for this run (`ad4a0328ab054e75`, team-built StormLib wrapper, non-git durable path would be lawful
+to hold it but `build_ts.py` would not look there without the edit).
+
+**Measured six-map rebuild cycle from the durable path, tag `P2L1`, rc 0, wall 00:50:23 to 01:27:39 UTC.**
+Cycle cost **2231.57 s** against the 2232.36 s baseline at doc:3311, 0.79 s lower, 0.04 percent. Components
+`maps_total` 2158.29 + `cycle_steps` 1.25 + `paint` 72.03. Per-map totals 356.02, 361.98, 361.97, 361.99,
+353.88, 362.45 s. Per-map non-display overhead **43.88 to 44.41 s**, against the baseline 43.88 to 44.36 s;
+`zoom_set` 14.44 to 15.09 s against baseline 14.51 to 15.05 s. Cycles that fit, computed from this measured
+cost, 1 in one hour, 3 in two, 4 in three, identical to the baseline. The move and the mask-code copy cost
+the cycle no measurable time. Every `S1a`/`S1b` property held on all six maps, all six rebuilt to their
+recorded SHA-256 before transfer, re-matched on the target, `NO_SCM_RUNNING` and `REMOVED` at each teardown,
+zoom verified from pixels, palette re-derived 839/968, paint median WCAG 6.267, and the six deliverable
+originals in `/home/howard/scmdraft-maps` read back at their recorded hashes with pre-cycle mtimes, so the
+cycle wrote to none of them. Report `/tmp/opencode/t0042/P2_cycle_report.json`, 88 `P2L1` records.
+
+**Plain answer, does anything the runner writes land outside the durable path. Yes, almost all of it.** Run
+with the canonical booth command, which leaves `CHAOTIX_T0042_WORK` and `CHAOTIX_T0042_INJECTOR` at their
+`/tmp/opencode/t0042` defaults (`booth_loop.py:62,65`), the durable path holds only what the cycle reads
+(`booth_loop.py`, `build_ts.py`, the mask modules, `ts-harvest/ref-era6.chk`) plus a `__pycache__` directory
+(7 `.pyc`, 168 KB) that importing the mask code wrote inside it via `load_mask`'s `sys.path.insert(0, HERE)`.
+Everything the cycle writes landed in `/tmp/opencode/t0042`, not the durable path, verified after the run, 0
+captures and 0 build artifacts under the durable path: the 52 `P2L1-*` capture PNGs and the `_title.png` /
+`_status.png` OCR crops (`capture`, `title_bar`, `status_readout`, `booth_loop.py:744,755,183`), the six
+rebuilt `.scm` and `.chk` in `WORK_DIR/s1a-build` (`booth_loop.py:66,646`), the appended `s1a-run-log.jsonl`
+(88 records, `booth_loop.py:67,137`), the `P2_cycle_report.json` (`booth_loop.py:68,942`), and a second
+`__pycache__` (22 `.pyc`) in `/tmp` written by `build_ts.py`'s hardcoded `sys.path.insert(0,
+"/tmp/opencode/t0042")` imports. The injector `rdp-input` plus the `rdp-args` credential are read from
+`/tmp/opencode/t0042`, deliberately not durable (a credential does not belong in a directory that outlives
+the 10-day `/tmp` window). On the target the cycle writes to `C:\Maps\` (loop copies removed at teardown,
+seven `Scm*.tmp` backups left named, scratch backed up to `.pre-s1a` and restored) and to target `/tmp` (52
+capture PNGs left named). Net effect, the durable path made the runner and the reference CHK survive the
+age-clean window, but it did not move the runner's writes; a booth-day run with `/tmp` age-cleaned would still
+write its captures, build output, log, report and the build-step mask imports into a fresh `/tmp`, and
+`build_ts.py` would still fail to find `rocky`, `glyph`, `build_map` and `mkmpq` there. Making the durable
+path self-sufficient for a booth-day rebuild run means setting `CHAOTIX_T0042_WORK` to the durable path,
+deriving `build_ts.py`'s `HERE` from `__file__`, copying `mkmpq` into the durable path, and building the
+injector there per the README section 5 step 2, none of which this re-measurement brief authorized.
+
+**Checks that ran, with the command that produced each figure.** `python3 booth_loop.py --maps <six> --loops
+1 --display-seconds 300 --tag-prefix P2`, rc 0, report `P2_cycle_report.json`. `python3 booth_loop.py
+--stability` reads the six target deliverable originals at their recorded SHA-256 with mtimes 2026-11-20
+06:03 to 2026-11-21 19:28. `sha256sum` pairs match on the seven copied mask modules before running. The
+target read `pgrep -af "ScmDraft[ ]2"` answers `NO_SCM_RUNNING`; `find ... -name "Scm*.tmp"` names the seven
+backups at 4301926 B; `du -sb C:\Maps` reads 4404854 B after; `df -B1 /` reads 65289039872 B avail after.
+
+**Checks that did NOT run, named.** `--loops 1`, so loop-to-loop drift inside a booth session is not
+measured and the 1/2/3-hour fits are arithmetic on one measured cycle, as in `S1b`. No independent agent read
+this pass's captures and no blind reader, that belongs to the review chain. `V1`'s map-validation dialog was
+not re-run and the `L5` editor save chain was not re-run, no save was performed, per the 2026-11-21 08:40
+decision. No per-frame WCAG on deliverable frames, census and glyph share only. `scripts/dispatch-gate` is
+the dispatcher's step and was not run by me. `scripts/licence-check` did not run in this pass, defensible
+because no file's bytes entered a git-tracked repo (the team-repo commit is this planning doc and
+`DEMO-LOG.md` only) but it is a check that did not run. The booth-published `DEMO-LOG.md`, `MANIFEST.md` and
+`PUBLISH-STATUS.md` in the booth repo were not updated or regenerated in this pass, this pass records to the
+team-repo master `DEMO-LOG.md`, named as not run. The durability follow-up (edit `build_ts.py` to derive
+`HERE` from `__file__`, copy `mkmpq` into the durable path) was recorded and deliberately not applied. Whether
+the target captures land on `/` or a tmpfs-backed `/tmp` was not verified, and the 9711616 B `/` consumed does
+not equal the 4301926 B backups plus 7221732 B captures, the difference left unattributed as in the earlier
+1448858 B record. `P3`, the venue reachability dry run scheduled 2026-11-26, did not run here.
+`tests/selftest.sh` runs only through the `scripts/hooks/pre-push` hook on the team-repo push; its check
+count is read after the push, not before.
+
+**Competing priorities, what was traded.** Run with default `WORK_DIR` to reproduce the exact command a
+booth-day agent will run, trading a tidy write-location against a durability finding that is actually true.
+Completed the move by copying the mask modules, trading faithfulness to the `P2` brief's "map and mask code"
+against editing `load_mask`/`build_ts.py` mid-measurement, and accepted that the build step still reaches
+`/tmp`, reported rather than silently patched. Left the injector credential out of the durable path, trading
+booth-day convenience against not persisting a credential past the 10-day window.
+
+**Inverse for this pass.** Durable path, `rm -f /home/howard/AI/booth-2026/t0042/{rocky,glyph,korea,korea_10m,rocky_svg,tux,build_map}.py` and `rm -rf /home/howard/AI/booth-2026/t0042/__pycache__` returns the durable directory to its 2026-11-24 move state, though that re-breaks the booth rebuild command, so it is recorded and not recommended. Controller, the rebuilt `.scm` and `.chk` in `/tmp/opencode/t0042/s1a-build` and the captures carry the runner's own per-step `rm -f` inverses in the run log. Team repo, revert this commit and the two `DEMO-LOG.md` entries and restore the planning-doc entry. Target, the residue inverse named in `DEMO-LOG.md` 01:27, no deliverable or scratch content changed net. No credential, token or password appears in any argv, file, commit, log or planning doc, `sshpass -f ~/AI/secrets/scm_draft_pass.md` supplied the target password at run time only and `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh` supplies the push. No game data, no SCMDraft or Wine binary and no harvested reference CHK entered any git-tracked path.
+
 ---
 
 ## Review
