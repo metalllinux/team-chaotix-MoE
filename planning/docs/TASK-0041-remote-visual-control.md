@@ -848,6 +848,334 @@ ruling on `C2` and `C3`. Nothing in this pass changes that posture.
 
 ---
 
+### First RDP channel test, `Omega` finding 2 (2026-11-25 23:45 UTC, 2026-11-26 08:45 JST, `Tails`, dispatch `T6`)
+
+Brief: `TASK-0042` `## Next Actions` `LIVE QUEUE 8` item 1. `Omega` finding 2 at
+`## Security:922-924` had never had a channel test run against it and `K1` carries it as
+release blocker 3 for the 2026-11-28 booth. Four questions answered: the certificate the
+daemon actually presents, what `xfreerdp /cert:ignore` accepts and what it discards, whether
+the same-subnet path is interceptable, and the booth-day mitigation.
+
+Hygiene items at `## Status:22-25` were read first and none were acted on. Item 1 is the
+operator's `chmod`. Item 2 is closed by `K6`. Item 3 was re-read on the target today:
+`gsettings get org.gnome.desktop.screensaver lock-enabled` returns `false`, still open, and
+it is the operator's posture call.
+
+Verification tooling lives at `/home/howard/AI/booth-2026/t0042` (not a git repository, so
+nothing there is committed). No team-repo file changed except this section and the
+`DEMO-LOG.md` entry for the test. No file was created, changed or removed on the target, and
+no target-side command in this pass wrote anything.
+
+| Tool | What it does |
+|---|---|
+| `t6_tls_probe.py` | Sends a TPKT/X.224 Connection Request with an `RDP_NEG_REQ`, then does the TLS handshake with verification on or off, dumps the peer certificate DER, prints fingerprints, TLS version and cipher. Sends no credential. |
+| `t6_attacker_endpoint.py` | Controller-side loopback endpoint, four roles: `dump` (print the client's cleartext connection request), `serve` (terminate TLS with an attacker certificate, no upstream), `passthrough` (raw byte relay, TLS stays end to end), `mitm` (terminate TLS with the attacker certificate and open its own TLS session to the real listener). Logs structure only. |
+| `t6_cert_matrix.sh` | Runs `xfreerdp` against `serve` with every `/cert:` option, in both argument forms. Credential is the literal dummy `dummy-not-a-secret`. |
+| `t6_target_cert_matrix.sh` | Same option set against the live listener at `192.168.1.99:3389`, `/auth-only`, credential read at run time into a mode 600 argument file. |
+| `t6_mitm_run.sh` | One `mitm` or `passthrough` run against the live listener with a real client. |
+| `t6_ssh_tunnel_test.sh` | The mitigation probe: RDP carried inside the pinned SSH connection. |
+| `t6_cleanup.sh` | Removes every argument file and the attacker key pair this pass created, then verifies. |
+
+**Network position, measured before any RDP run.**
+
+```
+ip -4 -o addr show                                    controller: virbr0 192.168.1.102/24
+ip route get 192.168.1.99                             192.168.1.99 dev virbr0 src 192.168.1.102
+ip neigh show 192.168.1.99                            d4:93:90:04:4a:7f STALE
+bridge link show                                      enp2s0 master virbr0 state forwarding
+                                                      vnet0, vnet1 master virbr0
+ip -d link show virbr0                                promiscuity 0, stp_state 1, fdb_n_learned 16
+ip -d link show vnet0                                 promiscuity 1
+virsh list                                            Rocky_Linux_9_Cinnamon, Linux_Mint_22-3,
+                                                      Fedora_45_Cinnamon_Howards, all running
+target, over pinned ssh: ip -4 -o addr show            enp2s0 192.168.1.99/24
+target, over pinned ssh: ip neigh show 192.168.1.102   192.168.1.102 dev enp2s0
+                                                       lladdr d4:93:90:05:50:5a DELAY
+```
+
+Controller and target are on one IPv4 broadcast domain and resolve each other by ARP directly,
+no router between them. The controller reaches the LAN through its own bridge `virbr0`, whose
+forwarding ports include the physical NIC `enp2s0`, so the controller is itself an L2
+participant in the segment it is testing. ARP entries on both ends are dynamic (`DELAY`), so
+ARP and MAC spoofing are available to any host on the segment. Three desktop VMs sit on the
+same bridge with their taps in promiscuous mode. The controller's own MAC on the segment is the
+bridge MAC `d4:93:90:05:50:5a`, which is what the target has learned for `192.168.1.102`.
+
+**1. The certificate the daemon actually presents.**
+
+Target side, read-only:
+
+```
+XDG_RUNTIME_DIR=/run/user/1000 grdctl status
+  TLS certificate: /home/howard/.config/gnome-remote-desktop/tls-cert.pem
+  TLS fingerprint: 84:b1:2d:76:aa:e3:93:93:7a:27:dc:a9:76:7e:fa:76:85:77:83:52:f1:c1:b0:a6:b9:19:b6:07:9f:18:ba:b4
+  Authentication methods: credentials, View-only: no, Negotiate port: yes
+openssl x509 -in ~/.config/gnome-remote-desktop/tls-cert.pem -noout -subject -issuer -dates -serial -fingerprint -sha256
+  subject=CN=scmdraft2-map-creator   issuer=CN=scmdraft2-map-creator   (self-issued)
+  notBefore=Nov 13 13:31:57 2026 GMT   notAfter=Feb 15 13:31:57 2029 GMT
+  serial=2292586FA9F433C288E1BE5311341BE8A6116C2D
+  sha256 Fingerprint=84:B1:2D:76:...:BA:B4
+stat -c '%a %U:%G %s %n' ~/.config/gnome-remote-desktop/tls-cert.pem ~/.config/gnome-remote-desktop/tls-key.pem
+  644 howard:howard 1176 tls-cert.pem   600 howard:howard 1704 tls-key.pem
+```
+
+Controller side, `python3 t6_tls_probe.py --host 192.168.1.99 --mode none --req 2 --dump ...`:
+
+```
+peer_cert_bytes=826
+sha256=84b12d76aae393937a27dca9767efa7685778352f1c1b0a6b919b6079f18bab4
+sha1=52342b4b15fdca4b7d6ff6455e519e6d98de1bef
+tls_handshake=OK version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 alpn=None compression=None
+openssl x509 -inform der -in /tmp/opencode/t0041/target-rdp-cert.der -noout -text
+  Signature Algorithm: sha256WithRSAEncryption, Public Key: rsaEncryption (2048 bit)
+  Extensions: Subject Key Identifier, Authority Key Identifier, Basic Constraints critical,
+  Extended Key Usage. No Subject Alternative Name.
+```
+
+The certificate the daemon presents on the wire is byte-identical to the file on disk: the
+SHA-256 of the 826-byte DER the probe captured equals the `grdctl status` TLS fingerprint and
+the `openssl -fingerprint` of `tls-cert.pem`. It is self-signed and self-issued, CN
+`scmdraft2-map-creator`, RSA 2048, sha256WithRSAEncryption, valid 2026-11-13 to 2029-02-15,
+serial `2292...6C2D`, with **no Subject Alternative Name**, so no name in it can ever match the
+address `192.168.1.99` a client connects to. The public certificate is mode 644 and the key is
+mode 600.
+
+Negotiation, same probe with `--mode negotiate`, requestedSecurity as the last four bytes:
+
+```
+req 0x001 SSL only     reply_raw=0ed000000000000300080005000000  NEG_FAILURE value 0x05
+req 0x002 HYBRID       reply_raw=0ed00000000000020b080002000000  NEG_RSP selected 0x02
+req 0x008 HYBRID_EX    reply_raw=0ed00000000000020b080008000000  NEG_RSP selected 0x08
+req 0x00b all (FreeRDP default)                       NEG_RSP selected 0x08
+```
+
+Reading: the daemon refuses TLS-without-NLA and answers failure code 5, which is
+`HYBRID_REQUIRED_BY_SERVER` in MS-RDPBCGR 2.2.1.2.3. Offered NLA it selects HYBRID, and
+against the FreeRDP default request set it selects HYBRID_EX (`0x08`). FreeRDP's own request
+bytes confirm the field layout I used, captured with `--role dump`: `/sec:tls` sends
+`...0100080001000000`, `/sec:nla` sends `...0100080003000000`, `/sec:ext` sends
+`...010008000b000000`. The daemon then runs CredSSP, visible client-side as
+`[ERROR][com.winpr.sspi.Kerberos] - kerberos_AcquireCredentialsHandleA` in the log of a real
+run. Caveat recorded rather than smoothed over: the 8-octet `RDP_NEG_*` field I read out of
+these frames lays out as type, flags, length, security, and MS-RDPBCGR 2.2.1.2.1 documents a
+2-octet type; the semantics above are self-consistent across all four frames and against the
+client's own behaviour, and a later pass can settle the field table against the spec text.
+
+TLS is TLS 1.3 with `TLS_AES_256_GCM_SHA384`, so confidentiality and integrity of the session
+are present in every mode tested, including `/cert:ignore`. What is absent in every mode is
+authentication of *which* key the client is talking to.
+
+**2. What `xfreerdp /cert:ignore` accepts and what it discards.**
+
+Local matrix against the `serve` endpoint, which presents an attacker-generated self-signed
+certificate, CN identical to the target's (`CN=scmdraft2-map-creator`) plus a SAN the target
+certificate does not have, SHA-256 `607bbe3e7c21724a801a2a2afd42cbcc47d257ab8f15b0bab7a7244560ca449d`,
+with the dummy credential, `SELECT=1` (SSL selected) and `SELECT=2` (HYBRID selected), results
+identical under both:
+
+| `/cert:` option | client outcome |
+|---|---|
+| `ignore` | no verification warning, client proceeds past TLS |
+| `fingerprint:sha256:<matching>` | no verification warning, client proceeds |
+| `fingerprint:sha256:<non-matching>` | `certificate not trusted, aborting`, `ERRCONNECT_TLS_CONNECT_FAILED` |
+| `deny` | `certificate not trusted, aborting`, no prompt |
+| none given | `Do you trust the above certificate? (Y/T/N)` prompt, then abort: `Error: Could not read answer from stdin` |
+
+Target matrix against the live listener, six cases, every case `/auth-only`, credential read
+at run time, `grep -c '^$'` reports 0 blank lines in every argument file:
+
+| `/cert:` option | rc | client outcome | `verify_cb` warnings logged |
+|---|---|---|---|
+| `ignore` | 0 | `ERRCONNECT_CONNECT_CANCELLED`, `Authentication only, exit status 1` | 0 |
+| `fingerprint:sha256:84b1...bab4` | 0 | same as `ignore` | 0 |
+| `deny` | 143 | `certificate not trusted, aborting`, `ERRCONNECT_TLS_CONNECT_FAILED` | 2 |
+| `fingerprint:sha256:0000...0000` | 143 | prompt, then `certificate not trusted, aborting` | 2 |
+| none given | 143 | prompt, then `certificate not trusted, aborting` | 2 |
+| `ignore /sec:tls` on one line | 22 | parse failure, see the packaging facts below | n/a |
+
+`rc 0` with `ERRCONNECT_CONNECT_CANCELLED` is the `/auth-only` shape: the connection sequence
+and the credential exchange complete and FreeRDP cancels before opening a session. A
+certificate rejection is distinguishable by `ERRCONNECT_TLS_CONNECT_FAILED` plus the
+`certificate not trusted, aborting` line, and `verify_cb` count 0 versus 2 separates "the
+client never looked at the certificate" from "the client looked and refused it".
+
+So `/cert:ignore`, in the packaged position:
+
+- Accepts any certificate, including a lookalike self-signed certificate carrying the same CN
+  as the target. `FreeRDP 3.32.2` help states `ignore` "overrules all other options", and the
+  matrix confirms it: with `ignore` set, no verification code runs at all.
+- Discards chain and trust validation (the strict path reports OpenSSL verify code 18,
+  `self-signed certificate`, measured with `t6_tls_probe.py --mode chain` and `--mode
+  chainname`), discards name matching (the target certificate has no SAN and its CN
+  `scmdraft2-map-creator` never matches `192.168.1.99`; the strict client logs the full
+  `CERTIFICATE NAME MISMATCH` banner), and discards the only signal that would tell the
+  operator that something else is answering port 3389.
+- Does not discard TLS 1.3 encryption, and does not change the credential exchange, which is
+  CredSSP/NLA because the daemon forces it.
+- Expiry checking was not separately tested, named as not run.
+
+Two packaging facts found while building the matrix, both live traps for `rt-lib`'s argument
+lines (`scripts/remote/rt-lib:161-172`):
+
+1. `/args-from:` cannot be combined with any other argument:
+   `/args-from:file:/tmp/.../probe-args2 /v:127.0.0.1:3398` fails with
+   `can not be used in combination with other arguments!`. Everything, including `/v:`, has to
+   live in the file. `rt_rdp_args` already emits `/v:` ✓.
+2. A blank line inside an `/args-from` file silently drops every argument after it, with no
+   error. My first target matrix hit exactly that (a stray newline after the credential line
+   made `/cert:ignore` and `/auth-only` never apply, and the run behaved as if no certificate
+   option had been given, prompting and aborting). Two space-separated arguments on one line
+   are parsed as one value: `/cert:ignore /sec:tls` on a line yields
+   `Command line parsing failed at 'cert' value 'ignore /sec:tls'`. `rt_rdp_args` already emits
+   one argument per line ✓, and the team's own C tools parse the file themselves
+   (`scripts/rdp-input.c:63-79`), so they are not exposed to this. The exposure is any future
+   `xfreerdp /args-from:` use, which `## Next Actions:76` names as a chosen path.
+
+**3. Is the same-subnet path interceptable?**
+
+Cleartext exposure, measured. The connection request is not encrypted, and it carries the
+username. Captured with `t6_attacker_endpoint.py --role dump`, client `/u:howard`:
+
+```
+hex=0300002c27e00000000000436f6f6b69653a206d737473686173683d686f776172640d0a010008000b000000
+decoded: Cookie: mstshash=howard
+```
+
+Any host on the segment sees, in the clear, that RDP is happening, that the client is FreeRDP
+requesting SSL+HYBRID+RDP, and the username `howard`. That is a real credential-adjacent
+disclosure on the booth LAN: the username is the same `howard` that has passwordless sudo on
+the target.
+
+Active-position test, `ROLE=mitm bash t6_mitm_run.sh`, xfreerdp aimed at a relay on
+`127.0.0.1:3399` that terminates TLS with the attacker certificate and opens its own TLS
+session to `192.168.1.99:3389`, client with `/cert:ignore`:
+
+```
+client rc=141, ERRCONNECT_CONNECT_TRANSPORT_FAILED, no verify_cb line, no prompt
+relay: client_accepted_tls=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384
+       attacker_cert_offered_sha256=607bbe3e...449d
+       upstream_cert_sha256=84b12d76...bab4, upstream_cert_is_attacker_cert=false
+       frames 0, bytes 0, client_info_pdu -1, username offsets -1,
+       credential presence: absent (ascii and utf-16le)
+       pump_error=upstream_to_client:TimeoutError
+```
+
+The client accepted the attacker certificate and completed a TLS 1.3 session with it silently.
+That is the core of `Omega` finding 2 confirmed: the packaged posture cannot tell the target
+from a substituted endpoint. In this run the credential did **not** reach the relay: nothing
+crossed, and no Client Info PDU appeared.
+
+Control run, `ROLE=passthrough bash t6_mitm_run.sh` with the same relay not terminating TLS,
+so the client still talks to the target certificate end to end:
+
+```
+client rc=0, ERRCONNECT_CONNECT_CANCELLED
+relay: bytes={'client_to_upstream': 5043, 'upstream_to_client': 348547}
+```
+
+The relay plumbing is sound and a full authenticated connection runs through it. So the
+failure in the `mitm` run belongs to the substituted-certificate path, not to the relay.
+
+Named and unresolved, for `O1`: why the relayed credential exchange stopped. Two candidate
+explanations, neither proven in this pass. (a) The daemon's mandatory NLA is doing the work
+`/cert:ignore` does not: CredSSP binds the credential to the TLS channel, so a middle endpoint
+that terminates TLS separately on each side breaks the binding and the target refuses. If that
+is the reason, the credential-theft half of finding 2 does not reproduce against this daemon,
+while the "client cannot authenticate the server" half stands. (b) This relay is not a
+faithful CredSSP man-in-the-middle: it forwards the client's post-TLS bytes verbatim into its
+own separate TLS session, which is the right shape for HTTP-over-TLS and may not be for
+CredSSP record ordering. `grd`'s HYBRID_EX choice (early user info before CredSSP completes)
+makes (b) plausible. Distinguishing them needs a CredSSP-aware attacker endpoint or a wire
+capture, neither run here.
+
+Passive bound, reasoned from measured handshake structure, not measured on the wire: TLS 1.3
+encrypts the handshake after `ServerHello`, so a passive same-segment observer sees the
+cleartext preamble above (including the username) and then AEAD ciphertext, not the
+certificate and not the credential. TLS 1.3 was the negotiated version in every run.
+
+**4. Booth-day mitigation for 2026-11-28, with the recommended one prototyped.**
+
+Recommended, measured end to end by `bash t6_ssh_tunnel_test.sh`: carry RDP inside the SSH
+connection that is already host-key-pinned by `scripts/remote/known_hosts`, and drop
+`/cert:ignore` in favour of the pinned fingerprint.
+
+```
+sshpass -f ~/AI/secrets/scm_draft_pass.md ssh -o StrictHostKeyChecking=yes \
+  -o UserKnownHostsFile=scripts/remote/known_hosts -o ExitOnForwardFailure=yes \
+  -N -L 127.0.0.1:3401:127.0.0.1:3389 howard@192.168.1.99        # inverse: kill the pid
+ss -tln | grep -c 3401                                            1
+t6_tls_probe.py --host 127.0.0.1 --port 3401 --mode none --req 2  sha256=84b12d76...bab4
+tunneled_cert_same_as_direct=yes
+xfreerdp /args-from:file:.../args-pin   # /cert:fingerprint:sha256:84b1...bab4, no /cert:ignore
+  pin rc=0   result=[Authentication only, exit status 1 ERRCONNECT_CONNECT_CANCELLED]
+xfreerdp /args-from:file:.../args-ignore # /cert:ignore
+  ignore rc=0
+kill $ssh_pid ; ss -tln | grep -c 3401                            0
+```
+
+Why this is the recommendation and not just an option:
+
+- The 3389 traffic no longer crosses the LAN at all. It reaches the listener from the target's
+  own loopback, which the firewall does not filter through the `public` zone rule, so the
+  `P3` blocker (the rich rule admitting only `192.168.1.102`, and the venue question that
+  goes with it) stops being a blocker for the loop. The booth machine needs SSH 22 reachability
+  and nothing else. `192.168.1.102`'s rich rule can then be narrowed or removed after the
+  event, which is the operator's call.
+- The pinned-fingerprint run succeeds without `/cert:ignore`, measured, so `/cert:ignore` can
+  come out of `rt_rdp_args` (`scripts/remote/rt-lib:164` dry-run form and `:170` real form)
+  without breaking the loop. The pin is the fix `Omega` named as secondary and it works.
+- Removing `/cert:ignore` without adding a pin would break the booth run: with no `/cert:`
+  option at all the client prompts interactively and aborts when stdin is not a terminal,
+  measured twice. So the change is a substitution, not a deletion.
+- Defence in depth: pin plus tunnel. The pin still cannot survive an attacker who holds the
+  SSH path, and the tunnel still cannot survive a compromised target user account; together
+  they remove the unauthenticated LAN channel, which is the thing finding 2 is about.
+
+Alternatives considered and the reason each was not chosen. `/cert:deny` alone: measured abort
+against a self-signed certificate, so it would require replacing the daemon's certificate with
+one from a CA the controller trusts, a target-side change bigger than a tunnel and outside this
+brief. `/cert:tofu`: available in FreeRDP 3.32.2 and would record the certificate on first
+contact, not tested, and it writes state under `~/.freerdp` (verified absent on this controller
+today), so a booth-day machine would need its own first-contact run, which is exactly the
+silent-accept window finding 2 is about. Replacing the self-signed certificate with a
+CA-signed one: no CA on the LAN, out of scope.
+
+**Target state accounting for this pass.** Read-only commands plus RDP connections.
+`loginctl list-sessions --no-legend` before: 4 rows, newest `427`; after the battery: 4 rows,
+newest `428`; after the tunnel test: 4 rows, newest `430`, so the ephemeral session id advances
+and the count does not. `ss -tn state established "( sport = :3389 )"` returns no rows after
+the runs. `sudo -n firewall-cmd --list-rich-rules` on the target returns exactly the one rule
+recorded at `DEMO-LOG.md:131-135`, unchanged. `ls /tmp/t6*` on the target answers `No such file
+or directory`, nothing was written there. `lock-enabled` is `false`, unchanged from the state
+`DEMO-LOG.md:136-137` records. Per rule r002 nothing here is reset.
+
+**Checks that did not run, named.** No packet capture on the wire, `tcpdump`, `tshark` and
+`socat` are absent on this controller, so the passive bound is argued from the TLS 1.3
+handshake structure and not observed. No third observer was placed on the segment, so bridge
+forwarding behaviour toward the three VMs on `virbr0` is not measured. No ARP or MAC spoofing
+was attempted. No CredSSP-aware attacker endpoint was written, so the mitm result above is one
+measured outcome with an unresolved mechanism. Expiry handling with a deliberately expired
+certificate was not tested. No CVE or advisory lookup against `freerdp-libs-3.32.2-1.el10_2`.
+`/cert:tofu` not exercised. `shellcheck` absent, so the new shell tooling was not linted.
+`scripts/licence-check` not re-run, `Charmy` owns it, and note that the new files are MIT
+SPDX-headed but live outside any git repository. `tests/selftest.sh` re-run for the push gate,
+recorded in `DEMO-LOG.md`; no assert was added for this test because the tooling is not in the
+repo.
+
+**Where this leaves `Omega` finding 2, stated in my own section because it changes the
+evidence base for it.** The claim "the channel does not authenticate the server" is confirmed
+measured. The claim that a network-position attacker who answers 3389 thereby "receives the
+credential and gains a live input channel" did not reproduce in the one active-position test
+run here, and the likely reason is the daemon's mandatory NLA/CredSSP rather than anything the
+team configured. The mechanism is named as unresolved above. Both fixes `Omega` asked for now
+have measured prototypes at `/home/howard/AI/booth-2026/t0042`: the SSH tunnel and the
+fingerprint pin. Neither is landed in `scripts/remote/rt-lib`; that is a code change for a
+dispatch with `Shadow` in the chain, and it is a small one.
+
+Written 2026-11-25 23:45 UTC (2026-11-26 08:45 JST).
+
+---
+
 ## Review
 
 *Owner: `Shadow`. Read-only — findings only, no edits. Severity order, blockers first.*
