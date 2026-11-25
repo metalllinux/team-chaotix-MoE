@@ -861,6 +861,82 @@ Written 2026-11-25 10:12 UTC (2026-11-25 19:12 JST).
 
 *Owner: `Omega`. Read-only. Severity order.*
 
+### T2 security read (2026-11-25 10:42 UTC, 19:42 JST, `Omega`, dispatch `T2`)
+
+Read-only. No target contact. No credential value read or printed. Modes read by path only. Findings in severity order.
+
+---
+
+### Status of TASK-0042 findings 1, 2, 3, and 8 against `scripts/remote/rt-lib`
+
+**Finding 1, SSH host key verification off while `sshpass -f` hands the password. CLOSED by `K6` at `3e43d2a`.**
+
+`rt-lib:38` now carries `StrictHostKeyChecking=yes` plus two `UserKnownHostsFile` options, the pinned file at `scripts/remote/known_hosts` first and the operator's own `~/.ssh/known_hosts` second. Three ED25519, RSA, and ECDSA keys for `192.168.1.99` are published in `scripts/remote/known_hosts` with fingerprints and provenance in comments. The selftest at `tests/selftest.sh` asserts no file under `scripts/` carries `StrictHostKeyChecking=no` (verified: `grep -rn 'StrictHostKeyChecking' scripts/` returns only `yes` and `accept-new`). Positive proof recorded in K6's entry: `rt-status --host 192.168.1.99` returns the hostname through the pin, and byte-flipped keys produce `ssh rc 255` with `Host key verification failed` before the password is sent. Closed.
+
+**Finding 2, `/cert:ignore` baked into the RDP argument template. STAYS OPEN.**
+
+`rt_rdp_args` at `rt-lib:164` (dry-run) and `rt-lib:170` (real form) still emit `/cert:ignore`. No RDP channel test has run in any pass. K6's named-not-run list states this explicitly. The attack posture is unchanged from `R2`: the channel that carries the plaintext RDP credential does not authenticate the server, and a network-position attacker who answers 3389 receives the credential and gains a live input channel to the session. The recommended fix (tunnel 3389 over the already-pinned SSH connection, eliminating both the listener and the unauthenticated TLS layer) has not been implemented. The secondary fix (pin the certificate thumbprint and replace `/cert:ignore`) has not been implemented. No selftest asserts the absence of `cert:ignore` in a credential-bearing tool. This finding is open pending either the tunnel or the certificate pin, and it is load-bearing for the booth because the 3389 firewall rule at `DEMO-LOG.md:131-135` restricts to an address the controller will not hold at the venue, so the booth-day firewall change is foreseeable and finding 4 (TASK-0042) records the dangerous branch.
+
+**Finding 3, world-readable copy of the pre-existing grd credentials. CLOSED by `K6` at `3e43d2a`.**
+
+K6 landed the target-side mode change: `sudo chmod 700` on `/home/howard/AI/demo-backup`, `/home/howard/AI/demo-backup/2026-11-13`, and `/home/howard/AI/demo-backup/2026-11-13/grd-credentials.ini`, then `sudo chmod 600` on `credentials.ini` inside. Before, the directories were 755 and the file 644. After, the directories are 700 and the file is 600, verified by `find ... -printf "%m %u:%g %s %p\n"` under `sudo -n`, and unprivileged `ls -l` answers `Permission denied`. Inverse recorded in booth DEMO-LOG. The live half of the original finding was already closed before this review: the team's own `grdctl rdp clear-credentials` and `set-credentials` overwrote the pre-existing credential. The service-internal file at `/var/lib/gnome-remote-desktop/.local/share/gnome-remote-desktop/credentials.ini` remains 644 owned by `gnome-remote-desktop` (that is the daemon's own store, not team residue, and K6 read it by path only). Closed.
+
+**Finding 8, persistent plaintext credential file in a world-listable `/tmp` path as a preflight requirement. CLOSED.**
+
+K6 re-read the finding and confirmed it was already closed before `3e43d2a`: `rt_rdp_args()` feeds the credential through `printf` piped to `/dev/stdin`, no credential file is created by the packaged tools, and the booth runner's `rdp_args()` uses the same mechanism. The stale `/tmp/opencode/t0042/rdp-args` at mode 600 remains on disk but nothing in the durable runner reads it. The parent directories `/home/howard/AI/booth-2026` and `/home/howard/AI/booth-2026/t0042` are mode 755 but contain no credential file (verified: `find /home/howard/AI/booth-2026 -maxdepth 2` for credential-shaped names returns only `git-askpass-tc.sh`, which carries no secret material). Residue: the stale file should be deleted and the two directory modes tightened to 700, named here but outside any current dispatch. Closed for the finding's mechanism; residue noted.
+
+---
+
+### Ruling on TASK-0041 `## Status` hygiene items
+
+**Hygiene item 1, `~/AI/secrets/scm_draft_pass.md` is mode 644. Severity: medium, open.**
+
+**Where:** `~/AI/secrets/scm_draft_pass.md`. Verified today, `stat -c '%a'` returns `644`. AGENTS.md section 4 requires 600.
+
+**Attack and honest bound:** the parent directory `/home/howard/AI/secrets` is mode 700 (verified today, `ls -la ~/AI/secrets/` shows `drwx------`), so today no other non-root user on the controller can traverse into the directory. The 644 file mode is therefore not currently exploitable on this machine by a path I can construct. It is one directory-mode change, one backup misconfiguration, or one `rsync --perms` away from being a plaintext world-readable SSH password for a machine where `howard` has passwordless sudo. AGENTS.md section 4 does not permit the state regardless.
+
+**`rt_secret_mode_warn` at `rt-lib:93-100`** warns rather than refusing. For a booth run the tool should fail. Fix: `chmod 600 ~/AI/secrets/scm_draft_pass.md`, the operator's one command. Follow-up for a future dispatch: a selftest assert on the mode of each `~/AI/secrets` file the tooling reads (no target contact, no credential value).
+
+**Hygiene item 2, pre-existing world-readable grd credentials file on the target and its backup copy. Closed.**
+
+The live credential was overwritten by the team before this review. The backup copy was world-readable (755 directories, 644 file) until `K6` closed it to 700/600 at `3e43d2a`. The service-internal store remains as the daemon owns it. No further action required on this item. The decision TASK-0041 `## Status` asked for, rotate or keep 3389 source-restricted, is answered: the credential behind the pre-existing file is no longer live, and the 3389 posture question now falls under finding 2 (the `/cert:ignore` channel) and finding 4 (the firewall rule's booth-day shape), not this item.
+
+**Hygiene item 3, `lock-enabled` went `true` to `false`. Severity: medium, needs a recorded accept-or-fix decision.**
+
+**Where:** `DEMO-LOG.md:136-137`, with inverse recorded. `idle-delay` is `uint32 0`, so nothing re-locks on its own.
+
+**Attack:** physical presence at an open booth gives anyone an unlocked live session as `howard`. `howard` has passwordless sudo. Physical presence is therefore root on the target with no credential and no network required.
+
+**Ruling:** the operator should re-lock before the event (`gsettings set org.gnome.desktop.screensaver lock-enabled true`) or record an explicit accept that the demo desktop is unlocked for the event duration. If left unlocked, the impact is bounded by running the booth as a dedicated non-sudo `booth` account (TASK-0042 finding 6 recommendation), which turns the unlocked session into an unlocked sandbox rather than an unlocked path to root. The decision belongs in `## Status` before 2026-11-28. It is not a code fix, it is a target-side posture decision.
+
+---
+
+### Checks that ran, with the command that produced each claim
+
+`stat -c '%a %U:%G %s'` by path, `scm_draft_pass.md` 644, `~/AI/secrets` directory 700. `grep -rn 'StrictHostKeyChecking' scripts/` returns two lines, `vm-create:147` (`accept-new`, acceptable for test VMs) and `rt-lib:38` (`yes`). `grep -n 'cert:ignore' scripts/remote/rt-lib` returns two lines (164, 170). `scripts/remote/known_hosts` read, 23 lines, three keys with fingerprints. `git log --oneline 3e43d2a -1` and `git show --stat 3e43d2a`, confirming the four-file landing. `ls -la ~/AI/secrets/` showing all secret files with modes.
+
+---
+
+### Checks that did not run, named
+
+1. No target contact. The target-side grd credentials file state, the backup directory modes today, the firewall rich-rule state, the `lock-enabled` value today, the `idle-delay` value today, the enabled repo set, and the RDP TLS certificate state on the target were all read from the record, not from the target.
+2. No RDP channel test. `/cert:ignore` in `rt_rdp_args` is unverified against a live connection, no certificate thumbpin was tested, and the tunnel-over-SSH fix for finding 2 has not been attempted or prototyped.
+3. No network test of any kind. No probe of 3389, no MITM simulation, no packet capture.
+4. No `shellcheck` on the packaged tools (absent on this controller).
+5. No CVE or advisory lookup against `freerdp-libs-3.32.2`, the distro freerdp the C tools link.
+6. `tests/selftest.sh` was not re-run in this dispatch (the 106-check baseline is the record from K8; I read the K6 and K8 entries rather than re-executing the suite).
+7. No journal scan on either machine. Whether a positional RDP password from an earlier pass sits in the target's `journalctl` history is unverified.
+8. No verification of the `lock-enabled` value on the target today (no target contact).
+9. `flatpak info --show-permissions org.winehq.Wine` did not run. TASK-0042 finding 5 (the Flatpak sandbox boundary against the grd key pair) depends on its output and stays open.
+
+---
+
+### Verdict
+
+No new finding above medium. Finding 1 is closed. Finding 2 stays open, no RDP channel test has run, `/cert:ignore` is untouched, and it is the highest-remaining security risk in the packaged tooling because it is the only credential-bearing channel that does not authenticate the far end. Finding 3 is closed. Finding 8 is closed. Hygiene items 2 and 3 are resolved (item 2 closed by K6, item 3 is an operator posture decision). Hygiene item 1 (mode 644 secret) is open pending the operator's `chmod 600`.
+
+Written 2026-11-25 10:42 UTC (2026-11-25 19:42 JST).
+
 ---
 
 ## License (Charmy)
@@ -892,12 +968,61 @@ Written 2026-11-25 10:12 UTC (2026-11-25 19:12 JST).
 
 *Owner: `Big`. Verdicts, never raw log dumps.*
 
+### T3 test read (2026-11-25 11:52 UTC, 20:52 JST, `Big`, dispatch `T3`)
+
+Ran at `7781512`. No target contact was made, and none was needed. Every count below was produced by re-executing the suite or a block of it, not read from the record. Working trees for the historical runs are `git archive` extractions under `/tmp/opencode/t0041-big/`, the repo was never checked out to an older commit.
+
+**Workflow runs (local gate; no CI runner exists, see not-run list):**
+
 | Check | What it exercises | Result | Notes |
 |---|---|---|---|
+| selftest, whole suite, at `7781512` | the full local gate the pre-push hook enforces | PASS | `bash tests/selftest.sh` exit 0, `SELFTEST: 106 checks passed (floor 100)` |
+| selftest at `44a017e` (parent of the packaging landing) | the pre-packaging baseline | PASS | 61 checks. The record's "before: 61" at `:744` is now a measured number, not a claim |
+| selftest at `b906f00` (items 9 to 11 landing) | the 22 new asserts as committed | PASS | 83 checks. Delta measured: 61 to 83, +22. The record's category list at `:748-759` sums to 22 exactly, so the claim is arithmetically consistent with the commit |
+| selftest at `ef06147`, `482aed5`, `3e43d2a`, `cc2dd06`, `415858e` | the chain from 83 to 106 | PASS | 86, 103, 105, 105, 106. Measured deltas: +3 (`ef06147`), +17 (`482aed5` F8, the widened bash syntax gate), +2 (K6 `3e43d2a`, host-key pinning plus the second credential in the scan loop), 0 (K7 `cc2dd06`), +1 (K8 `415858e`, the run-body interpolation gate). The 83-to-103 span is TASK-0042 harness work, not TASK-0041 work |
+| remote-desktop assert block alone, extracted from `tests/selftest.sh:165-295` | the 24 asserts item 11 owns today | PASS | 24 asserts, exit 0 |
+| same block under `unshare -rn` (fresh netns, loopback down, `192.168.1.99` unreachable) | whether the remote asserts need the target online | PASS | 24 asserts, exit 0, output byte-identical to the run on the open host (`diff` clean). The offline rule at `## Plan:111` holds for these asserts by measurement, not by intent |
+| whole suite under `unshare -rn` | whether the suite as a whole is network-independent | FAIL (expected, out of scope) | 8 pytest failures, 7 in `tests/test_a2a.py`, 1 in `tests/test_portless.py`. Cause: the fixtures bind loopback (`tests/test_a2a.py:22-33` starts its own in-process server on an ephemeral port), and a fresh netns leaves `lo` down. Not service dependence. `systemctl is-active team-chaotix-a2a agentgateway` is `inactive inactive` while the suite at HEAD passes 29/29, so no live system service is required |
+| credential leak scan, positive control | the DoD row 8 guard on a clean tree | PASS | Scan block `tests/selftest.sh:246-266` run against a `git archive HEAD` copy with `HOME` pointed at a scratch secrets dir. 2 asserts, exit 0 |
+| credential leak scan, negative control | whether the scan can actually fail | PASS | A planted **fake** string (`FAKELEAK-RDP-CONTROL-4412`) in the tree copy produced `selftest FAIL: target credential from scm_draft_rdp_pass.md found in repository contents`, exit 1. No real credential was written to any file. The scan is falsifiable, so it is not decorative |
+| `rt-build` path-fix claim at `:735` | the doubled-path fix | PASS | `scripts/remote/rt-build:47-50` reads `${RT_ROOT}/rdp-input.c` and `${RT_ROOT}/rdp-pointer.c`. `rt-build --dry-run` prints `scripts/scripts` zero times. `scripts/rdp-input.c` and `scripts/rdp-pointer.c` exist at repo `scripts/`, `scripts/remote/` holds 12 files |
+| C build assert really executed | offline compile of `rdp-input`, `rdp-pointer`, `rt-uinput-inject` | PASS | The HEAD run log carries real `freerdp3` header deprecation warnings from the compile and `scripts/remote build OK (offline compile, scratch dir)`. `gcc` present, `pkg-config --exists freerdp-client3` present, so the guarded branch was taken and the assert ran rather than skipped |
+| dry-run host independence | whether any packaged dry run names the real target | PASS | All seven dry-run outputs (`rt-shot`, `rt-status`, `rt-ocr`, `rt-type`, `rt-key`, `rt-click`, `rt-uinput`, plus `rt-build`) contain zero occurrences of `192.168.1.99`. `rt-lib:85,113,126,139,163` return before `sshpass` when `RT_DRY=1`, and `rt-lib:41` leaves `RT_HOST` empty until `--host` is parsed |
+| pre-push gate wiring | the effective CI gate | PASS | `core.hooksPath=scripts/hooks`, `scripts/hooks/pre-push` reads `MIN_CHECKS` from `tests/selftest.sh` (100) and blocks on a missing count or a count below the floor. `.github/workflows/team-selftest.yml:54-68` reads the same single constant. Local gate and CI floor agree at 100 against a real 106 |
 
-**Checks requested vs run:** N requested, N executed.
+**Checks requested vs run:** 13 requested. 12 executed. 1 not executable in this dispatch (no CI runner exists). No matrix exists in any workflow in `.github/workflows/` (grep for `matrix` and `fail-fast` returns nothing across all 8 workflows), so nothing dropped from a matrix and the `fail-fast: false` house rule is unexercised rather than violated.
 
-**Verdict:**
+**Check-count delta I measured, not inherited.** The packaging delta is +22 (61 to 83), measured by running both commits. The current baseline is 106 measured directly at `7781512`, and the TASK-0042 K8 claim of 105 to 106 is confirmed by re-execution at `cc2dd06` and `415858e`, not inherited. Fixed asserts at HEAD are 77, pytest is 29, total 106. The remote-desktop block contributes 24 of the 77 fixed asserts, 22 from `b906f00` plus 2 from K6.
+
+**Matrices or checks that silently dropped, named.**
+1. The guarded remote build sub-block is 5 asserts. Measured by running the same block with that region excised: 19 asserts instead of 24 (`tests/selftest.sh:224-244`). If `gcc` or `freerdp-client3` is ever absent on the runner, the suite falls 106 to 101, still above the floor 100, and stays green with no C compile proof and no input-tool dry-run proof. That is the only silent-drop path in the suite today, and it is a harness bug, mine. Fix direction: count guarded skips and fail when a skip drops the total below a stated expectation, instead of leaving the slack to absorb it.
+2. `shellcheck` is absent on this controller (`selftest: shellcheck absent, skipped`, first line of the run log) and contributes zero asserts, permanently. The packaging record's claim at `:788-790` that the new selftest code is "warning-level-clean" is therefore unverified by any machine, as that record itself says.
+3. The skill assert at `tests/selftest.sh:289-294` checks file presence plus two grep strings (`never echoed`, `scripts/remote`). It does not prove opencode discovers the skill. The discovery proof in the record (`:762-768`, `opencode api get`) was not re-run in this dispatch. Live substitute: `remote-desktop` appears in the current session's skill registry for this project, so discovery holds today.
+4. Dry-run independence is partly self-report. Only `rt-shot` and `rt-status` are asserted against the `<host>` placeholder; `rt-type`, `rt-key`, `rt-click`, `rt-uinput` are asserted only by `grep -qi 'dry run'`, which the tool prints unconditionally. A tool that printed "dry run" and then contacted the host would pass. My independent scan for the real target IP in all seven outputs (zero hits) closes that gap for today, and the fix is to assert the absence of a real host token in every dry-run output, not two.
+5. `grep -Eq 'UI_DEV_CREATE|1800'` at `tests/selftest.sh:219-220` is a loose alternation. A bare `1800` anywhere in `uinput-inject.c` satisfies it. Falsifiable, but weaker than the fact it claims to protect.
+6. CI itself has never run. The repo is public and GitHub does not register self-hosted runners on public repos (AGENTS.md section 6 and 13), so all 8 workflows including the Team Selftest count assert have zero runner executions. The executed gate is the pre-push hook on this machine.
+
+**Checks that did not run, every one named.**
+1. No live-target round trip. `rt-shot`, `rt-type`, `rt-key`, `rt-click`, `rt-status`, `rt-uinput` were never run against `192.168.1.99` in this dispatch. The target is online and port 22 is open, so this was a choice, not a limitation: item 11 forbids target contact in the asserts, and no target-contact authorization exists for a review dispatch.
+2. No packaged-tool real-run path is asserted anywhere in the suite. Nothing in CI or in the local gate proves `rt-shot` captures a frame, `rt-ocr` reads text, `rt-type` or `rt-key` deliver keystrokes, or `rt-click` delivers a click. The packaging inherits the item 4 to 7 proof, it does not re-prove it, exactly as `:775-780` states.
+3. Modifier chords through the packaged `rt-key` are unproven live. The live chord proofs (`Ctrl+T`, `Ctrl+U`, `Ctrl+D`, `Ctrl+S`) were made with `scripts/rdp-input.c` in TASK-0042, not through `rt-key --chord`. The selftest only dry-runs `rt-key --chord ctrl+t`.
+4. No RDP channel test, no certificate thumbprint test, no 3389 probe, no packet capture. Consistent with `Omega`'s T2 named list, and finding 2 (`/cert:ignore` at `rt-lib:164,170`) stays open on the same grounds.
+5. `shellcheck` did not run. `shellcheck` is not installed on this controller.
+6. No CI job ran on any runner, for the reason named at item 6 above.
+7. The packaging record's "green on three consecutive runs including inside the pre-push hook" (`:746`) is a historical claim and is not reproducible. What I verified is the mechanism, the hook, the floor read, and the suite at 83 at that commit.
+8. The `opencode api` skill-discovery call was not re-run.
+9. No CVE or advisory lookup against `freerdp-libs-3.32.2`. That is `Omega`'s and `Charmy`'s ground, named here only as not-run.
+
+**What a booth-day run would have to assert to prove itself.** The suite proves the packaging exists and compiles. It proves nothing about the loop working on 2026-11-28. A booth-day run that proves itself asserts all seven of these, each with the command recorded and a non-zero exit on failure, none as prose.
+1. `rt-status --host <venue address>` exits 0 and returns `hostname=`, `shell_type=wayland`, `screenshot_tool=` present, `session_bus=present`, and the `rdp_listener` count. Load-bearing detail: `scripts/remote/known_hosts` pins three keys for `192.168.1.99` only (measured: the only host token in the 23-line file). With `StrictHostKeyChecking=yes` at `rt-lib:38`, a re-addressed target fails verification unless the venue address is in the operator's own `~/.ssh/known_hosts`, which `rt-lib` lists second, or the pin is re-seeded at the venue. Assert this before anything else, because every other path depends on it.
+2. Eyes, both directions. `rt-shot` lands a PNG of non-zero size that decodes, and `rt-ocr` of that same PNG returns a string known to be on the screen. A file appearing is not proof; OCR returning a real on-screen string is.
+3. Keyboard hand. Type a marker with `rt-type`, take a second `rt-shot`, and require `rt-ocr` to return the marker. It must include one modifier chord through `rt-key --chord` (the SCMDraft 2 save chord), because chords are the named open limit at `## Status:18` and the packaged `rt-key` has no live proof.
+4. Mouse hand. `rt-click` at a known coordinate against a before/after screenshot pair, where the pixels differ in a localized bounding box around the click target, not merely somewhere. md5 inequality plus a PIL bbox.
+5. Failure shape. Each of the above fails with a non-zero exit, and the run is recorded in `DEMO-LOG.md` with the command that produced it.
+6. Credential hygiene during the run. `ps -eo args` during the run must not contain the credential (`rt-lib:109` feeds `sshpass` by `-f` file, assert that it stays that way), the target journal after the run must not contain the credential (grep with the secret as pattern only, output never printed), `~/AI/secrets/scm_draft_pass.md` must be mode 600 (measured 644 today, `Omega` hygiene item 1 still open), and the 3389 firewall rule must match the address the controller actually holds at the venue, since `Omega` finding 2 plus the TASK-0042 finding 4 branch is unresolved.
+7. The gate. The booth push passes the local pre-push hook with the count asserted, and the run states plainly that CI contributed nothing because no runner is registered.
+
+**Verdict:** PASS on items 9, 10, and 11 as packaged. The checks the packaging record claims did execute. The 22 asserts exist in the commit and pass there (61 to 83 measured at both commits), the C build assert really compiled at HEAD, the credential scan is falsifiable under a planted fake credential, the `rt-build` path fix is real, and the pre-push baseline holds at 106 measured at `7781512` against a floor of 100. The new remote-desktop asserts do not require `192.168.1.99` online: the 24-assert block exits 0 with byte-identical output inside a network namespace where the target and all networking are unreachable. Two harness findings stay with me, neither a code bug for `Tails`. First, the guarded build sub-block is 5 asserts and a toolchain absence would drop the suite from 106 to 101, still green, silently removing the only compile proof. The floor slack at `tests/selftest.sh:23` was written to absorb pytest variance and it also absorbs this. Second, four of the six dry-run asserts rely on the tool self-reporting "dry run" rather than on the absence of a real host token, and the `UI_DEV_CREATE|1800` alternation is too loose to protect the fact it names. Both are tighten-the-assert items for a future dispatch, not blockers for the booth. Nothing in the suite proves the live loop works, so the booth-day run must carry its own proof, and item 1 of that list, host-key pinning against the venue address, is the first thing that will fail if the venue re-addresses the target. The booth repo stays private under the standing `R4` FAIL at `7c4fa16`; nothing in this verdict changes that posture.
 
 ---
 
