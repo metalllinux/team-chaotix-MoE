@@ -50,8 +50,8 @@
 - [x] `tests/selftest.sh` passes, 61 checks, before push.
 - [x] No credential appears in the diff. Verified with `grep -R -F -f ~/AI/secrets/scm_draft_pass.md .` and the same for the RDP secret, both no match.
 - [x] Committed, PR opened, merged to `main`, pushed.
-- [ ] `Shadow`, `Omega`, `Big`, `Charmy` each review the change. Owed by a fresh `Robotnik` session, this row stays open until they run. Restated in place 2026-11-23 00:10 UTC by `Robotnik` per `Shadow`'s TASK-0044 `F2` finding 2, the fifth reviewer named in the original row was retired under TASK-0044 and no agent can satisfy her row. `G4` carries her audit scope.
-- [ ] `agentsmd learn` proposes the lesson once the project is initialized for agentsmd, which it is not. Recorded in TASK-0042 `## Next Actions`.
+- [x] `Shadow`, `Omega`, `Big`, `Charmy` each review the change. Owed by a fresh `Robotnik` session, this row stays open until they run. Restated in place 2026-11-23 00:10 UTC by `Robotnik` per `Shadow`'s TASK-0044 `F2` finding 2, the fifth reviewer named in the original row was retired under TASK-0044 and no agent can satisfy her row. `G4` carries her audit scope. Ticked 2026-11-25 16:25 UTC (2026-11-26 01:25 JST) by `Knuckles` dispatch `K2`. The chain ran 2026-11-25 as `G1` `Shadow`, `G2` `Omega`, `G3` `Big`, `G4` `Charmy`, records in `## Review`, `## Security`, `## Test Results` and `## License (Charmy)`. The agreed fix set landed at `f1907ab`.
+- [x] `agentsmd learn` proposes the lesson once the project is initialized for agentsmd, which it is not. Recorded in TASK-0042 `## Next Actions`. Ticked 2026-11-25 16:25 UTC (2026-11-26 01:25 JST) by `Knuckles` dispatch `K2`. agentsmd was initialized 2026-11-19 (`## Status`), and `~/.local/bin/agentsmd pending` on this host lists two proposed TASK-0043 rules, `p1795094347085128711` and `p1795139396531065410`. `agentsmd promote` is the operator's action per AGENTS.md section 16.
 
 ---
 
@@ -520,6 +520,23 @@ called tested.
 ## Release
 
 *Owner: `Knuckles`.* Branch `task-0043-dispatch-gate`, commits `418e8b2` and the earlier record commit, GPG-verified with `git log --show-signature` as Team Chaotix. PR #1 opened and merged with `merge_method=merge`, merge commit `44a017e`. Pushed through the pre-push hook, which ran `tests/selftest.sh` and reported 61 checks. GitHub writes used the token at `~/AI/secrets/token.md` read at run time, no token in any remote URL, commit message, log, or committed file. DONE is not fully ticked, the review chain is open, recorded above.
+
+**Release decision, `Knuckles` dispatch `K2`, 2026-11-25 16:25 UTC (2026-11-26 01:25 JST), host clock JST +0900.**
+
+**DONE checklist verified:** yes, all ten rows ticked. The two rows that were open were ticked in `## Definition of Done` by this dispatch with the evidence attached to each. No DoD row stays open. The review row closed on the `G1` to `G4` records, the agentsmd row closed on `agentsmd pending`. The earlier paragraph in this section described the state before the review chain and stands as record history.
+
+- **Branch:** `task-0043-dispatch-gate` merged to `main` as PR #1, merge commit `44a017e`. The fix commit `f1907ab` is on `main`. No further branch is needed for this record.
+- **Remote verification:** read from `origin` after a fresh `git fetch`, not from local state. `git ls-remote origin refs/heads/main` is `b7d6fad5f0a011abd57a0d4466b369287fd6395c`. `git merge-base --is-ancestor` against that fetched ref reports `44a017e` yes and `f1907ab` yes.
+- **Review gate:** pass. `Shadow`'s four findings and the nit are all named as landed in the `f1907ab` change table in `## Implementation`. No unresolved blocker in `## Review`.
+- **Security gate:** pass. No finding above `low` in `## Security`. The severities are two `low`, one informational, and confirmatory findings otherwise. The security constraints on the fix are listed as landed in the same change table.
+- **Testing gate:** pass. `bash tests/selftest.sh` on this host at this dispatch reports `SELFTEST: 110 checks passed (floor 100)`, exit 0. The baseline is 106 checks before `f1907ab` and 110 after. The local selftest and the `scripts/hooks/pre-push` hook are the effective gate, because the repo is public and the self-hosted runner is not registered (AGENTS.md section 6). No CI workflow ran for this task, named in `## Test Results` and `## Implementation`.
+- **Licence gate:** pass. `scripts/licence-check` exit 0, `## License (Charmy)` VERDICT: PASS. The licence assert is one of the 110 checks in the selftest run above.
+- **Commits:** GPG-signed, yes. `commit.gpgsign=true`, signing key `D553FBE4B47020B2033E9594F9261D151316FD60`. `git log --show-signature` verifies `f1907ab` as Team Chaotix on this host. `44a017e` is the GitHub-side merge commit, signature made 2026-11-15 by a key not in this host's keyring (`Can't check signature: No public key`), and the branch commits it merged were verified at the first release in this section.
+- **PR:** #1 opened and merged. `metalllinux` repository, no external review step required (AGENTS.md section 8). There is no GitHub issue for this task and none to close.
+- **Deploy:** not dispatched. Nothing in this task deploys, and deployment workflows are dispatch only (AGENTS.md). No deploy was requested.
+- **Release commit:** this record and the two DoD ticks commit on top of `b7d6fad` on `main`, signed, pushed with `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`. The pre-push hook runs the 110-check selftest. No credential appears in the commit, this record, or any log.
+- **Operator-owned, open, not team rows:** `agentsmd promote` for the pending rules (AGENTS.md section 16). Re-fit of the WARN 245760 and BLOCK 258048 margins against measured child request sizes (`## Implementation`, threshold provenance). Neither blocks this release.
+- **Open harness item, named, not a blocker:** the checked-in synthetic store fixture recommended in `## Test Results` (`Big`) is not landed, and `## Implementation` records it as `Big`'s follow-up. The mutant classes `## Test Results` called load-bearing are caught by the negative controls recorded in `## Implementation`, which is what clears `FAIL 1` for release purposes.
 
 ---
 
