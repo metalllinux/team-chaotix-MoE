@@ -6,7 +6,7 @@ software development task thrown at it, from initial planning through deployment
 
 ## Architecture
 
-Team Chaotix uses a 12-agent team with strict least-privilege permissions. Each agent has a specific
+Team Chaotix uses an 11-agent team with strict least-privilege permissions. Each agent has a specific
 role and is restricted to only the capabilities it needs.
 
 ```
@@ -47,7 +47,9 @@ Key permission patterns:
 - `Espio` is the only agent scoped to `planning/` edits. All other agents have full `edit`
   and are scoped by role, in their prompt, not by tool
 - `Shadow`, `Omega`, and `Charmy` are read-only on code in practice: their writes go to the
-  planning doc, into their own section (`Espio` additionally archives within existing sections)
+  planning doc, into their own section (`Espio` additionally archives within existing sections).
+  `Charmy`'s one exception is `team/licenses/policy.yaml`, the house policy it owns, which it may
+  change only inside a task that explicitly changes policy
 - No agent can access credential stores directly. Secrets live in `~/AI/secrets/` on the local
   machine, never in the repo and never on GitHub
 

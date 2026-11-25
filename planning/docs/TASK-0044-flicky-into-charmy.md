@@ -768,6 +768,41 @@ VERDICT: PASS the roster change, gates execute and fail under mutation, 86 check
 
 *Owner: `Vector`.*
 
+**`F6` docs pass, 2026-11-25 03:11 UTC (12:11 JST).** The user-facing docs are aligned to the
+eleven-agent roster and the four-stage review chain. Roster table verified file by file against
+`.opencode/agents/`: the directory holds exactly 11 files (`amy`, `big`, `charmy`, `espio`,
+`knuckles`, `omega`, `robotnik`, `shadow`, `sonic`, `tails`, `vector`, listed by `ls -la`), the
+catalogue carries exactly 11 rows, one per file, no extra row, and the Mode column matches each
+file's frontmatter (`robotnik` primary, `shadow` all, the other nine subagent).
+
+| File | Sections touched | What changed |
+|---|---|---|
+| `README.md` | Architecture, line 9 | "12-agent team" to "11-agent team". The only stale roster count left in the README by the `F1` sweep. |
+| `README.md` | Key permission patterns, `README.md:49-52` | Closes `Shadow`'s nit at `## Review`. Adds Charmy's one exception to the read-only-on-code bullet in a single clause: it owns `team/licenses/policy.yaml` and may change it only inside a task that explicitly changes policy, matching `charmy.md:33-35`. |
+| `planning/templates/planning-doc.md` | | Checked, needed no change. `Tails` merged the licence sections at `ef06147`; my sweep grep shows no stale reference. |
+| `AGENTS.md` | sections 1, 2, 3, 9, 18 | Checked, needed no change. Tails' pass landed them and my `grep -rinE 'twelve|12[- ]agent|five[- ]reviewer|flicky'` over `AGENTS.md` returns zero. |
+| `.github/workflows/`, `team/licenses/`, `scripts/licence-check`, `tests/` | | Checked, needed no change. Same sweep, zero matches in those paths. |
+
+**Checked and needed no change:** the rows above, plus the README delegation tree (11 names), the
+"Agent catalogue" rows, the `team/graph/` row chain (Shadow, Omega, Big, Charmy), the "How it works"
+step 5 (four reviewers), the "License compliance" bullets (Charmy single licence owner), and the
+repository-structure note "(11 files)" at `README.md:399`, all re-read against the files rather than
+taken from `F1`'s record.
+
+**Could not verify, and what would settle it.** `team/a2a/server.py:109` still reads "twelve-role" in
+the agent-card description string, found by the same sweep (the sole non-README match). Not edited by
+me because it is code text and `## Status` at 00:50 UTC routes it into the `F8` `Tails` fix dispatch.
+`F8` landing that one-line edit with the A2A card test green settles it. The README Sonic row's
+"GitHub CLI" matches `sonic.md`'s own prompt but sits against AGENTS.md section 13's "the `gh` CLI is
+not installed on this host"; pre-existing, outside this task, recorded rather than edited.
+
+**Checks that did not run.** No GitHub Actions workflow ran (the self-hosted runner is unregistered on
+this public repo, AGENTS.md section 6), so the effective gate for this commit is the `pre-push`
+selftest, whose result is recorded in the commit record below. The licence gate, config gate, and
+pytest were not re-run by me standalone; they run inside that selftest. No contact with
+`192.168.1.99`. The `planning/docs/TASK-0042-*` file dirty in the tree belongs to a concurrent
+session and is excluded from my commit.
+
 ---
 
 ## Release
