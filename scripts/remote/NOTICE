@@ -28,9 +28,14 @@ Verified package identity on the controller, 2026-11-22, command
     licence=Apache-2.0 AND HPND AND LGPL-2.1-or-later
             AND LicenseRef-Fedora-Public-Domain AND OFL-1.1
 
-Upstream FreeRDP (https://github.com/FreeRDP/FreeRDP) is dual-licensed
-Apache-2.0 or GPL-2.0+. The team's tools link against the package under its
-Apache-2.0 option. That option governs the library the tools link against.
+Upstream FreeRDP (https://github.com/FreeRDP/FreeRDP) at tag 3.32.2, the
+version this distro package is built from, is Apache-2.0 only. Verified
+2026-11-26 against the upstream LICENSE blob
+d645695673349e3947e8e5ae42332d0ac3164cd7 at that tag, which is the Apache
+License Version 2.0 in full and the only licence text file in the tag's root
+tree. No GPL-2.0+ option is published at that ref and none is claimed here.
+The team's tools link against the package under its Apache-2.0 option. That
+option governs the library the tools link against.
 The team's own sources stay MIT under the repository root licence, which is
 what their SPDX-License-Identifier: MIT headers declare, because a dynamic
 link against a library under a different permissive licence does not

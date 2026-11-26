@@ -22,8 +22,14 @@ scripts/rdp-input.c and scripts/rdp-pointer.c link dynamically against
 libfreerdp3 and libfreerdp-client3 from the distro package
 freerdp-libs-3.32.2-1.el10_2, identity verified by
 `rpm -q --qf '%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs`.
-Upstream https://github.com/FreeRDP/FreeRDP at tag 3.32.2 is dual-licensed
-Apache-2.0 or GPL-2.0+ and the team takes the Apache-2.0 option. No FreeRDP
+Upstream https://github.com/FreeRDP/FreeRDP at tag 3.32.2 is Apache-2.0 only,
+read at that tag on 2026-11-26 from the LICENSE blob
+d645695673349e3947e8e5ae42332d0ac3164cd7, which is the Apache License Version
+2.0 in full and the only licence text file in the tag's root tree. No GPL-2.0+
+option is published at that ref and none is claimed here; the GPL-2.0 licence
+belongs to the pre-1.0 rdesktop derived code base. The distro package carries
+HPND and LGPL-2.1-or-later terms alongside Apache-2.0, and the team takes the
+Apache-2.0 option. No FreeRDP
 source is vendored, compiled in, or distributed by this repository; the
 binaries scripts/remote/rt-build produces are never committed. Copyright of
 FreeRDP rests with the FreeRDP project authors.
