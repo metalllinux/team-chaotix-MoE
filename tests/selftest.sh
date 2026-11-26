@@ -428,16 +428,26 @@ PASS
 note "host key pinning asserts OK (no unpinned SSH posture under scripts/)"
 
 # RDP certificate posture. `TASK-0042 ## Security` finding 2, `Omega`'s `O1` ruling 2026-11-26
-# 00:06 UTC: `/cert:ignore` accepts any server certificate, so no file under scripts/ may carry it, and
-# the credential-bearing argument generator must instead pin the SHA-256 fingerprint of the target
-# daemon's TLS certificate and dial the loopback end of the host-key-pinned SSH forward. String match
-# only, no target contact, no credential read, same shape as the host-key assert above. The pin is a
-# public certificate fingerprint, not secret material.
-if grep -rn 'cert:ignore' scripts/ >/dev/null 2>&1; then
-  fail "a file under scripts/ carries /cert:ignore, which accepts any RDP server certificate (finding 2)"
+# 00:06 UTC: the accept-any certificate option accepts any server certificate, so no shipped or loaded
+# file may carry it, and the credential-bearing argument generator must instead pin the SHA-256
+# fingerprint of the target daemon's TLS certificate and dial the loopback end of the host-key-pinned SSH
+# forward. String match only, no target contact, no credential read, same shape as the host-key assert
+# above. The pin is a public certificate fingerprint, not secret material.
+#
+# Scope widened by dispatch `TF1`, closing `S2` blocker 1 (TASK-0041 `## Review:1474-1481`). The scan used
+# to cover scripts/ only, which meant the page every dispatched agent actually loads,
+# .opencode/skills/remote-desktop/SKILL.md, could keep teaching the accept-any option with no gate able to
+# see it. The trees listed below are the ones this team ships or an agent loads. planning/ and DEMO-LOG.md
+# are allow-listed as record history: they carry the words of the finding being closed and they are not
+# instructions. The pattern is written with a bracket so this file never matches its own pattern text (the
+# same trick the no-turn-caps assert near the head of this file uses), which keeps the scanner's own file
+# inside the scanned scope instead of excluding it.
+RT_CERT_SCAN_PATHS=(scripts .opencode team tests .github README.md AGENTS.md)
+if grep -rn 'cert:[i]gnore' "${RT_CERT_SCAN_PATHS[@]}" >/dev/null 2>&1; then
+  fail "the accept-any RDP certificate option appears in a shipped or loaded file (TASK-0042 finding 2, S2 blocker 1): $(grep -rnl 'cert:[i]gnore' "${RT_CERT_SCAN_PATHS[@]}" | tr '\n' ' ')"
 fi
 PASS
-note "no /cert:ignore anywhere under scripts/ OK"
+note "no accept-any RDP certificate option in ${RT_CERT_SCAN_PATHS[*]} OK"
 
 grep -qE 'RT_RDP_CERT_PIN="\$\{RT_RDP_CERT_PIN:-[0-9a-f]{64}\}"' "$RT/rt-lib" \
   || fail "rt-lib no longer holds the RDP certificate pin in one named 64-hex variable"
@@ -456,8 +466,8 @@ printf '%s\n' "$RDP_ARGS_FORM" | grep -qE '^/v:127\.0\.0\.1:[0-9]+$' \
   || fail "the default RDP /v: is not the loopback end of the pinned SSH forward"
 printf '%s\n' "$RDP_ARGS_FORM" | grep -qE '^/cert:fingerprint:sha256:[0-9a-f]{64}$' \
   || fail "the RDP argument lines do not carry a 64-hex certificate fingerprint"
-if printf '%s\n' "$RDP_ARGS_FORM" | grep -q 'cert:ignore'; then
-  fail "the RDP argument lines still emit /cert:ignore"
+if printf '%s\n' "$RDP_ARGS_FORM" | grep -q 'cert:[i]gnore'; then
+  fail "the RDP argument lines still emit the accept-any certificate option"
 fi
 PASS
 
@@ -467,18 +477,169 @@ if bash -c "source '$RT/rt-lib'; rt_rdp_args '192.0.2.1'" >/dev/null 2>&1; then
   fail "rt_rdp_args would build a credential-bearing argument set with no decided RDP channel"
 fi
 PASS
-note "RDP certificate posture asserts OK (pin present, no cert:ignore, channel refused when undecided)"
+note "RDP certificate posture asserts OK (pin present, no accept-any option, channel refused when undecided)"
 
 # The remote-desktop skill page exists where opencode discovers project
 # skills (.opencode/skills, verified 2026-11-22 with
 # `opencode api get '/api/skill?location[directory]=<cwd>'`, which lists
 # the remote-desktop id for this project) and it carries the secrets rule.
+# Since `TF1` it also has to teach the posture that actually landed, because this page is what a
+# dispatched agent loads at run time: a skill page is an instruction, not documentation.
 SK=".opencode/skills/remote-desktop/SKILL.md"
 [ -f "$SK" ] || fail "remote-desktop skill page missing at $SK"
 grep -q 'never echoed' "$SK" || fail "remote-desktop skill lost the secrets rule wording"
 grep -q 'scripts/remote' "$SK" || fail "remote-desktop skill lost the tooling reference"
 PASS
-note "remote-desktop skill OK"
+grep -q 'rt-tunnel' "$SK" || fail "remote-desktop skill does not name scripts/remote/rt-tunnel, the pinned SSH forward the RDP channel runs inside"
+PASS
+grep -q 'RT_RDP_CERT_PIN' "$SK" || fail "remote-desktop skill does not name RT_RDP_CERT_PIN, the pinned daemon certificate fingerprint"
+PASS
+grep -q '/cert:fingerprint:sha256:' "$SK" || fail "remote-desktop skill does not name the certificate identity line the tools emit"
+PASS
+grep -q 'RT_RDP_TUNNEL=0' "$SK" || fail "remote-desktop skill does not name the RT_RDP_TUNNEL=0 direct-dial fallback"
+PASS
+note "remote-desktop skill OK (secrets rule, tooling reference, pin plus tunnel posture)"
+
+# --- forward lifecycle: the borrow wait and the claim count (TASK-0041 `## Review` S2) ---------------
+# The two `rt-lib` should-fixes `S2` named, both measured offline. Host is 192.0.2.1 (RFC 5737, contacted
+# by nobody), both credential files are deliberately absent, and nothing dials: every "forward" here is a
+# real `sleep` whose argv[0] carries the exact forward spec, so rt_tunnel_pid_is_ours recognises it while
+# no connection exists. The port is never the default 3401, so a forward a real run left up cannot skew
+# these asserts, and the port being free is itself asserted rather than assumed.
+RT_FWD_PORT=3417
+RT_FWD_HOST='192.0.2.1'
+RT_FWD_SPEC="127.0.0.1:${RT_FWD_PORT}:127.0.0.1:3389"
+RT_FWD_RECORD() { printf '%s/tunnel-%s-%s.pid' "$1" "$RT_FWD_HOST" "$RT_FWD_PORT"; }
+rt_fake_forward() {
+  exec -a "ssh -N -L ${RT_FWD_SPEC} howard@${RT_FWD_HOST}" sleep 30 >/dev/null 2>&1 &
+  printf '%s' "$!"
+}
+if ss -tln 2>/dev/null | grep -qE "127\.0\.0\.1:${RT_FWD_PORT}([[:space:]]|$)"; then
+  fail "127.0.0.1:${RT_FWD_PORT} is already listening, so the borrowed-forward asserts below cannot mean anything"
+fi
+PASS
+
+# Finding 1, the borrow race. A forward another caller started that is still coming up used to be a hard
+# failure whose advice was `rt-tunnel stop`, the command that kills a healthy forward. `AGENTS.md`
+# section 17 batching is the real trigger: `rt-tunnel start` and an input tool launched in one message
+# race the ~0.5 s the forward needs (dispatch `T7` measured 0.54 s). The fixed call polls the same window
+# it uses for a forward it opened itself, then fails naming `rt-tunnel status` first.
+RT_FWD_DIR="$RT_TMP/fake-race"; mkdir -p "$RT_FWD_DIR"
+RT_FAKE="$(rt_fake_forward)"
+printf '%s\n' "$RT_FAKE" > "$(RT_FWD_RECORD "$RT_FWD_DIR")"
+RT_T0=$SECONDS
+set +e
+RT_OUT="$(RT_STATE_DIR="$RT_FWD_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD_PORT" RT_BUILD_DIR="$RT_TMP" \
+  RT_TUNNEL_WAIT_TRIALS=4 RT_TUNNEL_WAIT_MS=0.5 \
+  RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" \
+  "$RT/rt-click" --host "$RT_FWD_HOST" --click 1 1 2>&1)"
+RT_RC=$?
+set -e
+RT_WAITED=$((SECONDS - RT_T0))
+RT_ACTION="$(grep -o "rt-tunnel --host ${RT_FWD_HOST} [a-z]*" <<< "$RT_OUT" | head -1 || true)"
+if [ "$RT_RC" -eq 0 ]; then
+  fail "rt-click accepted a forward record whose pid is alive while the loopback port is not listening"
+fi
+PASS
+if [ "$RT_WAITED" -lt 1 ]; then
+  fail "rt-click gave a borrowed forward no wait window before failing (it waited ${RT_WAITED}s of a 4 x 0.5s window), which is the S2 borrow race"
+fi
+PASS
+if [ "$RT_ACTION" != "rt-tunnel --host ${RT_FWD_HOST} status" ]; then
+  fail "the half-open forward error names '${RT_ACTION:-nothing}' as its first action, not scripts/remote/rt-tunnel --host ${RT_FWD_HOST} status; naming stop first advises killing a healthy forward"
+fi
+PASS
+if ! kill -0 "$RT_FAKE" 2>/dev/null || [ ! -f "$(RT_FWD_RECORD "$RT_FWD_DIR")" ]; then
+  fail "the call that only wanted to borrow the forward killed it or removed its record"
+fi
+kill "$RT_FAKE" 2>/dev/null || true
+PASS
+
+# Finding 2, reference counting. Four cases, each on its own state directory.
+RT_FWD_DIR="$RT_TMP/fake-claims"
+# own releases while a live borrower holds a claim: the forward survives and the borrower's claim survives.
+rm -rf "$RT_FWD_DIR"; mkdir -p "$RT_FWD_DIR"
+RT_OWN="$(rt_fake_forward)"; RT_USE="$(rt_fake_forward)"
+set +e
+RT_OUT="$(RT_STATE_DIR="$RT_FWD_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD_PORT" bash -c "
+  source '$RT/rt-lib'
+  RT_TUNNEL_HOST='$RT_FWD_HOST'; RT_TUNNEL_PID=$RT_OWN; RT_TUNNEL_CLAIM_ROLE=own
+  rt_tunnel_claims_write '$RT_FWD_HOST' add own \$\$ $RT_OWN && RT_TUNNEL_CLAIMED=1
+  rt_tunnel_claims_write '$RT_FWD_HOST' add use $RT_USE && RT_TUNNEL_CLAIMED=1
+  RT_TUNNEL_OWNED=1
+  rt_rdp_channel_release
+" 2>&1)"
+RT_RC=$?
+set -e
+if [ "$RT_RC" -ne 0 ]; then fail "an owner releasing a shared forward exited non-zero: ${RT_OUT}"; fi
+if ! kill -0 "$RT_OWN" 2>/dev/null; then
+  fail "the tool that opened the forward reaped it while another live process still held a claim on it (S2 reference counting)"
+fi
+if ! grep -q "^use ${RT_USE}$" "$(RT_FWD_RECORD "$RT_FWD_DIR")"; then
+  fail "the surviving forward record lost the borrower's claim: $(tr '\n' ';' < "$(RT_FWD_RECORD "$RT_FWD_DIR")")"
+fi
+kill "$RT_OWN" 2>/dev/null || true; kill "$RT_USE" 2>/dev/null || true
+PASS
+note "borrowed forward survives the owner's exit OK"
+
+# the last live holder reaps: a forward must not sit on the loopback port with nobody left to stop it.
+rm -rf "$RT_FWD_DIR"; mkdir -p "$RT_FWD_DIR"
+RT_OWN="$(rt_fake_forward)"
+RT_OUT="$(RT_STATE_DIR="$RT_FWD_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD_PORT" bash -c "
+  source '$RT/rt-lib'
+  RT_TUNNEL_HOST='$RT_FWD_HOST'; RT_TUNNEL_PID=$RT_OWN; RT_TUNNEL_CLAIM_ROLE=own
+  rt_tunnel_claims_write '$RT_FWD_HOST' add own \$\$ $RT_OWN && RT_TUNNEL_CLAIMED=1
+  RT_TUNNEL_OWNED=1
+  rt_rdp_channel_release
+" 2>&1)"
+sleep 0.5
+if kill -0 "$RT_OWN" 2>/dev/null; then
+  fail "the last live holder left the forward running with no claim on it: ${RT_OUT}"
+fi
+if [ -f "$(RT_FWD_RECORD "$RT_FWD_DIR")" ]; then fail "the reap left the forward record at $(RT_FWD_RECORD "$RT_FWD_DIR")"; fi
+PASS
+
+# a detached starter (scripts/remote/rt-tunnel start) hands the keeper claim to the forward itself, so the
+# forward outlives the tool that opened it and a later borrower cannot reap it. This is the booth pattern:
+# booth code/booth_loop.py opens one forward and makes many input calls against it.
+rm -rf "$RT_FWD_DIR"; mkdir -p "$RT_FWD_DIR"
+RT_OWN="$(rt_fake_forward)"
+RT_OUT="$(RT_STATE_DIR="$RT_FWD_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD_PORT" bash -c "
+  source '$RT/rt-lib'
+  RT_TUNNEL_HOST='$RT_FWD_HOST'; RT_TUNNEL_PID=$RT_OWN; RT_TUNNEL_CLAIM_ROLE=own
+  rt_tunnel_claims_write '$RT_FWD_HOST' add own \$\$ $RT_OWN && RT_TUNNEL_CLAIMED=1
+  RT_TUNNEL_OWNED=0
+  rt_rdp_channel_release
+  RT_TUNNEL_CLAIM_ROLE=use
+  rt_tunnel_claims_write '$RT_FWD_HOST' add use \$\$ && RT_TUNNEL_CLAIMED=1
+  RT_TUNNEL_OWNED=0
+  rt_rdp_channel_release
+" 2>&1)"
+sleep 0.5
+if ! kill -0 "$RT_OWN" 2>/dev/null; then
+  fail "a borrowed forward was reaped even though its starter detached on purpose and left a keeper claim: ${RT_OUT}"
+fi
+if ! grep -q "^keep ${RT_OWN}$" "$(RT_FWD_RECORD "$RT_FWD_DIR")"; then
+  fail "the detached starter left no keeper claim in $(RT_FWD_RECORD "$RT_FWD_DIR"): $(tr '\n' ';' < "$(RT_FWD_RECORD "$RT_FWD_DIR")")"
+fi
+kill "$RT_OWN" 2>/dev/null || true
+PASS
+note "forward claims OK (owner leaves a shared forward, last holder reaps, a detached forward keeps its keeper)"
+
+# Plumbing asserts: one shared wait window used by both channel paths, and a reap that consults the claims.
+grep -q 'rt_tunnel_wait()' "$RT/rt-lib" \
+  || fail "rt-lib no longer has one shared wait window for a forward that is coming up"
+PASS
+RT_WAIT_CALLS="$(grep -c 'rt_tunnel_wait "' "$RT/rt-lib" || true)"
+if [ "${RT_WAIT_CALLS}" -lt 2 ]; then
+  fail "only one channel path waits for a forward to come up, so the borrowed-forward race is back"
+fi
+PASS
+grep -q 'flock 9' "$RT/rt-lib" || fail "rt-lib no longer serializes forward claims with flock"
+grep -q 'RT_TUNNEL_KEEPERS' "$RT/rt-lib" \
+  || fail "rt_rdp_channel_release no longer counts live claims before it decides to reap"
+PASS
+
 
 # --- no interpolation into run: bodies (Omega finding 12) -------------------
 # AGENTS.md section 6 binds every untrusted input to env:. The planning-doc

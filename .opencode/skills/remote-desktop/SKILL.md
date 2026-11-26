@@ -37,6 +37,7 @@ All take `--host <ip>`, `--dry-run`, and the shared credential-path options.
 | `rt-type` | Unicode text into whatever has focus, through the RDP input channel (code points only, no chords) |
 | `rt-key` | Raw AT set-1 scancodes: `--key`, `--down`/`--up`, `--chord ctrl+t`, modifier holds |
 | `rt-click` | Pointer `--move`, `--click x y`, `--drag` waypoints through the RDP pointer channel |
+| `rt-tunnel` | `start\|status\|stop` for the pinned SSH forward that carries RDP; idempotent both ways, `stop` is the named inverse of every run that opens one |
 | `rt-uinput` | Kernel-level injection below gnome-remote-desktop: `--probe` or `--script <command file>` via `/dev/uinput` on the target |
 
 ## Verified facts (carry them, do not re-derive)
@@ -61,10 +62,25 @@ All take `--host <ip>`, `--dry-run`, and the shared credential-path options.
 - The target has no compiler; `rt-build` compiles on the controller and
   `rt-uinput` copies the binary over, runs it with `sudo -n`, and removes it
   again unless `--keep-target-copy`.
-- RDP connection: `/cert:ignore` is accepted for the LAN demo's self-signed
-  certificate; the credential reaches the tools through stdin argument lines.
-  The listener is enabled on the target with `grdctl rdp enable` (state
-  recorded in TASK-0041).
+- RDP connection, the posture that landed in TASK-0041 `T7`: the credential-
+  bearing channel authenticates the far end twice. RDP runs inside the
+  host-key-pinned SSH forward to `127.0.0.1:3401`, opened by
+  `scripts/remote/rt-tunnel` (`start`, `status`, `stop`; port
+  `RT_RDP_TUNNEL_PORT`, keys pinned in `scripts/remote/known_hosts`), and the
+  client pins the daemon's certificate fingerprint with
+  `/cert:fingerprint:sha256:` read from `RT_RDP_CERT_PIN` in
+  `scripts/remote/rt-lib`. The daemon's certificate is self-issued with no
+  Subject Alternative Name, so name matching and chain validation are not
+  postures available on this LAN, and a wrong pin aborts with `certificate not
+  trusted`. The accept-any certificate option is used nowhere in this tree and is
+  not an option to reach for: `tests/selftest.sh` fails the moment its name
+  appears in a shipped or loaded file, this page included. `RT_RDP_TUNNEL=0` is
+  the endorsed fallback, a direct `/v:<host>:3389` under the same certificate
+  pin, for a network the tunnel has not been proven on. Open one forward for a
+  whole run with `rt-tunnel start` and tear it down with `rt-tunnel stop`; a tool
+  that borrows a forward leaves it running for its owner. The credential reaches
+  the tools through stdin argument lines. The listener is enabled on the target
+  with `grdctl rdp enable` (state recorded in TASK-0041).
 
 ## Target hygiene
 

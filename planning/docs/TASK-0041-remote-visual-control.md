@@ -1410,6 +1410,136 @@ Written 2026-11-26 02:13 UTC (11:13 JST).
 
 ---
 
+### TF1 implementation record, `S2` blocker 1 and the two `rt-lib` forward should-fixes (2026-11-26 04:09 UTC, 13:09 JST)
+
+*Dispatch `TF1`, `TASK-0042 LIVE QUEUE 8` item `3d-fix`. Three files, closed against `S2` at `## Review:1474-1501`.
+No target contact in this dispatch, no credential read, no booth-tree file touched. Selftest 122 to 137 checks,
+green, nine negative controls run, eight with named failures and one recorded as inert.*
+
+**Blocker 1, the skill page and the gate that could not see it.** `.opencode/skills/remote-desktop/SKILL.md` now
+teaches the posture that landed at `b56be2b`: RDP inside the host-key-pinned SSH forward to `127.0.0.1:3401`
+(`scripts/remote/rt-tunnel start|status|stop`, `RT_RDP_TUNNEL_PORT`, `scripts/remote/known_hosts`), the identity
+line `/cert:fingerprint:sha256:` read from `RT_RDP_CERT_PIN`, `RT_RDP_TUNNEL=0` named as the endorsed fallback
+with the pin still applied, and the accept-any option named as forbidden in the tools *and* in this page. The tool
+table gained the `rt-tunnel` row it never had. The scan at `tests/selftest.sh` replaced the old `scripts/`-only
+grep and now covers a named list, `RT_CERT_SCAN_PATHS=(scripts .opencode team tests .github README.md AGENTS.md)`,
+with `planning/` and `DEMO-LOG.md` allow-listed in the comment as record history rather than instructions. The
+pattern is written `cert:[i]gnore` so the scanner's own file stays inside its own scope instead of being excluded,
+the same device the `[m]axTurns` assert uses. Four skill asserts added, each independently falsifiable: `rt-tunnel`,
+`RT_RDP_CERT_PIN`, `/cert:fingerprint:sha256:`, `RT_RDP_TUNNEL=0`.
+
+*Scan scope, options considered.* Option A, scan the whole tree with `--exclude-dir` for `.git`, `planning`,
+`.agentsmd`, `.pytest_cache`, `.runs`. Rejected: those local-only evidence trees carry the words of every past
+dispatch, so the gate would false-positive on history it cannot control and someone would widen the exclude list
+until it meant nothing. Option B, `git grep` over tracked files with pathspec exclusions. Rejected: `git` is not
+otherwise a dependency of this suite, and a gate that silently degrades outside a checkout is the skip-shaped hole
+`Omega`'s finding 14 is about. Option C chosen: the shipped and loaded trees enumerated as one named list, so the
+gate's scope is a stated claim a reviewer can read and dispute.
+
+**Should-fix 1, the borrow race at `rt-lib:236-249`.** One shared `rt_tunnel_wait` (returns 0 listening, 1 window
+expired, 2 pid died) is now used by both channel paths, bounded by the named constants `RT_TUNNEL_WAIT_TRIALS`
+(10) and `RT_TUNNEL_WAIT_MS` (0.5). A forward this call borrowed gets the same window a forward it opened gets, so
+`rt-tunnel start` and an input tool batched in one message no longer race into a hard failure. The failure text
+when the window does expire names `scripts/remote/rt-tunnel --host <host> status` first and `stop` only as the
+second step, conditional on what status says. The pid file is also no longer written before the port is listening:
+a forward that never came up used to leave a record for the next caller to trip over, and now leaves nothing.
+
+*Options considered.* Option A, `flock` held across the whole open, which is what `S2` suggested. Rejected on a
+mechanism: a background `ssh` inherits the lock fd, so the lock would be held for the life of the forward and every
+later caller would block on it; closing the fd in the child (`8>&-`) still leaks the fd to every `sleep` in the wait
+loop. Option B, chosen: short exclusive locks on each claim read-modify-write plus the wait window on the borrowed
+path, which removes the same race class without a long-lived fd. Option C, keep the immediate failure and just
+re-word the message. Rejected: the race is real, `T7` measured 0.54 s to forward up, and `AGENTS.md` section 17
+batching is the ordinary trigger.
+
+**Should-fix 2, reference counting for borrowed forwards.** The state file now carries the claim list as well as
+the pid: line 1 stays the forward's pid exactly as `rt-tunnel status` and `stop` read it, and each later line is
+`<role> <pid>` with `own` the process that opened the forward, `use` a borrower, and `keep` a forward holding itself
+because its starter detached on purpose. `rt_tunnel_claims_write` does every read-modify-write under `flock` on a
+companion `.lock` and lands as one `mv`, pruning every claim whose pid is dead. `rt_rdp_channel_release` drops this
+shell's claim and reaps only when no live claim of any role survives; when another live holder remains it leaves the
+forward up and says so, naming `rt-tunnel stop` as the inverse. A starter that cleared `RT_TUNNEL_OWNED` on purpose
+(`rt-tunnel:68`, unchanged) converts its own claim into a `keep` claim keyed to the forward's own pid, so the booth
+pattern survives. A borrower reaps when the opener is gone and it was the last live user, so a forward cannot sit on
+the loopback port with nobody left who will stop it. `RT_TUNNEL_CLAIMED` gates the reap: a call whose claim write
+failed never kills a forward it cannot prove nobody else is using.
+
+*Options considered.* Option A, a sidecar holders file. Rejected: `rt-tunnel stop` removes one record, and a sidecar
+would outlive it as an orphan that no path cleans. Option B, `flock` held for the whole tool session so only one tool
+runs against the port at a time. Rejected: it serializes the booth loop's calls, and a `SIGKILL`ed holder leaves a
+lock nobody can reclaim. Option C, last borrower adopts the forward whenever the owner pid is dead. Rejected: a
+`rt-tunnel start` forward always has a dead owner pid by the time the input tools run, so Option C would reap the
+booth forward at the first input call. Option D, keep claims in the same file behind line 1, chosen: `rt-tunnel`
+needs no change, `stop` still cleans in one removal, and the record stays one artifact per forward.
+
+**Changes.**
+
+| File | What changed | Why |
+|---|---|---|
+| `.opencode/skills/remote-desktop/SKILL.md` | RDP bullet rewritten to the pin plus tunnel posture, accept-any option named as forbidden, `RT_RDP_TUNNEL=0` fallback named, `rt-tunnel` row added to the tool table | `S2` blocker 1: this page is what a dispatched agent loads at run time, and it still taught the option finding 2 is about |
+| `tests/selftest.sh` | `cert:ignore` scan widened to the enumerated shipped and loaded trees with the bracket pattern; four skill posture asserts; a forward-lifecycle block (borrow race, four claim cases, port-free precondition, two plumbing asserts); two command substitutions guarded with `|| true` so a regression reads as a named FAIL instead of a silent `set -e` abort | `S2`: no gate could see the skill; and each new behaviour needs an assert that can fail |
+| `scripts/remote/rt-lib` | shared `rt_tunnel_wait` used by both paths, named wait constants, status-first failure text, record written only after the port listens, `rt_tunnel_claims_write` with `own`/`use`/`keep` claims under `flock`, `rt_rdp_channel_release` rewritten to the claim count | the two `S2` should-fixes, measured by `booth_loop.py` opening and closing a forward every cycle |
+
+**Checks run, with the command that produced each claim.** `bash tests/selftest.sh` at this working tree answers
+`SELFTEST: 137 checks passed (floor 100)` in 10.7 s, against the 122 baseline, so +15 checks. `bash -n
+tests/selftest.sh` and `bash -n scripts/remote/rt-lib` clean. Race case measured through the packaged tool: stand-in
+pid whose `/proc/<pid>/cmdline` carries `127.0.0.1:3417:127.0.0.1:3389` (`exec -a` on a real `sleep`, dialing
+nothing), record present, port 3417 free, both credential files absent, host `192.0.2.1` (RFC 5737, contacted by
+nobody) -> `rt-click` rc 1 after 3 s with the status-first text, stand-in still alive, record intact
+(`/tmp/opencode/tf1/race_test.sh`). Claim matrix run against the sourced lib in four isolated state directories:
+owner releases while a live borrower holds a claim, forward alive and `use` claim surviving; last holder reaps, pid
+dead and record gone; detached starter leaves `keep <forward pid>`; borrower against that keeper leaves the forward
+up (`/tmp/opencode/tf1/claims_test.sh`). `ss -tln` confirms no listener on 3401 or 3417 on this controller before
+and after, and `pgrep -af 'ExitOnForwardFailure'` answers zero processes, so no stand-in and no forward was left
+running. `grep -c 'rt_tunnel_wait "' scripts/remote/rt-lib` answers 2.
+
+**Negative controls, run in scratch copies under `/tmp/opencode/tf1/controls`, never in the checkout.** Copies made
+without `.git`, which is not needed by the suite.
+
+| Control | Patch | Outcome |
+|---|---|---|
+| C1 | plant the accept-any option in `SKILL.md` | exit 1, `the accept-any RDP certificate option appears in a shipped or loaded file ... .opencode/skills/remote-desktop/SKILL.md` |
+| C2 | skill page rewritten back to the old posture with no banned token | exit 1, `remote-desktop skill does not name RT_RDP_CERT_PIN` |
+| C3 | borrowed branch back to fail-now with the old `rt-tunnel stop` advice | exit 1, `rt-click gave a borrowed forward no wait window before failing (it waited 0s of a 4 x 0.5s window)` |
+| C4 | `rt_rdp_channel_release` back to the pre-fix unconditional reap | exit 1, `the tool that opened the forward reaped it while another live process still held a claim on it` |
+| C5 | release never reaps (`$others -gt 0` to `$others -ge 0`) | exit 1, `the last live holder left the forward running with no claim on it` |
+| C6 | detach branch disabled so the keeper claim is never written | exit 1, `a borrowed forward was reaped even though its starter detached on purpose and left a keeper claim` |
+| C7 | borrow path takes `RT_TUNNEL_OWNED=1` | **ran green, no teeth, recorded as not a control.** The offline borrow never completes, so ownership is unobservable without a listener on the port |
+| C8 | a failed borrow kills the borrowed pid and clears the record | exit 1, `the call that only wanted to borrow the forward killed it or removed its record` |
+| C9 | the self-start path stops using the shared window | exit 1, `only one channel path waits for a forward to come up, so the borrowed-forward race is back` |
+
+Two new asserts have no dedicated control and are named as such: the `127.0.0.1:3417 is free` precondition (it guards
+the other asserts rather than testing behaviour) and the borrower-claim-survival sub-assert inside the `C4` case (C4
+fails the group one assert earlier).
+
+**Behaviour changes a later dispatch must know.** `rt-tunnel status` can no longer report `forward half up` for a
+forward opened by these tools, because the record now appears only once the port listens; the half-up state remains
+visible for a record left by any other means. `rt-tunnel stop` removes the record and leaves the companion `.lock`
+file, which holds no content and is reused by the next claim. If `flock` is ever absent, `rt_tunnel_claims_write`
+prints a warning and refuses to write an unlocked record, and the tools then run with claims unrecorded: a forward is
+left running rather than killed, which is the safe direction of that failure.
+
+**Not run, every one named.** No target contact, so the pin against the live daemon and the forward against the live
+target remain `T7`'s evidence, not mine; `rt-tunnel start|status|stop` was not exercised end to end against a real
+forward in this pass, only the claim and release paths it triggers. `shellcheck` is absent on this controller, so the
+new `rt-lib` and selftest code is unlinted. No CI (no runner registered). The pre-push hook will run the same
+selftest. `scripts/licence-check` ran inside the suite only; nothing upstream was imported, all three files are
+team-authored under the MIT root licence, and the booth-tree gate stays `Charmy`'s. No CVE lookup.
+
+**Left for other dispatches, stated rather than dropped.** The three `S2` nits are outside this three-file budget:
+the fail-open `return 0` in `rt_tunnel_pid_is_ours` when `/proc/<pid>/cmdline` is unreadable (unchanged, still
+backstopped by the certificate pin), the four divergent pin validations and the unpinned `sshpass` residue in four
+booth files (`TF2`), and the dead `-` argument array plus the unprobed `--pointer minimal` path in `rt-click`
+(`TF2` or `B2`). `B2` should re-probe the 137-check baseline, the nine controls above, and specifically C7's gap: a
+successful borrow followed by a release is the one path this dispatch proved by construction and not by control.
+
+**Standing posture.** `R4`'s verdict stays FAIL on the booth repo as published at `7c4fa16`; the booth repo stays
+private; the flip is the operator's ruling on `C2` and `C3`. Nothing in this pass touches the booth tree.
+
+Written 2026-11-26 04:09 UTC (13:09 JST).
+
+---
+
 ## Review
 
 *Owner: `Shadow`. Read-only — findings only, no edits. Severity order, blockers first.*

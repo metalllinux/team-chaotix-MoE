@@ -51,7 +51,13 @@ RT_RDP_CERT_PIN="${RT_RDP_CERT_PIN:-84b12d76aae393937a27dca9767efa7685778352f1c1
 RT_RDP_TARGET_PORT="${RT_RDP_TARGET_PORT:-3389}"          # the listener's port on the target
 RT_RDP_TUNNEL_PORT="${RT_RDP_TUNNEL_PORT:-3401}"          # our loopback port, the near end of the forward
 RT_RDP_TUNNEL="${RT_RDP_TUNNEL:-1}"                       # 1 = RDP inside the pinned SSH connection
-RT_STATE_DIR="${RT_STATE_DIR:-$HOME/.cache/team-chaotix/remote-run}"  # pid files for live forwards
+RT_STATE_DIR="${RT_STATE_DIR:-$HOME/.cache/team-chaotix/remote-run}"  # records for live forwards
+# How long a caller waits for a forward to start listening, and the pause between polls. The same window
+# is used for a forward this shell opens and for one another process opened that this call borrows
+# (dispatch `S2`: `rt-tunnel start` and an input tool batched into one message race the 0.5 s the forward
+# needs, dispatch `T7` measured 0.54 s at TASK-0041 `## Implementation`).
+RT_TUNNEL_WAIT_TRIALS="${RT_TUNNEL_WAIT_TRIALS:-10}"     # polls before a forward is called half-open
+RT_TUNNEL_WAIT_MS="${RT_TUNNEL_WAIT_MS:-0.5}"            # seconds between those polls
 RT_RDP_V=""                                               # the /v: value, set by rt_rdp_channel
 # argv[1] of the team's C tools is an argument *file path* (scripts/rdp-input.c:202 and
 # scripts/rdp-pointer.c:83 fopen it directly, no `-` convention), so the argument lines that come down
@@ -59,6 +65,11 @@ RT_RDP_V=""                                               # the /v: value, set b
 RT_RDP_STDIN="${RT_RDP_STDIN:-/dev/stdin}"
 RT_TUNNEL_OWNED=0                                         # 1 when this shell started the forward
 RT_TUNNEL_PID=""
+RT_TUNNEL_HOST=""                                         # host the claim bookkeeping below is for
+RT_TUNNEL_CLAIM_ROLE=""                                   # own = started it, use = borrowed it, "" = no claim
+RT_TUNNEL_CLAIMED=0                                       # 1 when this shell's claim is recorded in the state file
+RT_TUNNEL_KEEPERS=0                                       # live own|keep claims left after a claim write
+RT_TUNNEL_USERS=0                                         # live use claims left after a claim write
 
 RT_DRY=0                                                   # 1 when --dry-run was given
 RT_HOST="${RT_HOST:-}"                                     # target host, empty until parsed
@@ -187,8 +198,12 @@ rt_session_env() {
 # substituting the pin would break the loop: with no `/cert:` option FreeRDP prompts interactively and
 # aborts when stdin is not a terminal.
 #
-# A live forward is described by a pid file in $RT_STATE_DIR named after the host and the local port.
-# The file holds a pid only, never a credential, and it is mode 600 under the umask 077 set above.
+# A live forward is described by a state file in $RT_STATE_DIR named after the host and the local port.
+# Line 1 holds the forward's pid, exactly as scripts/remote/rt-tunnel status and stop read it. Every line
+# after line 1 is a claim on that forward, `<role> <pid>`: `own` is the process that started it, `use` is a
+# process that borrowed it, and `keep` is a forward holding itself because its starter detached on purpose
+# (scripts/remote/rt-tunnel start). The file never holds a credential and is mode 600 under the umask 077
+# set above. Claims are what stop one tool reaping a forward another tool is still using.
 
 rt_tunnel_key() { printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'; }
 
@@ -222,30 +237,132 @@ rt_tunnel_pid_is_ours() {
   return 0
 }
 
+# Wait for the loopback port to accept, $1 being the pid believed to hold the forward. Both paths use it:
+# a forward this shell starts, and a forward another process started that this call is about to borrow.
+# Returns 0 when listening, 1 when the window ran out, 2 when the pid died first.
+rt_tunnel_wait() {
+  local pid="$1" i
+  for (( i = 1; i <= RT_TUNNEL_WAIT_TRIALS; i++ )); do
+    if rt_tunnel_listening; then return 0; fi
+    if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then return 2; fi
+    sleep "$RT_TUNNEL_WAIT_MS"
+  done
+  if rt_tunnel_listening; then return 0; fi
+  return 1
+}
+
+rt_tunnel_lock_file() { printf '%s.lock' "$(rt_tunnel_state_file "$1")"; }
+
+# Read-modify-write of one forward's claim list.
+#   $1 host  $2 add|drop  $3 own|use|keep  $4 pid of the claim being written  $5 forward pid to record
+#      as line 1, only when the record is being created.
+# add appends the claim. drop removes it. Both prune every claim whose pid is dead. Sets RT_TUNNEL_KEEPERS
+# and RT_TUNNEL_USERS to the live own|keep and use claims left, which is what rt_rdp_channel_release
+# decides the reap from. The whole rewrite is done under an exclusive flock on the companion lock file and
+# lands as one mv, so two callers launched in one batched message (AGENTS.md section 17) cannot lose each
+# other's claim. Returns 1 rather than writing an unlocked or partial record.
+rt_tunnel_claims_write() {
+  local host="$1" action="$2" role="$3" claim_pid="$4" fwd="${5:-}"
+  local state lock tmp r p n rc=0
+  state="$(rt_tunnel_state_file "$host")"
+  lock="$(rt_tunnel_lock_file "$host")"
+  RT_TUNNEL_KEEPERS=0
+  RT_TUNNEL_USERS=0
+  case "$action" in add|drop) : ;; *) return 1 ;; esac
+  case "$role" in own|use|keep) : ;; *) return 1 ;; esac
+  case "$claim_pid" in ''|*[!0-9]*) return 1 ;; esac
+  if [ "$action" = drop ] && [ ! -f "$state" ]; then return 0; fi
+  if [ "$action" = add ] && [ -z "$fwd" ] && [ ! -f "$state" ]; then return 1; fi
+  mkdir -p "$RT_STATE_DIR" 2>/dev/null || return 1
+  chmod 700 "$RT_STATE_DIR" 2>/dev/null || true
+  {
+    if rt_have flock; then
+      if ! flock 9; then rc=1; fi
+    else
+      printf 'rt: warning: flock is not available, forward claims are unlocked\n' >&2
+    fi
+    if [ "$rc" -eq 0 ]; then
+      tmp="${state}.claims"
+      if [ -n "$fwd" ]; then
+        printf '%s\n' "$fwd" > "$tmp" || rc=1
+      else
+        head -n 1 "$state" > "$tmp" || rc=1
+      fi
+      if [ "$rc" -eq 0 ] && [ -f "$state" ]; then
+        n=0
+        while read -r r p; do
+          n=$((n + 1))
+          if [ "$n" -eq 1 ]; then continue; fi              # line 1 is the forward pid, not a claim
+          case "$r" in own|use|keep) : ;; *) continue ;; esac
+          case "$p" in ''|*[!0-9]*) continue ;; esac
+          if [ "$r" = "$role" ] && [ "$p" = "$claim_pid" ]; then continue; fi
+          if ! kill -0 "$p" 2>/dev/null; then continue; fi
+          case "$r" in
+            own|keep) RT_TUNNEL_KEEPERS=$((RT_TUNNEL_KEEPERS + 1)) ;;
+            *)        RT_TUNNEL_USERS=$((RT_TUNNEL_USERS + 1)) ;;
+          esac
+          printf '%s %s\n' "$r" "$p" >> "$tmp" || rc=1
+        done < "$state"
+      fi
+      if [ "$rc" -eq 0 ] && [ "$action" = add ]; then
+        printf '%s %s\n' "$role" "$claim_pid" >> "$tmp" || rc=1
+        case "$role" in
+          own|keep) RT_TUNNEL_KEEPERS=$((RT_TUNNEL_KEEPERS + 1)) ;;
+          *)        RT_TUNNEL_USERS=$((RT_TUNNEL_USERS + 1)) ;;
+        esac
+      fi
+      if [ "$rc" -eq 0 ]; then
+        chmod 600 "$tmp" 2>/dev/null || true
+        mv -f "$tmp" "$state" || rc=1
+      else
+        rm -f "$tmp" 2>/dev/null || true
+      fi
+    fi
+  } 9>"$lock" || rc=1
+  if [ "$rc" -ne 0 ]; then return 1; fi
+  return 0
+}
+
 # Decide the channel and set RT_RDP_V. Call it from the tool's own shell, before any pipeline: a
 # background ssh started inside a pipeline subshell cannot be reaped by the tool's exit trap.
 rt_rdp_channel() {
-  local host="$1" state pid i
+  local host="$1" state pid rc
   [ -n "$host" ] || rt_die "rt_rdp_channel needs a host"
   if [ "$RT_RDP_TUNNEL" -eq 0 ]; then
     RT_RDP_V="${host}:${RT_RDP_TARGET_PORT}"
     rt_note "warning: RT_RDP_TUNNEL=0, RDP dials ${RT_RDP_V} across the LAN. The certificate pin still applies."
     return 0
   fi
+  RT_TUNNEL_HOST="$host"
   state="$(rt_tunnel_state_file "$host")"
   if [ -f "$state" ]; then
     read -r pid < "$state" || pid=""
     if rt_tunnel_pid_is_ours "$pid" "$(rt_tunnel_forward_spec)"; then
-      if rt_tunnel_listening; then
+      # A forward this call did not start gets the same wait window a forward it starts itself gets. The
+      # old code died here on the spot and told the operator to run `rt-tunnel stop`, which tears down a
+      # perfectly healthy forward that is 0.5 s into coming up (`S2` should-fix, TASK-0041 `## Review`).
+      rc=0
+      rt_tunnel_wait "$pid" || rc=$?
+      if [ "$rc" -eq 0 ]; then
         RT_RDP_V="127.0.0.1:${RT_RDP_TUNNEL_PORT}"
         RT_TUNNEL_OWNED=0                    # a forward this run borrowed: reuse it, never kill it
         RT_TUNNEL_PID="$pid"
+        RT_TUNNEL_CLAIM_ROLE="use"
+        if rt_tunnel_claims_write "$host" add use "$$"; then
+          RT_TUNNEL_CLAIMED=1
+        else
+          rt_note "warning: the borrowed forward at ${state} could not be claim-recorded, so this call cannot protect it from another caller's exit"
+        fi
         return 0
       fi
-      rt_die "the forward for ${host} (pid ${pid}) is alive but 127.0.0.1:${RT_RDP_TUNNEL_PORT} is not listening; run scripts/remote/rt-tunnel stop --host ${host}"
+      if [ "$rc" -eq 2 ]; then
+        rt_note "the forward for ${host} (pid ${pid}) exited while this call waited ${RT_TUNNEL_WAIT_TRIALS} x ${RT_TUNNEL_WAIT_MS}s for 127.0.0.1:${RT_RDP_TUNNEL_PORT}"
+      else
+        rt_die "the forward for ${host} (pid ${pid}) is alive but 127.0.0.1:${RT_RDP_TUNNEL_PORT} did not start listening within ${RT_TUNNEL_WAIT_TRIALS} x ${RT_TUNNEL_WAIT_MS}s. Look at it with scripts/remote/rt-tunnel --host ${host} status first, and run scripts/remote/rt-tunnel --host ${host} stop only if status says the record is not a forward that is still coming up."
+      fi
     fi
     rt_note "clearing the stale forward record at ${state}"
-    rm -f "$state"
+    rm -f "$state" "$(rt_tunnel_lock_file "$host")" "${state}.claims"
   fi
   if rt_tunnel_listening; then
     rt_die "127.0.0.1:${RT_RDP_TUNNEL_PORT} is held by a process this tool cannot identify as its own forward. Free the port or set RT_RDP_TUNNEL_PORT; refusing to send a credential into an unknown socket."
@@ -258,31 +375,87 @@ rt_rdp_channel() {
     -o ServerAliveInterval=20 -o ServerAliveCountMax=3 \
     -L "$(rt_tunnel_forward_spec)" "${RT_SSH_USER}@${host}" &
   RT_TUNNEL_PID=$!
-  RT_TUNNEL_HOST="$host"
-  printf '%s\n' "$RT_TUNNEL_PID" > "$state"
   RT_TUNNEL_OWNED=1
-  for i in 1 2 3 4 5 6 7 8 9 10; do
-    if rt_tunnel_listening; then
-      RT_RDP_V="127.0.0.1:${RT_RDP_TUNNEL_PORT}"
-      return 0
+  RT_TUNNEL_CLAIM_ROLE="own"
+  # The record is written only once the port is listening, so a forward that never came up never leaves a
+  # pid file for the next caller to trip over.
+  rc=0
+  rt_tunnel_wait "$RT_TUNNEL_PID" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    if rt_tunnel_claims_write "$host" add own "$$" "$RT_TUNNEL_PID"; then
+      RT_TUNNEL_CLAIMED=1
+    else
+      rt_note "warning: the forward is up but its claim could not be recorded at ${state}; scripts/remote/rt-tunnel --host ${host} stop is the inverse"
     fi
-    kill -0 "$RT_TUNNEL_PID" 2>/dev/null \
-      || rt_die "the ssh forward for ${host} exited before it forwarded anything. Check the pinned host key for ${host} in ${RT_SSH_KNOWN_HOSTS}."
-    sleep 0.5
-  done
-  rt_rdp_channel_release
+    RT_RDP_V="127.0.0.1:${RT_RDP_TUNNEL_PORT}"
+    return 0
+  fi
+  if [ "$rc" -eq 2 ]; then
+    rt_die "the ssh forward for ${host} exited before it forwarded anything. Check the pinned host key for ${host} in ${RT_SSH_KNOWN_HOSTS}."
+  fi
+  # The forward is alive and never forwarded anything: kill this shell's own child directly, there is no
+  # claim to consult yet.
+  kill "$RT_TUNNEL_PID" 2>/dev/null || true
+  wait "$RT_TUNNEL_PID" 2>/dev/null || true
   rt_die "the ssh forward never opened 127.0.0.1:${RT_RDP_TUNNEL_PORT} for ${host}"
 }
 
-# Kill only the forward this shell started. A borrowed one is left running for its owner.
+# Release this shell's claim on a forward and reap the forward only when nothing else is holding it.
+#   own, still owned  drop the claim. Reap only when no live claim of any kind is left. When another live
+#                     process is using the forward it stays up and says so, which is the fix for the tool
+#                     that used to reap a forward out from under a concurrent caller (`S2` should-fix,
+#                     TASK-0041 `## Review`, and booth code/booth_loop.py opens and closes one every cycle).
+#   own, detached     the caller cleared RT_TUNNEL_OWNED on purpose (scripts/remote/rt-tunnel start): the
+#                     claim becomes a keep claim held by the forward's own pid, so the forward outlives
+#                     this shell and no later tool reaps it.
+#   use               drop the claim, never reap while a keeper or another user is live, and reap when the
+#                     opener is gone and this shell was the last live user, so a forward does not sit on the
+#                     loopback port with nobody left who will stop it.
 rt_rdp_channel_release() {
-  if [ "$RT_TUNNEL_OWNED" -eq 1 ] && [ -n "$RT_TUNNEL_PID" ]; then
-    kill "$RT_TUNNEL_PID" 2>/dev/null || true
-    wait "$RT_TUNNEL_PID" 2>/dev/null || true
-    [ -n "${RT_TUNNEL_HOST:-}" ] && rm -f "$(rt_tunnel_state_file "$RT_TUNNEL_HOST")"
+  local host="${RT_TUNNEL_HOST:-}" role="${RT_TUNNEL_CLAIM_ROLE:-}" fwd="${RT_TUNNEL_PID:-}" others state
+  state="$(rt_tunnel_state_file "${host:-none}")"
+  if [ -z "$host" ] || [ -z "$role" ] || [ "${RT_TUNNEL_CLAIMED:-0}" -ne 1 ]; then
+    RT_TUNNEL_OWNED=0
+    RT_TUNNEL_PID=""
+    return 0
   fi
+  if [ "$role" = own ] && [ "$RT_TUNNEL_OWNED" -eq 0 ]; then
+    if rt_tunnel_claims_write "$host" add keep "$fwd" \
+       && rt_tunnel_claims_write "$host" drop own "$$"; then
+      rt_note "forward left running for the rest of the run, pid ${fwd}, record ${state}"
+    else
+      rt_note "warning: the keeper claim for pid ${fwd} could not be recorded at ${state}; the forward may outlive the run. Inverse: scripts/remote/rt-tunnel --host ${host} stop"
+    fi
+    RT_TUNNEL_CLAIMED=0
+    RT_TUNNEL_CLAIM_ROLE=""
+    RT_TUNNEL_OWNED=0
+    RT_TUNNEL_PID=""
+    return 0
+  fi
+  if ! rt_tunnel_claims_write "$host" drop "$role" "$$"; then
+    rt_note "warning: the forward record at ${state} could not be updated, so pid ${fwd} is being left running. Inverse: scripts/remote/rt-tunnel --host ${host} stop"
+    RT_TUNNEL_CLAIMED=0
+    RT_TUNNEL_CLAIM_ROLE=""
+    return 0
+  fi
+  others=$((RT_TUNNEL_KEEPERS + RT_TUNNEL_USERS))
+  if [ "$others" -gt 0 ]; then
+    rt_note "leaving the forward up for ${others} other live holder(s), record ${state}; inverse: scripts/remote/rt-tunnel --host ${host} stop"
+    RT_TUNNEL_CLAIMED=0
+    RT_TUNNEL_CLAIM_ROLE=""
+    RT_TUNNEL_OWNED=0
+    return 0
+  fi
+  if [ -n "$fwd" ]; then
+    kill "$fwd" 2>/dev/null || true
+    wait "$fwd" 2>/dev/null || true
+  fi
+  rm -f "$state" "$(rt_tunnel_lock_file "$host")" "${state}.claims"
+  RT_TUNNEL_CLAIMED=0
+  RT_TUNNEL_CLAIM_ROLE=""
   RT_TUNNEL_OWNED=0
   RT_TUNNEL_PID=""
+  return 0
 }
 
 # --- rdp argument lines -------------------------------------------------------
