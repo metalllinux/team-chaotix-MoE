@@ -13,6 +13,31 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3 landed, `T7` retires `/cert:ignore` on the live path, and the selftest baseline moves from
+110 to 120 (2026-11-26 10:32 JST, 2026-11-26 01:32 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `T7` (`Tails`, child `ses_deacb0619ffedOi97drcW8B50p`) landed in both repos,
+read back from the remotes by me rather than from the dispatch report. Team `refs/heads/main` answers `b56be2b`
+with `git verify-commit` good against `F9261D151316FD60`, booth `refs/heads/main` answers `8bf04b7` with signature
+good, and `git status --porcelain` answers 0 lines in both clones. **Baseline change, load-bearing for every later
+dispatch in this task.** I re-ran `bash tests/selftest.sh`, which answers `SELFTEST: 120 checks passed (floor
+100)`, so the baseline is 106 before `f1907ab`, 110 after it, and 120 after `b56be2b`. Every brief from here
+states 120. What landed. `scripts/remote/rt-lib` now carries the certificate fingerprint pin, a new `rt-tunnel`,
+and `rt_rdp_channel`, and `rt-type`, `rt-key` and `rt-click` run through it; the booth repo carries
+`code/rdp-cert-pin.txt` with all seven `Omega` sites updated including `code/booth_loop.py`. The live smoke run
+measured the posture rather than asserting it, tunnel open at 0.54 s to `127.0.0.1:3401` over pinned host keys,
+the tunneled endpoint presenting the identical 826-byte DER at the pinned SHA-256, `rt-click --click 960 14`
+opening the GNOME 49 dropdown at rc 0, target-side `ss` showing the 3389 session peer
+`[::ffff:127.0.0.1]:47450` while controller-side shows zero connections to `192.168.1.99:3389`, and the dismissal
+click returning a byte-identical frame with no target state changed. Negative controls give the pin teeth, a wrong
+pin aborts at rc 1 with `certificate not trusted`, and three scratch-copy plants each fail the suite with its named
+message. A real bug surfaced and was fixed on the way, the packaged tools passed `-` to C tools that `fopen`
+argv[1], now `RT_RDP_STDIN=/dev/stdin` behind a new offline assert. **Gaps `T7` named, recorded, not yet
+dispatched, they become item `3c`.** Six archived booth probes keep direct `/v:` with the pin and hold no forward,
+the booth tree carries no machine gate for this posture, the `l1_*` scripts still use
+`StrictHostKeyChecking=no`, and the tunnel remains untested on a non-bridge network. I keep `Omega`'s accepted
+residual risk on the last one rather than pretend a venue-network test is achievable in the time left. Next
+dispatch is item `3b`, `T8`.
+
 **`LIVE QUEUE 8` item 2 landed, `O1` keeps finding 2 open at high, and the booth-day RDP configuration is now a
 named fix instead of an open question (2026-11-26 09:11 JST, 2026-11-26 00:11 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `O1` (`Omega`, child `ses_deadbd076ffeEsZ5udJ3jZvJ06`) wrote `TASK-0041 ##
@@ -829,7 +854,8 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
   committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
-  selftest baseline is 110 checks, being 106 before the gate fix at `f1907ab` and 110 after it. Stamp every entry
+  selftest baseline is 120 checks, being 106 before the gate fix at `f1907ab`, 110 after it, and 120 after the RDP
+  certificate-pin commit `b56be2b`. Stamp every entry
   at the moment it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Each
   child writes its own section in the planning doc it is working on and reports back in at most five short lines.
   **Standing ruling in every brief.** `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent
@@ -852,7 +878,8 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    dispatcher as team `47c6dfb`.` `Omega` as `O1`. `TASK-0041 ## Security`. Rule on finding 2 against `T6`'s
    evidence, and on the 3389 listener, the three hygiene items, and the `lock-enabled` posture, naming the
    booth-day recommendation.
-   3. `Tails` as `T7`. `TASK-0041 ## Implementation` plus the runner code. Close the fix `Omega` names in
+   3. `LANDED 2026-11-26 01:32 UTC (10:32 JST) as `T7`, team `b56be2b` and booth `8bf04b7`, both read back from the
+   remotes and signed, selftest 110 to 120.` `Tails` as `T7`. `TASK-0041 ## Implementation` plus the runner code. Close the fix `Omega` names in
    `TASK-0041 ## Security` for finding 2: replace `/cert:ignore` with the `/cert:fingerprint:sha256:` pin and the
    host-key-pinned SSH tunnel at `rt-lib:164/170` and at the seven booth-runner sites including
    `booth_loop.py:273`, and prove it against the live target with one smoke run through the tunnel to
@@ -860,7 +887,12 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    `DEMO-LOG.md` already records a named inverse.
    3b. `Tails` as `T8`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9` recorded without
    fixing: 4 of 6 dry-run asserts rely on tool self-report, and `UI_DEV_CREATE|1800` is too loose. Negative
-   controls required, selftest baseline 110 checks.
+   controls required, selftest baseline 120 checks.
+   3c. `Tails` as `T9`, owed and not yet dispatched, the four gaps `T7` named. Six archived booth probes still use
+   direct `/v:` with the pin and hold no forward, the booth tree carries no machine gate for the pinned posture,
+   the `l1_*` scripts still use `StrictHostKeyChecking=no`, and the tunnel is untested on a non-bridge network.
+   Lower priority for the 2026-11-28 booth than items `3b`, 4, 5 and 6, and the last gap is `Omega`'s accepted
+   residual risk rather than open work.
    4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
    secrets rule and the packaged `gnome-screenshot-tool` path. Do not touch the booth clone in the same dispatch
    as any other agent.
