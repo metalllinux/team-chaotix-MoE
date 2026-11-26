@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# rt-tunnel -- hold the pinned SSH forward that carries RDP for a whole run.
+#
+# Why this exists. `Omega`'s ruling on `TASK-0042 ## Security` finding 2 (dispatch `O1`,
+# 2026-11-26 00:06 UTC) recommends the booth-day configuration where no 3389 packet crosses the LAN:
+# RDP runs inside the SSH connection whose host key is pinned in scripts/remote/known_hosts, to
+# 127.0.0.1:3401 on the controller, and the client pins the daemon's certificate fingerprint. The
+# individual tools (rt-type, rt-key, rt-click) open a forward for the length of their own call. A booth
+# run makes many calls, so it starts one forward here, once, and tears it down at the end.
+#
+# The forward is described by a pid file under $RT_STATE_DIR, mode 600, holding a pid only. No
+# credential is written anywhere by this tool, and the SSH password reaches sshpass through -f <file>.
+set -euo pipefail
+set +x
+RT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/remote/rt-lib
+source "${RT_DIR}/rt-lib"
+
+usage() {
+  cat <<'EOF'
+usage: rt-tunnel --host <ip> start|status|stop [--dry-run]
+
+start    open 127.0.0.1:$RT_RDP_TUNNEL_PORT -> 127.0.0.1:$RT_RDP_TARGET_PORT on the target, over the
+         pinned SSH connection, and leave it running for the rest of the run. Idempotent: if a
+         forward this tool recognises is already up, it reports that and changes nothing.
+status   report whether that forward is up and which pid holds it.
+stop     kill the forward named by the pid file and remove the file. Idempotent: nothing running is
+         a successful no-op.
+
+Overrides: RT_RDP_TUNNEL_PORT (3401), RT_RDP_TARGET_PORT (3389), RT_STATE_DIR, RT_SSH_USER.
+RT_RDP_TUNNEL=0 disables the tunnel model for the input tools; this tool then does nothing useful.
+EOF
+  rt_common_options
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then usage; exit 0; fi
+
+rt_parse_common "$@"
+set -- "${RT_ARGV[@]}"
+ACTION=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    start|status|stop) ACTION="$1"; shift ;;
+    *) rt_die "unknown argument: $1 (see --help)" ;;
+  esac
+done
+[ -n "$ACTION" ] || rt_die "one of start, status or stop is required (see --help)"
+[ "$RT_RDP_TUNNEL" -eq 1 ] || rt_die "RT_RDP_TUNNEL=0: the tunnel model is switched off, this tool has nothing to do"
+
+STATE="$(rt_tunnel_state_file "$(rt_host_or_placeholder)")"
+
+if [ "$RT_DRY" -eq 1 ]; then
+  printf 'would run: sshpass -f %s ssh %s -N -o ExitOnForwardFailure=yes -L %s %s@%s &\n' \
+    "$RT_SSH_PASS_FILE" "${RT_SSH_OPTS[*]}" "$(rt_tunnel_forward_spec)" "$RT_SSH_USER" "$(rt_host_or_placeholder)"
+  printf 'would record the pid in: %s\n' "$STATE"
+  rt_note "dry run, no connection made and no credential read"
+  exit 0
+fi
+
+rt_require_host
+
+case "$ACTION" in
+  start)
+    rt_rdp_channel "$RT_HOST"
+    if [ "$RT_TUNNEL_OWNED" -eq 1 ]; then
+      # Detach on purpose: this command's job is to leave a forward running for the rest of the run, so
+      # the exit trap that the input tools rely on must not reclaim it. rt-tunnel stop is the inverse.
+      RT_TUNNEL_OWNED=0
+      rt_note "forward up: 127.0.0.1:${RT_RDP_TUNNEL_PORT} -> ${RT_HOST}:127.0.0.1:${RT_RDP_TARGET_PORT}, pid ${RT_TUNNEL_PID}, record ${STATE}"
+      rt_note "inverse: scripts/remote/rt-tunnel --host ${RT_HOST} stop"
+    else
+      rt_note "forward already up for ${RT_HOST}, pid ${RT_TUNNEL_PID}, left running unchanged"
+    fi
+    ;;
+  status)
+    pid=""
+    [ -f "$STATE" ] && read -r pid < "$STATE" || pid=""
+    if [ -n "$pid" ] && rt_tunnel_pid_is_ours "$pid" "$(rt_tunnel_forward_spec)"; then
+      if rt_tunnel_listening; then
+        rt_note "forward up for ${RT_HOST}: pid ${pid}, 127.0.0.1:${RT_RDP_TUNNEL_PORT} listening, record ${STATE}"
+      else
+        rt_note "forward half up for ${RT_HOST}: pid ${pid} alive, 127.0.0.1:${RT_RDP_TUNNEL_PORT} not listening"
+        exit 1
+      fi
+    elif [ -f "$STATE" ]; then
+      rt_note "stale record: ${STATE} names ${pid:-nothing}, which is not a forward this tool recognises"
+      exit 1
+    else
+      rt_note "no forward for ${RT_HOST}: no record at ${STATE}"
+      exit 1
+    fi
+    ;;
+  stop)
+    if [ ! -f "$STATE" ]; then
+      rt_note "no forward record at ${STATE}, nothing to stop"
+      exit 0
+    fi
+    pid=""
+    read -r pid < "$STATE" || pid=""
+    if [ -n "$pid" ] && rt_tunnel_pid_is_ours "$pid" "$(rt_tunnel_forward_spec)"; then
+      kill "$pid" 2>/dev/null || true
+      sleep 0.5
+      kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null || true
+      rm -f "$STATE"
+      rt_tunnel_listening && rt_die "pid ${pid} stopped but 127.0.0.1:${RT_RDP_TUNNEL_PORT} is still listening"
+      rt_note "forward for ${RT_HOST} stopped and record removed"
+    else
+      rt_die "${STATE} names ${pid:-nothing}, which is not a forward this tool recognises. Not killing it; remove the record by hand after checking it."
+    fi
+    ;;
+esac

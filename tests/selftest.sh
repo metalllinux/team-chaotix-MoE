@@ -248,7 +248,7 @@ fi
 # credential read. Dry runs only print the commands the real run would use,
 # with a <host> placeholder in place of any host.
 RT="scripts/remote"
-RT_TOOLS=(rt-shot rt-ocr rt-type rt-key rt-click rt-status rt-uinput rt-build)
+RT_TOOLS=(rt-shot rt-ocr rt-type rt-key rt-click rt-status rt-uinput rt-build rt-tunnel)
 
 # The packaged inventory: every helper plus the shared lib, the licence
 # record referenced by rt-build, and the target-side injector source.
@@ -278,7 +278,7 @@ note "scripts/remote --help OK"
 # Dry runs exit 0, name no real host, and state that no credential was read.
 RT_TMP="$(mktemp -d)"
 trap 'rm -rf "$RT_TMP"' EXIT
-for probe in "rt-shot --dry-run" "rt-status --dry-run"; do
+for probe in "rt-shot --dry-run" "rt-status --dry-run" "rt-tunnel --dry-run start"; do
   out="$($RT/$probe 2>&1)" || fail "dry run failed: $probe"
   grep -q '<host>' <<< "$out" || fail "dry run of $probe used a real host instead of the placeholder"
   PASS
@@ -320,6 +320,20 @@ if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/
     PASS
   done
   note "scripts/remote input-tool dry runs OK"
+  # The C tools fopen argv[1] directly (scripts/rdp-input.c:202, scripts/rdp-pointer.c:83), so the
+  # argument lines that arrive down a pipe have to be named as /dev/stdin. Dispatch T7 found the
+  # packaged input tools passing `-`, which the tools cannot open, and found it only against the live
+  # target because no offline assert covered it.
+  for probe in \
+    "rt-type --dry-run --text CHAOTIX41" \
+    "rt-key --dry-run --chord ctrl+t" \
+    "rt-click --dry-run --click 960 14"; do
+    out="$(RT_BUILD_DIR="$RT_TMP" $RT/$probe 2>&1)" || fail "dry run failed: $probe"
+    grep -q '/dev/stdin' <<< "$out" \
+      || fail "$probe does not name an argument path the C tools can open"
+    PASS
+  done
+  note "scripts/remote rdp argument plumbing OK (/dev/stdin)"
 else
   fail "gcc or freerdp-client3 absent; the 5 remote-build asserts cannot run (Big T3 finding 1)"
 fi
@@ -362,6 +376,48 @@ grep -q 'UserKnownHostsFile' "$RT/rt-lib" \
   || fail "scripts/remote/known_hosts does not carry all three pinned keys for 192.168.1.99"
 PASS
 note "host key pinning asserts OK (no unpinned SSH posture under scripts/)"
+
+# RDP certificate posture. `TASK-0042 ## Security` finding 2, `Omega`'s `O1` ruling 2026-11-26
+# 00:06 UTC: `/cert:ignore` accepts any server certificate, so no file under scripts/ may carry it, and
+# the credential-bearing argument generator must instead pin the SHA-256 fingerprint of the target
+# daemon's TLS certificate and dial the loopback end of the host-key-pinned SSH forward. String match
+# only, no target contact, no credential read, same shape as the host-key assert above. The pin is a
+# public certificate fingerprint, not secret material.
+if grep -rn 'cert:ignore' scripts/ >/dev/null 2>&1; then
+  fail "a file under scripts/ carries /cert:ignore, which accepts any RDP server certificate (finding 2)"
+fi
+PASS
+note "no /cert:ignore anywhere under scripts/ OK"
+
+grep -qE 'RT_RDP_CERT_PIN="\$\{RT_RDP_CERT_PIN:-[0-9a-f]{64}\}"' "$RT/rt-lib" \
+  || fail "rt-lib no longer holds the RDP certificate pin in one named 64-hex variable"
+grep -qE 'cert_line="/cert:fingerprint:sha256:\$\{RT_RDP_CERT_PIN\}"' "$RT/rt-lib" \
+  || fail "rt-lib's rdp argument lines no longer pin the server certificate fingerprint"
+grep -qE 'RT_RDP_TUNNEL_PORT="\$\{RT_RDP_TUNNEL_PORT:-[0-9]+\}"' "$RT/rt-lib" \
+  || fail "rt-lib no longer names the loopback port the pinned SSH forward listens on"
+grep -q 'ExitOnForwardFailure=yes' "$RT/rt-lib" \
+  || fail "rt-lib no longer requires the SSH forward to fail rather than run unforwarded"
+PASS
+
+# The argument lines a real run would emit, produced offline through the dry-run form.
+RDP_ARGS_FORM="$(bash -c "source '$RT/rt-lib'; RT_DRY=1; rt_rdp_args '<host>'")" \
+  || fail "rt_rdp_args dry form could not be produced"
+printf '%s\n' "$RDP_ARGS_FORM" | grep -qE '^/v:127\.0\.0\.1:[0-9]+$' \
+  || fail "the default RDP /v: is not the loopback end of the pinned SSH forward"
+printf '%s\n' "$RDP_ARGS_FORM" | grep -qE '^/cert:fingerprint:sha256:[0-9a-f]{64}$' \
+  || fail "the RDP argument lines do not carry a 64-hex certificate fingerprint"
+if printf '%s\n' "$RDP_ARGS_FORM" | grep -q 'cert:ignore'; then
+  fail "the RDP argument lines still emit /cert:ignore"
+fi
+PASS
+
+# A real run has to refuse before the endpoint is decided: rt_rdp_args must not hand a credential to a
+# channel no one chose. The host below is 192.0.2.1, RFC 5737 documentation space, contacted by nobody.
+if bash -c "source '$RT/rt-lib'; rt_rdp_args '192.0.2.1'" >/dev/null 2>&1; then
+  fail "rt_rdp_args would build a credential-bearing argument set with no decided RDP channel"
+fi
+PASS
+note "RDP certificate posture asserts OK (pin present, no cert:ignore, channel refused when undecided)"
 
 # The remote-desktop skill page exists where opencode discovers project
 # skills (.opencode/skills, verified 2026-11-22 with

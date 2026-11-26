@@ -1176,6 +1176,154 @@ Written 2026-11-25 23:45 UTC (2026-11-26 08:45 JST).
 
 ---
 
+### Certificate pin plus pinned SSH tunnel landed, `Omega` finding 2 closed in code (2026-11-26 01:22 UTC, 10:22 JST, `Tails`, dispatch `T7`)
+
+Brief: `TASK-0042` `LIVE QUEUE 8` item 3. `Omega`'s `O1` ruling at `## Security:1336` names the fix
+concretely, and this dispatch lands it in both trees and proves it against the live target. No hygiene
+item was acted on: item 1 is the operator's `chmod`, item 3 is `O1`'s accept with the inverse scheduled.
+
+**Alternatives considered**
+
+*Problem: where the pin value lives.*
+- **Option A, one named variable in `rt-lib`,** `RT_RDP_CERT_PIN="${RT_RDP_CERT_PIN:-<hex>}"`. Chosen for
+  the team repo: `rt-lib` is already the lib every packaged tool sources, the selftest asserts the
+  variable, the 64-hex form, and that `rt_rdp_args` composes its certificate line from it, and a re-key
+  is one line.
+- **Option B, a config file the tools read,** which `O1` sanctions in the same sentence. Chosen for the
+  booth tree as `code/rdp-cert-pin.txt`: the seven booth sites are Python, bash and C-comment sites with
+  no shared lib between them, so a published file is the only single named place. `booth_loop.py` reads
+  it through `rdp_cert_pin()`, which refuses anything that is not 64 hex characters rather than
+  connecting, and `CHAOTIX_T0042_RDP_CERT_PIN` overrides it for a re-key without an edit. The shell and
+  archived-Python sites read the file from their own directory, falling back to the durable copy.
+- **Option C, the literal hex copy-pasted at each site.** Rejected, `Omega` named this as the thing to
+  avoid, and a re-key would be seven edits across three languages.
+
+*Problem: who owns the SSH forward.*
+- **Option A, each tool opens its own forward and reaps it** through its `EXIT` trap. Chosen for the
+  packaged path: a tool that opens something must close it, or a booth machine accumulates orphaned
+  ssh processes.
+- **Option B, one forward for a whole run, reused by every call.** Chosen as well, because a booth cycle
+  makes dozens of calls and one SSH handshake is the right cost. `scripts/remote/rt-tunnel start|status|stop`
+  is the packaged owner; the input tools detect a live forward through a pid file under `RT_STATE_DIR`
+  plus a `/proc/<pid>/cmdline` check that the pid is really a forward with our `-L` spec, reuse it
+  without killing it, and clear a stale record whose pid is dead.
+- **Rejected mechanism, starting the forward inside `rt_rdp_args`.** `rt_rdp_args` is always called in a
+  pipeline (`rt_rdp_args <host> | rdp-input …`), so a background ssh started there lives in a pipeline
+  subshell and cannot be reaped by the tool's trap. Instead `rt_rdp_channel` is called by each tool in
+  its own shell before the pipeline, and `rt_rdp_args` refuses to emit a credential-bearing argument set
+  when no channel was decided. Measured: `rt_rdp_args` alone exits 1 with `rt_rdp_channel was not called
+  … Refusing to connect`, and that refusal is asserted offline against RFC 5737 documentation space
+  (`192.0.2.1`), which nobody is contacted.
+- **Fail-closed rule on the loopback port.** If `127.0.0.1:3401` is listening but no record identifies it
+  as our own forward, the tools refuse: "refusing to send a credential into an unknown socket". A
+  half-open forward (pid alive, port not listening) also refuses, with the `rt-tunnel stop` command to run.
+
+*Problem: `/v:` at the six archived booth probe sites.* `O1` names `127.0.0.1:3401` at all seven sites.
+- **Option A, literal reading,** point all seven at the tunnel port. Rejected: `drive_l3.py`, `l5_a.py`,
+  `mkargs.sh`, `mkargs2.sh`, `l1_run1.sh` and `l1_setup.sh` are one-shot probes that open no forward of
+  their own, so pointing them at a port nothing forwards would make every one of them fail to connect.
+- **Option B, chosen and named as a divergence from `Omega`'s sentence:** pin all seven certificates, and
+  give only the live runner the tunnel posture. The six keep their direct `/v:192.168.1.99`, which is the
+  posture `O1` itself endorses as the booth fallback, and it was measured working with the pin in this
+  dispatch (`RT_RDP_TUNNEL=0`, click rc 0). The forward is per-run and belongs to the code that owns the
+  run, which in the booth tree is `code/booth_loop.py`.
+
+*Problem: the pinned fingerprint versus a trusted chain.* Unchanged from `O1` and re-confirmed by this
+run: the daemon's certificate has no SAN, so name matching can never succeed, `/cert:deny` aborts against
+it, and the fingerprint pin is the correct mechanism for this daemon rather than a fallback to it. The
+accept-any-certificate option that finding 2 is about now appears nowhere under `scripts/` or in the booth
+`code/`, and the selftest fails the moment its name returns.
+
+**Changes**
+
+| File | Change | Why |
+|---|---|---|
+| `scripts/remote/rt-lib` | pin, ports, `RT_RDP_STDIN`, `rt_rdp_channel`, `rt_rdp_tunnel_release`, forward pid-file helpers, `rt_rdp_args` now emits `/v:` from the decided channel plus `/cert:fingerprint:sha256:${RT_RDP_CERT_PIN}`, `trap … EXIT` added | the fix `O1` names, in one place, with the identity line built in one variable |
+| `scripts/remote/rt-type`, `rt-key`, `rt-click` | call `rt_rdp_channel` before the pipeline; pass `$RT_RDP_STDIN` instead of `-`; `rt-click` chains its own trap to `rt_rdp_channel_release` | the forward must be opened in the tool's shell so the tool can reap it; the C tools `fopen` argv[1] |
+| `scripts/remote/rt-tunnel` | new packaged tool, `start`, `status`, `stop`, `--dry-run` | "started once per run, killed at teardown" in `O1`'s configuration, and the idempotent teardown an agent can call |
+| `scripts/rdp-input.c:13`, `scripts/rdp-pointer.c:10` | usage comment shows `/cert:fingerprint:sha256:<hex>` | comments are the documentation a clone copies; the assert covers comments too |
+| `tests/selftest.sh` | `rt-tunnel` added to the packaged inventory and dry-run probes; new certificate-posture block (4 asserts); new argument-plumbing block (3 asserts) | the gate `O1` asked for, plus the class of bug the smoke run found |
+| booth `code/rdp-cert-pin.txt` | new published file, the fingerprint | the one named place in the booth tree |
+| booth `code/booth_loop.py` | `rdp_cert_pin()`, `start_rdp_tunnel()`, `tunnel_listening()`, `drop_rdp_tunnel()`, `main()` starts the forward and returns 6 if it cannot, `rdp_args()` emits the tunnel `/v:` and the pin | the runner that executes on 2026-11-28 now carries both halves of the ruling |
+| booth `code/drive_l3.py`, `l5_a.py`, `mkargs.sh`, `mkargs2.sh`, `l1_run1.sh`, `l1_setup.sh` | read the pin file, emit the pinned certificate line, refuse without a 64-hex pin; the two `l1_*` scripts carry a header naming their unpinned-ssh residue | the seven sites `O1` names |
+| booth `code/rdp-input.c`, `rdp-shot.c`, `rdp-shot-probe.c` | usage comment carries the pin | same reason as the team-repo pair |
+| booth `MANIFEST.md` | recomputed by `s1c_manifest.py`, 11 rows updated, 790 rows listed after the added pin row, totals sentence carries the dated note | the manifest must not leave a stale size or hash |
+| `DEMO-LOG.md` (both repos) | one entry each for this dispatch | every target-touching step is recorded with its inverse |
+
+**Checks run, each with the command that produced it**
+
+| Check | Command | Result |
+|---|---|---|
+| Selftest before / after | `bash tests/selftest.sh` | 110 before this dispatch, 120 after, floor 100, green on the last run and inside the pre-push hook |
+| Delta accounting | same, counting the new blocks | +1 syntax gate (new `rt-tunnel` file), +1 `--help`, +1 dry-run probe, +4 certificate posture, +3 argument plumbing |
+| Negative control 1 | scratch copy, plant `FAKE-CERT-CONTROL-4412: /cert:ignore` in its `rt-lib` | `selftest FAIL: a file under scripts/ carries /cert:ignore …`, exit 1 |
+| Negative control 2 | scratch copy, strip the pin from the certificate line | `selftest FAIL: rt-lib's rdp argument lines no longer pin the server certificate fingerprint`, exit 1 |
+| Negative control 3 | scratch copy, put `-` back in `rt-type` | `selftest FAIL: rt-type --dry-run --text CHAOTIX41 does not name an argument path the C tools can open`, exit 1 |
+| Undecided-channel refusal | `bash -c "source scripts/remote/rt-lib; rt_rdp_args '192.0.2.1'"` | exit 1, `Refusing to connect`, nothing contacted |
+| Forward up | `scripts/remote/rt-tunnel --host 192.168.1.99 start` then `ss -tln \| grep -c 127.0.0.1:3401` | up in 0.54 s, pid 2290479, count 1 |
+| What the tunnel answers | `t6_tls_probe.py --host 127.0.0.1 --port 3401 --mode none --req 2` | 826 DER bytes, SHA-256 `84b1…bab4`, TLS 1.3 `TLS_AES_256_GCM_SHA384`, identical to the direct listener and to the pin |
+| Packaged click, pinned, tunneled | `scripts/remote/rt-click --host 192.168.1.99 --click 960 14` | `event: click (960, 14)`, `done.`, rc 0, 1.04 s |
+| Effect visible | `rt-shot` before and after, `PIL` coarse histogram | dropdown open in the after frame: "26 Nov 09:53", "Thursday 26 November 2026", November grid with 26 highlighted, "No Notifications"; histogram delta 1404786 |
+| No 3389 on the LAN | target `ss -tn state all "( sport = :3389 )"` sampled during the run; controller `ss -tn \| grep -c 192.168.1.99:3389` | target shows `[::ffff:127.0.0.1]:3389 <- [::ffff:127.0.0.1]:47450`, controller shows 0 |
+| Pin is load-bearing | `RT_RDP_CERT_PIN=0000…0000 scripts/remote/rt-click --host 192.168.1.99 --click 960 14` | `certificate not trusted, aborting`, `ERRCONNECT_TLS_CONNECT_FAILED`, rc 1 |
+| Fallback posture keeps the pin | `RT_RDP_TUNNEL=0 scripts/remote/rt-click … --click 960 14` | rc 0, dropdown opens (same visual proof) |
+| Booth runner's own channel | `python3` loaded `code/booth_loop.py` from the durable copy: `rdp_cert_pin()`, `tunnel_forward_spec()`, `start_rdp_tunnel()`, `rdp_args()`, `rdpev(["click",960,14])`, `drop_rdp_tunnel()` | pin read from the published file, spec `127.0.0.1:3401:127.0.0.1:3389`, `/v:127.0.0.1:3401` plus the pinned certificate line in the args, click rc 0, forward closed |
+| Desktop returned | `rt-click --click 400 800` then `rt-shot`, `ImageChops` vs the earlier dismissed frame below the panel clock band | bounding box `None`, 0 changed pixels |
+| Teardown | `rt-tunnel --host 192.168.1.99 stop`; `ss -tln \| grep -c 127.0.0.1:3401`; `ls ~/.cache/team-chaotix/remote-run/`; `ls /tmp/rt-args.*` | stopped, 0, empty state dir, no argument file residue |
+| Accept-any option gone | `grep -rn 'cert:ignore' scripts/`; `grep -rn 'cert:ignore' <booth>/code/` | no match in either (the assert fired on my own first draft of the `rt-lib` comment before I reworded it, which is the gate working) |
+| Booth site syntax | `bash -n` on the four shell sites, `python3 -m py_compile` on the three Python sites | all clean |
+| Durable tree | `cp -p repo/code/booth_loop.py t0042/booth_loop.py`, `cp -p …/rdp-cert-pin.txt t0042/`, stale `booth_loop.cpython-312.pyc` removed | md5 `c25f499270915feb3235d25b08923eeb` identical on both copies |
+| Booth manifest | `python3 /home/howard/AI/booth-2026/t0042/s1c_manifest.py <clone> --note …` | `manifest rows 790 groups 17 listed bytes 198,545,225 rows updated 11` |
+| Commits | booth `8bf04b7` `git verify-commit` good against `F9261D151316FD60`, pushed `19ab5af..8bf04b7`, read back `8bf04b7c1e54…`; team commit carries code plus this record, pushed through the pre-push gate | signatures good, both trees clean (`git status --porcelain` 0 lines) |
+
+**Bug found by the smoke run, named and fixed.** The packaged `rt-type`, `rt-key` and `rt-click` passed
+`-` as argv[1] of the C tools, which `fopen` argv[1] directly (`scripts/rdp-input.c:202`,
+`scripts/rdp-pointer.c:83`), so the first live attempt died with `error: cannot open args file: -` and
+`error: args file has no arguments`. No offline assert had ever covered it because no packaged RDP tool had
+ever run against the target, exactly the gap `Big`'s `T3` non-run list names at `## Test Results:1505`. The
+booth runner already used `/dev/stdin`, so `RT_RDP_STDIN` is now the named value and the three tools pass
+it. Adding the assert then caught a second, smaller divergence: the dry-run text still advertised `-`, so
+the assert failed against the real tree before the display lines were fixed. Both the plumbing and the
+display now name `/dev/stdin`.
+
+**Competing priorities traded away.** Per-call forwards cost one SSH handshake each for ad-hoc agent
+use; the shared-forward reuse path exists but only pays off inside a run that holds one, and the booth
+runner is that run. The team selftest cannot gate the booth tree, which is a separate private repository
+with no harness of its own, so the booth-side guarantee is the `grep` recorded above plus the team assert
+on `scripts/`, and the standing gap (an archived booth script could regress and nothing machine-checks it)
+is named for `Big` rather than papered over. `rt-tunnel` adds a tenth packaged tool, which drags the
+inventory, executable, `--help` and dry-run asserts along with it. The six archived booth probes keep
+their direct `/v:` instead of the literal tunnel endpoint, for the reason in the alternatives above. The
+two `l1_*` scripts keep their L1-era `StrictHostKeyChecking=no` ssh posture, named in their own headers and
+here, because rewriting the historical behaviour of archived probes is outside this brief and outside what
+`K6` closed.
+
+**Checks that did not run, every one named.** No full booth cycle ran, only the runner's channel
+functions plus one injected click, so `booth_loop.py`'s `main()` path with the new `return 6` is
+unexercised end to end. No packet capture, `tcpdump`, `tshark` and `socat` remain absent on this
+controller, so "no 3389 packet crosses the LAN" is stated from the two `ss` reads, not from the wire. No
+third observer was placed on the segment. `d2_verify.py` was not run against the booth head this dispatch
+pushes; it belongs to the next dispatch that clones `8bf04b7`. `scripts/licence-check` was not re-run,
+`Charmy` owns it; note that the new booth file `code/rdp-cert-pin.txt` is data, not code, and the team-repo
+`rt-tunnel` is team-authored bash under the MIT root licence. `shellcheck` is absent, so `rt-tunnel` and the
+new selftest code are unlinted. `flatpak info --show-permissions org.winehq.Wine` was not run, so `O1`'s
+new medium finding (the pin bounded by `tls-key.pem`) stays open. `rt-shot`, `rt-type` and `rt-key` were
+not exercised live in this dispatch, only `rt-click` and `rt-tunnel`; the `/dev/stdin` fix is proven for
+`rt-click` and asserted offline for the other two. No CVE lookup against `freerdp-libs-3.32.2-1.el10_2`.
+The tunnel was exercised only on this controller's own bridge, so `O1`'s booth-morning smoke run on the
+venue network is still owed. `lock-enabled` and the 644 secret file were read at most and not touched.
+
+**Where this leaves finding 2.** Both fixes `Omega` named are landed in both trees and proven through the
+packaged path (`rt-click`, pin, tunnel, loopback-only 3389 on the target) and through the booth runner's
+own functions. The owed transfer `O1` named at `## Security:1338`, one `rt-click` run through the tunnel
+with the pin, is the smoke run above. Finding 2 can be re-ruled by `Omega` at the next review pass; the
+residual risks `O1` accepted for 2026-11-28 (physical presence, a tunnel untested on a foreign network, a
+TOFU-grade pin, the cleartext username moved to SSH) are unchanged by this dispatch.
+
+Written 2026-11-26 01:22 UTC (10:22 JST).
+
+---
+
 ## Review
 
 *Owner: `Shadow`. Read-only — findings only, no edits. Severity order, blockers first.*

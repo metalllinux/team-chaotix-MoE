@@ -7,7 +7,7 @@
  *
  * Usage: rdp-pointer <argsfile> <x> <y> [click|move]
  *   <argsfile> contains xfreerdp-style arguments, one per line:
- *     /v:host  /u:user  /p:pass  /cert:ignore  /w:1920  /h:1080  etc.
+ *     /v:host[:port]  /u:user  /p:pass  /cert:fingerprint:sha256:<hex>  /w:1920  /h:1080  etc.
  *
  * Copyright (c) 2026 Howard.
  * SPDX-License-Identifier: MIT

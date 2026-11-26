@@ -37,6 +37,29 @@ RT_SSH_KNOWN_HOSTS="${RT_SSH_KNOWN_HOSTS:-${RT_LIB_DIR}/known_hosts}"
 # literal file name, so the two files are passed as two -o options, which OpenSSH treats as a list.
 RT_SSH_OPTS=(-o StrictHostKeyChecking=yes -o UserKnownHostsFile="${RT_SSH_KNOWN_HOSTS}" -o UserKnownHostsFile="${HOME}/.ssh/known_hosts" -o ConnectTimeout=10)
 
+# RDP channel posture (TASK-0042 `## Security` finding 2, `Omega`'s `O1` ruling 2026-11-26 00:06 UTC).
+# The target's gnome-remote-desktop daemon presents a self-issued certificate with no Subject
+# Alternative Name (TASK-0041 `## Implementation`, dispatch T6), so name matching against it can never
+# succeed and chain validation is not an available posture on this LAN. The client-side mechanism that
+# does work is the SHA-256 fingerprint of that certificate, pinned below: measured through the live
+# listener and through the tunnel, `/cert:fingerprint:sha256:<pin>` authenticates at rc 0 while
+# `/cert:deny` and a wrong pin abort. The verify-everything-and-continue option finding 2 is about is
+# not used anywhere in this tree, and tests/selftest.sh fails the moment its name reappears under
+# scripts/. The pin is a public certificate fingerprint, not secret material, and it lives in this one
+# variable so re-keying the daemon is a one-line change.
+RT_RDP_CERT_PIN="${RT_RDP_CERT_PIN:-84b12d76aae393937a27dca9767efa7685778352f1c1b0a6b919b6079f18bab4}"
+RT_RDP_TARGET_PORT="${RT_RDP_TARGET_PORT:-3389}"          # the listener's port on the target
+RT_RDP_TUNNEL_PORT="${RT_RDP_TUNNEL_PORT:-3401}"          # our loopback port, the near end of the forward
+RT_RDP_TUNNEL="${RT_RDP_TUNNEL:-1}"                       # 1 = RDP inside the pinned SSH connection
+RT_STATE_DIR="${RT_STATE_DIR:-$HOME/.cache/team-chaotix/remote-run}"  # pid files for live forwards
+RT_RDP_V=""                                               # the /v: value, set by rt_rdp_channel
+# argv[1] of the team's C tools is an argument *file path* (scripts/rdp-input.c:202 and
+# scripts/rdp-pointer.c:83 fopen it directly, no `-` convention), so the argument lines that come down
+# a pipe reach them through /dev/stdin. That is the form the booth runner already uses.
+RT_RDP_STDIN="${RT_RDP_STDIN:-/dev/stdin}"
+RT_TUNNEL_OWNED=0                                         # 1 when this shell started the forward
+RT_TUNNEL_PID=""
+
 RT_DRY=0                                                   # 1 when --dry-run was given
 RT_HOST="${RT_HOST:-}"                                     # target host, empty until parsed
 RT_ARGV=()                                                 # tool-specific arguments survive here
@@ -154,22 +177,145 @@ rt_session_env() {
     "$RT_TARGET_UID" "$RT_TARGET_UID"
 }
 
+# --- the RDP channel: pinned SSH forward plus a pinned server certificate ------
+# `Omega`'s ruling on `TASK-0042 ## Security` finding 2 names a substitution, not a deletion. The
+# credential-bearing channel has to authenticate the far end, and here it does so twice: the RDP
+# session runs inside the SSH connection whose host key is pinned above, so no 3389 packet crosses the
+# LAN at all, and the client pins the daemon's certificate fingerprint. Both halves were measured end
+# to end by dispatch `T6` (TASK-0041 `## Implementation`, and the prototype at
+# /home/howard/AI/booth-2026/t0042/t6_ssh_tunnel_test.sh). Removing the certificate option without
+# substituting the pin would break the loop: with no `/cert:` option FreeRDP prompts interactively and
+# aborts when stdin is not a terminal.
+#
+# A live forward is described by a pid file in $RT_STATE_DIR named after the host and the local port.
+# The file holds a pid only, never a credential, and it is mode 600 under the umask 077 set above.
+
+rt_tunnel_key() { printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'; }
+
+rt_tunnel_state_file() {
+  printf '%s/tunnel-%s-%s.pid' "$RT_STATE_DIR" "$(rt_tunnel_key "$1")" "$RT_RDP_TUNNEL_PORT"
+}
+
+rt_tunnel_forward_spec() {
+  printf '127.0.0.1:%s:127.0.0.1:%s' "$RT_RDP_TUNNEL_PORT" "$RT_RDP_TARGET_PORT"
+}
+
+# Is anything listening on our loopback port? `ss` reads the socket table without dialing anything;
+# bash's /dev/tcp is the fallback, and dialing the port through it goes out through the forward.
+rt_tunnel_listening() {
+  if rt_have ss; then
+    ss -tln 2>/dev/null | grep -qE "127\.0\.0\.1:${RT_RDP_TUNNEL_PORT}([[:space:]]|$)"
+    return $?
+  fi
+  (exec 3<>"/dev/tcp/127.0.0.1/${RT_RDP_TUNNEL_PORT}") 2>/dev/null
+}
+
+# Does that pid look like our own forward rather than a pid recycled by an unrelated process?
+rt_tunnel_pid_is_ours() {
+  local pid="$1" spec="$2" cmdline
+  case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+  kill -0 "$pid" 2>/dev/null || return 1
+  if [ -r "/proc/${pid}/cmdline" ]; then
+    cmdline="$(tr '\0' ' ' < "/proc/${pid}/cmdline" 2>/dev/null)"
+    case "$cmdline" in *"${spec}"*) return 0 ;; *) return 1 ;; esac
+  fi
+  return 0
+}
+
+# Decide the channel and set RT_RDP_V. Call it from the tool's own shell, before any pipeline: a
+# background ssh started inside a pipeline subshell cannot be reaped by the tool's exit trap.
+rt_rdp_channel() {
+  local host="$1" state pid i
+  [ -n "$host" ] || rt_die "rt_rdp_channel needs a host"
+  if [ "$RT_RDP_TUNNEL" -eq 0 ]; then
+    RT_RDP_V="${host}:${RT_RDP_TARGET_PORT}"
+    rt_note "warning: RT_RDP_TUNNEL=0, RDP dials ${RT_RDP_V} across the LAN. The certificate pin still applies."
+    return 0
+  fi
+  state="$(rt_tunnel_state_file "$host")"
+  if [ -f "$state" ]; then
+    read -r pid < "$state" || pid=""
+    if rt_tunnel_pid_is_ours "$pid" "$(rt_tunnel_forward_spec)"; then
+      if rt_tunnel_listening; then
+        RT_RDP_V="127.0.0.1:${RT_RDP_TUNNEL_PORT}"
+        RT_TUNNEL_OWNED=0                    # a forward this run borrowed: reuse it, never kill it
+        RT_TUNNEL_PID="$pid"
+        return 0
+      fi
+      rt_die "the forward for ${host} (pid ${pid}) is alive but 127.0.0.1:${RT_RDP_TUNNEL_PORT} is not listening; run scripts/remote/rt-tunnel stop --host ${host}"
+    fi
+    rt_note "clearing the stale forward record at ${state}"
+    rm -f "$state"
+  fi
+  if rt_tunnel_listening; then
+    rt_die "127.0.0.1:${RT_RDP_TUNNEL_PORT} is held by a process this tool cannot identify as its own forward. Free the port or set RT_RDP_TUNNEL_PORT; refusing to send a credential into an unknown socket."
+  fi
+  mkdir -p "$RT_STATE_DIR" || rt_die "cannot create the state directory ${RT_STATE_DIR}"
+  chmod 700 "$RT_STATE_DIR" 2>/dev/null || true
+  rt_require_host
+  rt_require_secret_file "$RT_SSH_PASS_FILE"
+  sshpass -f "$RT_SSH_PASS_FILE" ssh "${RT_SSH_OPTS[@]}" -N -o ExitOnForwardFailure=yes \
+    -o ServerAliveInterval=20 -o ServerAliveCountMax=3 \
+    -L "$(rt_tunnel_forward_spec)" "${RT_SSH_USER}@${host}" &
+  RT_TUNNEL_PID=$!
+  RT_TUNNEL_HOST="$host"
+  printf '%s\n' "$RT_TUNNEL_PID" > "$state"
+  RT_TUNNEL_OWNED=1
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    if rt_tunnel_listening; then
+      RT_RDP_V="127.0.0.1:${RT_RDP_TUNNEL_PORT}"
+      return 0
+    fi
+    kill -0 "$RT_TUNNEL_PID" 2>/dev/null \
+      || rt_die "the ssh forward for ${host} exited before it forwarded anything. Check the pinned host key for ${host} in ${RT_SSH_KNOWN_HOSTS}."
+    sleep 0.5
+  done
+  rt_rdp_channel_release
+  rt_die "the ssh forward never opened 127.0.0.1:${RT_RDP_TUNNEL_PORT} for ${host}"
+}
+
+# Kill only the forward this shell started. A borrowed one is left running for its owner.
+rt_rdp_channel_release() {
+  if [ "$RT_TUNNEL_OWNED" -eq 1 ] && [ -n "$RT_TUNNEL_PID" ]; then
+    kill "$RT_TUNNEL_PID" 2>/dev/null || true
+    wait "$RT_TUNNEL_PID" 2>/dev/null || true
+    [ -n "${RT_TUNNEL_HOST:-}" ] && rm -f "$(rt_tunnel_state_file "$RT_TUNNEL_HOST")"
+  fi
+  RT_TUNNEL_OWNED=0
+  RT_TUNNEL_PID=""
+}
+
 # --- rdp argument lines -------------------------------------------------------
 # One argument per line in the xfreerdp form the team's own C tools read.
 # The password line is produced by reading the secret file at run time and is
 # piped into the tool's stdin: no credential file, no credential in argv.
+# `/v:` is the loopback end of the pinned forward unless RT_RDP_TUNNEL=0 says otherwise, and
+# `/cert:fingerprint:sha256:` is the pinned identity of the far end in every mode.
 rt_rdp_args() {
-  local host="$1"
+  local host="$1" v="$RT_RDP_V"
+  local cert_line="/cert:fingerprint:sha256:${RT_RDP_CERT_PIN}"   # the only identity line this emits
   if [ "$RT_DRY" -eq 1 ]; then
-    printf '/v:%s\n/u:%s\n/p:<from %s>\n/cert:ignore\n/w:%s\n/h:%s\n+disp\n' \
-      "$(rt_host_or_placeholder)" "$RT_SSH_USER" "$RT_RDP_PASS_FILE" "$RT_RDP_W" "$RT_RDP_H"
+    if [ -z "$v" ]; then
+      if [ "$RT_RDP_TUNNEL" -eq 1 ]; then
+        v="127.0.0.1:${RT_RDP_TUNNEL_PORT}"
+      else
+        v="$(rt_host_or_placeholder)"
+      fi
+    fi
+    printf '/v:%s\n/u:%s\n/p:<from %s>\n%s\n/w:%s\n/h:%s\n+disp\n' \
+      "$v" "$RT_SSH_USER" "$RT_RDP_PASS_FILE" "$cert_line" "$RT_RDP_W" "$RT_RDP_H"
     return 0
   fi
+  [ -n "$v" ] || rt_die "rt_rdp_channel was not called for ${host}, so no RDP endpoint is decided. Refusing to connect."
   rt_require_host
   rt_require_secret_file "$RT_RDP_PASS_FILE"
-  printf '/v:%s\n/u:%s\n/p:%s\n/cert:ignore\n/w:%s\n/h:%s\n+disp\n' \
-    "$host" "$RT_SSH_USER" "$(head -n 1 "$RT_RDP_PASS_FILE")" "$RT_RDP_W" "$RT_RDP_H"
+  printf '/v:%s\n/u:%s\n/p:%s\n%s\n/w:%s\n/h:%s\n+disp\n' \
+    "$v" "$RT_SSH_USER" "$(head -n 1 "$RT_RDP_PASS_FILE")" "$cert_line" "$RT_RDP_W" "$RT_RDP_H"
 }
+
+# Release a forward this shell started on any exit path. A tool that sets its own EXIT trap chains to
+# this one, see rt-click.
+trap 'rt_rdp_channel_release' EXIT
 
 # Resolve a built C tool, with an actionable message when it has not been built.
 rt_tool_bin() {

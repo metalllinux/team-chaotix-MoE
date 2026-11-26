@@ -134,13 +134,14 @@ done
 BIN="$(rt_tool_bin rdp-input "$RT_RDINPUT")"
 
 if [ "$RT_DRY" -eq 1 ]; then
-  printf 'would run: <rdp argument lines on stdin> | %s - %s\n' "$BIN" "${EVENTS[*]}"
+  printf 'would run: <rdp argument lines on stdin> | %s %s %s\n' "$BIN" "$RT_RDP_STDIN" "${EVENTS[*]}"
   rt_note "dry run, no connection made and no credential read"
   exit 0
 fi
 
 rt_require_host
-if ! out="$(rt_rdp_args "$RT_HOST" | "$BIN" - "${EVENTS[@]}" 2>&1)"; then
+rt_rdp_channel "$RT_HOST"          # pinned SSH forward, or the direct host when RT_RDP_TUNNEL=0
+if ! out="$(rt_rdp_args "$RT_HOST" | "$BIN" "$RT_RDP_STDIN" "${EVENTS[@]}" 2>&1)"; then
   rt_die "key injection failed against ${RT_HOST}: ${out}"
 fi
 rt_note "$out"

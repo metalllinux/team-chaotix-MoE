@@ -10,7 +10,7 @@
  *
  * Usage: rdp-input <argsfile> <event> [<event> ...]
  *   <argsfile>  xfreerdp-style arguments, one per line:
- *                 /v:host  /u:user  /p:pass  /cert:ignore  /w:1920  /h:1080
+ *                 /v:host[:port]  /u:user  /p:pass  /cert:fingerprint:sha256:<hex>  /w:1920  /h:1080
  *   events:
  *     move  <x> <y>        pointer motion
  *     click <x> <y>        pointer motion + left button press and release

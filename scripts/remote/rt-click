@@ -72,7 +72,7 @@ if [ "$TOOL" = "minimal" ]; then
   cmd=("$BIN" - "${COORDS[0]}" "${COORDS[1]}" "$ACTION")
 else
   BIN="$(rt_tool_bin rdp-input "$RT_RDINPUT")"
-  cmd=("$BIN" - "$ACTION" "${COORDS[@]}")
+  cmd=("$BIN" "$RT_RDP_STDIN" "$ACTION" "${COORDS[@]}")
 fi
 
 if [ "$RT_DRY" -eq 1 ]; then
@@ -86,13 +86,16 @@ if [ "$RT_DRY" -eq 1 ]; then
 fi
 
 rt_require_host
+rt_rdp_channel "$RT_HOST"          # pinned SSH forward, or the direct host when RT_RDP_TUNNEL=0
 if [ "$TOOL" = "minimal" ]; then
   # rdp-pointer takes the argument lines from a file; build one under umask 077
   # and remove it on exit. The credential lives only in that mode-600 file for
   # the lifetime of the command.
   ARGS_FILE="$(mktemp "${TMPDIR:-/tmp}/rt-args.XXXXXX")"
   chmod 600 "$ARGS_FILE"
-  trap 'rm -f "$ARGS_FILE"' EXIT INT TERM
+  # Bash keeps one trap per signal, so this line replaces the rt-lib trap and has to do both jobs:
+  # remove the argument file and release the forward this shell started.
+  trap 'rm -f "$ARGS_FILE"; rt_rdp_channel_release' EXIT INT TERM
   rt_rdp_args "$RT_HOST" > "$ARGS_FILE"
   if ! out="$("$BIN" "$ARGS_FILE" "${COORDS[0]}" "${COORDS[1]}" "$ACTION" 2>&1)"; then
     rt_die "pointer action failed against ${RT_HOST}: ${out}"
