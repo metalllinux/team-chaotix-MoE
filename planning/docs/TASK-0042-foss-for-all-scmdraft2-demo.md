@@ -13,6 +13,29 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3b landed, the loose `UI_DEV_CREATE|1800` assert was hiding a real defect, the baseline is
+now 122 checks, and the post-chain code needs `Shadow` and `Charmy` before documentation (2026-11-26 11:21 JST,
+2026-11-26 02:21 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `T8` (`Tails`, child
+`ses_dea81d0fdffeknnNsdI2ZKkxeC`) landed at team `70aa1dd`, read back from the remote by me, `git verify-commit`
+good against `F9261D151316FD60`, `git status --porcelain` answering 0 lines, and I re-ran `bash tests/selftest.sh`
+which answers `SELFTEST: 122 checks passed (floor 100)`. Baseline chain for every later brief, 106 before
+`f1907ab`, 110 after it, 120 after `b56be2b`, 122 after `70aa1dd`. What `T8` closed, each dry-run probe now gates
+a credential tripwire plus a `192.168.1.99` token scan instead of trusting the tool's own report, and the single
+loose `UI_DEV_CREATE|1800` assert became three asserts on the named constant, its use, and its position. **The
+load-bearing finding.** The loose assert was hiding a real defect, the documented 1800 ms settle did not exist in
+`uinput-inject.c` at all, and it now exists as `SETTLE_MS` between `UI_DEV_CREATE` and the first emit. That is an
+assert passing against code that did not do what the documentation claimed, which is the failure mode `Big` named.
+Six negative controls, control `p1` reverting the helper to the exact pre-`T8` state the old assert passed on.
+Checks `T8` named as not run, no live target run, `shellcheck` absent, no CI. **`Robotnik` decision on the review
+chain for post-chain code, recorded rather than asked.** `T6`, `T7` and `T8` changed `TASK-0041` code after its
+`T1` to `T4` chain ran, so `TASK-0041` DoD row 9 is not satisfied by that chain alone. Two of the four reviewers
+are genuinely covered, `Omega` by `O1`, which produced the `T7` fix, and `Big` in substance by the controls `T8`
+ran plus the count I re-measured myself rather than inheriting it. `Shadow` has not seen `rt-tunnel`, `rt-lib`,
+`uinput-inject.c` or the selftest changes, and `Charmy` has not seen the new `rt-tunnel` file or the booth
+`code/rdp-cert-pin.txt`. Items `3d` `Shadow` as `S2` and `3e` `Charmy` as `C2` go ahead of the documentation and
+release dispatches, and `3f` records that a `Big` re-probe is owed if either returns anything above `low`. Next
+dispatch is `S2`.
+
 **`LIVE QUEUE 8` item 3 landed, `T7` retires `/cert:ignore` on the live path, and the selftest baseline moves from
 110 to 120 (2026-11-26 10:32 JST, 2026-11-26 01:32 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `T7` (`Tails`, child `ses_deacb0619ffedOi97drcW8B50p`) landed in both repos,
@@ -854,8 +877,8 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
   committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
-  selftest baseline is 120 checks, being 106 before the gate fix at `f1907ab`, 110 after it, and 120 after the RDP
-  certificate-pin commit `b56be2b`. Stamp every entry
+  selftest baseline is 122 checks, being 106 before the gate fix at `f1907ab`, 110 after it, 120 after the RDP
+  certificate-pin commit `b56be2b`, and 122 after the dry-run assert hardening at `70aa1dd`. Stamp every entry
   at the moment it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Each
   child writes its own section in the planning doc it is working on and reports back in at most five short lines.
   **Standing ruling in every brief.** `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent
@@ -866,6 +889,8 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   old 142281 child projection is not a quantity the instrument produces any more, the gate was rewritten at
   `f1907ab`, and the margin re-fit is operator-owned. One at a time is load-bearing: `D1` and `K1` shared one
   working tree in `LIVE QUEUE 6` and produced the mixed-attribution commits `12e7928` and `93ddaf6`.
+   **Running order is the order written below, the labels `3b`, `3c`, `3d`, `3e`, `3f` are historical ids kept so
+   earlier `## Status` entries still point at something.** They are not sequential and no item is missing.
    1. `LANDED 2026-11-25 23:55 UTC (2026-11-26 08:55 JST) as `T6`, team `1d79b1c`, see `## Status`.` `Tails` as `T6`. `TASK-0041 ## Implementation`. `Omega` finding 2, the `/cert:ignore` self-signed RDP
    certificate, has never had an RDP channel test run against it, and it is `K1`'s release blocker 3 for the
    2026-11-28 booth. Run the first channel test on the target at `192.168.1.99` from this controller at
@@ -885,14 +910,18 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    `booth_loop.py:273`, and prove it against the live target with one smoke run through the tunnel to
    `127.0.0.1:3401`. Selftest baseline 110 checks, a negative control required, target state changes only where
    `DEMO-LOG.md` already records a named inverse.
-   3b. `Tails` as `T8`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9` recorded without
-   fixing: 4 of 6 dry-run asserts rely on tool self-report, and `UI_DEV_CREATE|1800` is too loose. Negative
-   controls required, selftest baseline 120 checks.
-   3c. `Tails` as `T9`, owed and not yet dispatched, the four gaps `T7` named. Six archived booth probes still use
-   direct `/v:` with the pin and hold no forward, the booth tree carries no machine gate for the pinned posture,
-   the `l1_*` scripts still use `StrictHostKeyChecking=no`, and the tunnel is untested on a non-bridge network.
-   Lower priority for the 2026-11-28 booth than items `3b`, 4, 5 and 6, and the last gap is `Omega`'s accepted
-   residual risk rather than open work.
+   3b. `LANDED 2026-11-26 02:21 UTC (11:21 JST) as `T8`, team `70aa1dd`, read back from the remote and signed,
+   selftest 120 to 122.` `Tails` as `T8`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9`
+   recorded without fixing: 4 of 6 dry-run asserts rely on tool self-report, and `UI_DEV_CREATE|1800` is too loose.
+   Negative controls required, selftest baseline 122 checks.
+   3d. `Shadow` as `S2`. `TASK-0041 ## Review`. Review the post-chain code that the `T1` to `T4` chain never saw,
+   `rt-tunnel`, the `rt-lib` pin path, `uinput-inject.c` with the new `SETTLE_MS`, and the `tests/selftest.sh`
+   assert changes at `b56be2b` and `70aa1dd`.
+   3e. `Charmy` as `C2`. `TASK-0041 ## License (Charmy)`. Licence review of the same post-chain set against the
+   upstream refs actually used, including the new `scripts/remote/rt-tunnel`, the booth `code/rdp-cert-pin.txt`,
+   and the FreeRDP and `libfreerdp3` posture, running `scripts/licence-check` and recording the gate outcome.
+   3f. `Big` as `B2`, owed only if `S2` or `C2` returns anything above `low`, an independent re-probe of the new
+   asserts and their negative controls at the 122-check baseline.
    4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
    secrets rule and the packaged `gnome-screenshot-tool` path. Do not touch the booth clone in the same dispatch
    as any other agent.
@@ -904,6 +933,11 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    to `LIVE QUEUE 7` consumed bodies into `## Archive`, keep the standing contradictions, the `R4` FAIL, and the
    `C2` and `C3` rulings, and leave `LIVE QUEUE 8` live. `Espio` has no shell permission, so the dispatcher
    commits the record.
+   3c. `Tails` as `T9`, owed and not yet dispatched, the four gaps `T7` named. Six archived booth probes still use
+   direct `/v:` with the pin and hold no forward, the booth tree carries no machine gate for the pinned posture,
+   the `l1_*` scripts still use `StrictHostKeyChecking=no`, and the tunnel is untested on a non-bridge network.
+   Lower priority for the 2026-11-28 booth than items `3b`, 3d, 3e, 4, 5 and 6, and the last gap is `Omega`'s
+   accepted residual risk rather than open work.
    7. `Operator actions, record and do not dispatch.` `C2` and `C3` unruled, so the booth repo
    `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private. **The `P3` firewall
    decision, with a date attached.** The target rich rule restricts 3389 to `192.168.1.102`, so either the booth
