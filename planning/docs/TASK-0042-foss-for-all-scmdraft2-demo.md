@@ -13,6 +13,25 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3d-fix landed, `TF1` closed `Shadow`'s blocker, and I verified the closure myself rather than
+accepting the report (2026-11-26 13:16 JST, 2026-11-26 04:16 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `TF1` (`Tails`, child `ses_dea3897caffeop1sdejnPTXDR6`) landed at team
+`625ce8a`, read back from the remote, `git verify-commit` good against `F9261D151316FD60`, `git status
+--porcelain` answering 0 lines. Blocker closure checked directly, `.opencode/skills/remote-desktop/SKILL.md:64-66`
+now reads the pinned posture, the credential-bearing channel authenticating the far end twice with RDP running
+inside the tunnel, no `/cert:ignore` anywhere in those lines. `bash tests/selftest.sh` answers `SELFTEST: 137
+checks passed (floor 100)`. Baseline chain for every later brief, 106 before `f1907ab`, 110 after it, 120 after
+`b56be2b`, 122 after `70aa1dd`, 137 after `625ce8a`. Shape of the three files. The credential and posture scan now
+covers `scripts`, `.opencode`, `team`, `tests`, `.github`, `README` and `AGENTS.md`, with planning docs and
+`DEMO-LOG` allow-listed as record history, which is the correct split because the gate has to see what an agent
+loads at run time while the record of what was once done must not be rewritten to satisfy a gate. `rt-lib` gives a
+borrowed forward the same 10 by 0.5 s wait it gives its own, names `rt-tunnel status` before any `stop`, and
+records forward claims as `own`, `use` or `keep` under `flock`, a release reaping only when no live claim survives,
+which is what `booth_loop.py` needs across cycles. Nine controls ran and eight trip named failures, while `C7` is
+recorded as inert rather than presented as a control, and that honesty is worth more than a ninth pass. `TF1`
+contacted no target, `shellcheck` is absent on this host, and `S2`'s three nits stay with `TF2` and `B2`. Next
+dispatch is item `3e`, `C2`.
+
 **`LIVE QUEUE 8` item 3d landed, `S2` returns one blocker, and I verified the blocker myself before dispatching the
 fix (2026-11-26 11:52 JST, 2026-11-26 02:52 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `S2`
 (`Shadow`, child `ses_dea543129ffeqTZYwN1kp6qql5`) wrote `TASK-0041 ## Review:1468-1570` and nothing else, and
@@ -899,8 +918,9 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
   committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
-  selftest baseline is 122 checks, being 106 before the gate fix at `f1907ab`, 110 after it, 120 after the RDP
-  certificate-pin commit `b56be2b`, and 122 after the dry-run assert hardening at `70aa1dd`. Stamp every entry
+  selftest baseline is 137 checks, being 106 before the gate fix at `f1907ab`, 110 after it, 120 after the RDP
+  certificate-pin commit `b56be2b`, 122 after the dry-run assert hardening at `70aa1dd`, and 137 after the skill
+  and forward-claim fix at `625ce8a`. Stamp every entry
   at the moment it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Each
   child writes its own section in the planning doc it is working on and reports back in at most five short lines.
   **Standing ruling in every brief.** `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent
@@ -941,7 +961,9 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    Review`. Review the post-chain code that the `T1` to `T4` chain never saw, `rt-tunnel`, the `rt-lib` pin path,
    `uinput-inject.c` with the new `SETTLE_MS`, and the `tests/selftest.sh` assert changes at `b56be2b` and
    `70aa1dd`.
-   3d-fix. `Tails` as `TF1`, the fix dispatch for `S2`. Three files. Close blocker 1, the skill at
+   3d-fix. `LANDED 2026-11-26 04:16 UTC (13:16 JST) as `TF1`, team `625ce8a`, read back from the remote and signed,
+   selftest 122 to 137, blocker closure verified by the dispatcher's own read of the skill.` `Tails` as `TF1`, the
+   fix dispatch for `S2`. Three files. Close blocker 1, the skill at
    `.opencode/skills/remote-desktop/SKILL.md:64-65` still teaches `/cert:ignore` and `tests/selftest.sh:436` scans
    only `scripts/`, so extend the scan to the skill and docs trees and correct the skill to the pin plus tunnel
    posture. Close the
