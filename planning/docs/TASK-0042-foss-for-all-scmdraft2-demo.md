@@ -13,6 +13,24 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 4 landed, `D2` closed the `TASK-0041` documentation row, and three dispatches have now named
+the same missing assert (2026-11-26 14:33 JST, 2026-11-26 05:33 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `D2` (`Vector`, child `ses_de9be5e57ffea0bCKCy2X0TuWC`) landed at team
+`b4da877`, read from the remote, `git verify-commit` good, tree clean, booth clone untouched. I checked the guards
+myself, `grep -rn "cert:ignore"` over `README.md`, `scripts` and `.opencode` answers 0 matches, `README.md` carries
+a `Remote visual control` section, and `bash tests/selftest.sh` answers 137 checks against the floor of 100. The
+durable part of `D2`'s work is that every `scripts/remote` tool now prints the channel posture in its own `--help`,
+which addresses the class of problem behind `S2`'s blocker rather than only the instance of it, a tool that does
+not say what it does is a tool an agent will misuse. **Three independent reports of one gap, recorded together.**
+`C2`, `TF3` and `D2` each named that no assert covers licence or README wording, and three separate dispatches
+reaching that conclusion is the strongest signal in this session that the gap is real. `D2` also named the last
+evidence gap in the capture path, the target-side `gnome-screenshot-tool` and fingerprint facts need one live
+`rt-status` run to settle. **`Robotnik` decision recorded.** Both gaps go into `B2`, and `B2` now runs before `K3`
+rather than after it, because `Big` sits in the review chain and a release read-back must not precede the reviewer
+that closes it. `B2` re-probes the new asserts and their controls at the 137-check baseline, closes the
+wording-assert gap, and runs the one live `rt-status` pass. Next dispatch is item `3f`, `B2`, then item 5 `K3`, then
+item 6 `E2`.
+
 **`LIVE QUEUE 8` item 3e-fix landed, `TF3` closed `Charmy`'s `F1`, and I re-ran every check behind it myself
 (2026-11-26 14:06 JST, 2026-11-26 05:06 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `TF3` (`Tails`,
 child `ses_de9d36a47ffeI1Sd6xf2IrQt2J`) landed at team `8a894dc` with its record at team `61d9f5f` and booth
@@ -1026,9 +1044,14 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    FreeRDP at tag `3.32.2` is dual-licensed Apache-2.0 or GPL-2.0+ when upstream at that ref is Apache-2.0 only.
    State the licence as verified at the ref, keep the recorded policy exceptions, and cite the upstream `LICENSE`
    blob `d645695…`. Selftest baseline 137 or above.
-   3f. `Big` as `B2`, **now owed**, `S2` returned a blocker and four should-fixes, so `B2` runs after `TF1`. An
-   independent re-probe of the new asserts, their negative controls, and the `TF1` fixes at the 122-check baseline.
-   4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
+   3f. `Big` as `B2`, **owed and now running before `K3`**, `S2` returned a blocker and four should-fixes and `Big`
+   closes the review chain on the post-chain code. Re-probe the new asserts and their negative controls at the
+   137-check baseline, close the gap that `C2`, `TF3` and `D2` each named independently, that no assert covers
+   licence or README wording, and run the one live `rt-status` pass that settles the target-side
+   `gnome-screenshot-tool` and fingerprint facts `D2` left open. Write `TASK-0041 ## Test Results`.
+   4. `LANDED 2026-11-26 05:33 UTC (14:33 JST) as `D2`, team `b4da877`, read back from the remote and signed.
+   `grep -rn "cert:ignore"` over `README.md`, `scripts` and `.opencode` answers 0 matches, selftest 137.` `Vector`
+   as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
    secrets rule and the packaged `gnome-screenshot-tool` path. Read `TF1`'s skill correction and `TF3`'s licence
    wording first, the docs must teach the certificate-pin plus loopback-tunnel posture and state FreeRDP as
    Apache-2.0 at tag `3.32.2`, and must not reintroduce `/cert:ignore` or the dual-licence claim. Do not touch the
