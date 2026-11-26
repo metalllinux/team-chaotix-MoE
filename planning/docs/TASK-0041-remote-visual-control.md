@@ -1313,6 +1313,102 @@ Written 2026-11-25 10:42 UTC (2026-11-25 19:42 JST).
 
 ---
 
+### O1: ruling on finding 2 against `T6`'s measured evidence, on the 3389 listener, on the three hygiene items, on the tunnel plus pin, and on `lock-enabled` (2026-11-26 00:06 UTC, 2026-11-26 09:06 JST, `Omega`, dispatch `O1`)
+
+Read-only. No target contact. No credential value read or printed. Modes read by path only. Evidence base is `T6` at `## Implementation:851-1175` and `DEMO-LOG.md:2552-2572`, plus the checks I ran in this dispatch, named at the end. Findings in severity order. `TASK-0042` `## Status:16-42` is read as `Robotnik`'s record of `T6`, and I rule against `T6`'s own section, not against that summary.
+
+---
+
+### Finding 2 (TASK-0042 `## Security`), `/cert:ignore` on the channel carrying the RDP credential. Severity: high, unchanged. STAYS OPEN, and stays `K1`'s release blocker 3.
+
+**Where:** `scripts/remote/rt-lib:164` and `scripts/remote/rt-lib:170`, both re-read in this dispatch. Also the booth-day code that actually executes on 2026-11-28, which my `T2` pass under-weighted: `/home/howard/AI/booth-2026/repo/code/booth_loop.py:273`, `drive_l3.py:72`, `l1_run1.sh:18`, `l1_setup.sh:19`, `l5_a.py:105`, `mkargs.sh:11`, `mkargs2.sh:11`. All emit `/cert:ignore`. The fix has to land in both trees or the packaged tools are clean and the booth run is not.
+
+**What I accept from `T6` as measured.** The daemon's wire certificate is byte-identical to `~/.config/gnome-remote-desktop/tls-cert.pem`, self-issued, CN `scmdraft2-map-creator`, RSA-2048, SHA-256 `84b1…bab4`, **no Subject Alternative Name** (`## Implementation:904-941`). `/cert:ignore` accepts a lookalike certificate carrying the same CN and discards chain validation, name matching, and any signal that a different endpoint answers 3389 (`## Implementation:968-1014`). It does not discard TLS 1.3 AES-256-GCM encryption (`## Implementation:964-966`). `/cert:deny` and a wrong pin abort (`## Implementation:991-993`). The no-`/cert:`-option case prompts and aborts when stdin is not a terminal (`## Implementation:993`, `:1127-1129`), so removing `/cert:ignore` without substituting a pin breaks the loop. All of that is accepted as evidence.
+
+**The no-SAN fact is load-bearing, and it decides which mechanism is correct here.** Because the certificate carries no SAN, name matching against `192.168.1.99` can never succeed for this daemon under any client option (`## Implementation:939-941`), and `/cert:deny` aborts against it (`## Implementation:991`). Chain validation is therefore not an available posture on this LAN. The fingerprint pin is the correct client-side mechanism for this daemon, not a fallback to it.
+
+**Ruling on the mechanism `T6` handed to me (`## Implementation:1079-1089`), and the correction to the attack shape.** `T6`'s relay test was the wrong attack shape, and its negative result does not reduce this finding. My ruling, stated as reasoning from the protocol and not as a measurement I made: I adopt candidate (a). CredSSP/NLA channel binding binds the credential exchange to the TLS channel on which the CredSSP exchange runs. A relay that terminates TLS twice forwards CredSSP tokens bound to the relay's own certificate into a session the target believes are bound to the target's certificate, so the target refuses before Client Info. The passthrough control (`## Implementation:1068-1074`) shows the same relay carrying a full authenticated connection when it does not substitute a certificate, which is consistent with the failure belonging to the binding and not to the plumbing.
+
+**Why that does not close the credential half.** Channel binding is a *server-side* check of the channel the server is on. It is never client-side authentication of the server, and the client with `/cert:ignore` never authenticates the server in any mode `T6` tested. The attack that matters against `/cert:ignore` is endpoint substitution, not relaying. An attacker who answers 3389 with a listener of their own, at a spoofed address on the segment, terminates CredSSP toward the client with a correct channel binding to the attacker's own certificate. The client accepts that listener silently, which `T6` proved directly against the lookalike certificate (`## Implementation:1050-1063`), and `T6`'s target matrix shows the credential exchange completing in the same position (`rc 0` with `verify_cb` count 0 at `## Implementation:989`, meaning the client ran the exchange having never evaluated the certificate). Network position for that attacker is measured, not assumed: one broadcast domain, dynamic ARP on both ends, three VMs on the controller's own bridge with promiscuous taps (`## Implementation:879-902`).
+
+**I did not test the substituted listener, and I will not.** A successful run would hand a live RDP credential to an attacker endpoint on the production LAN, which AGENTS.md section 4 and my brief both rule out. If the operator wants the mechanism settled, the bounded version is: an attacker listener that terminates CredSSP toward the client, driven by a client in `/auth-only` mode with a dummy credential, on the loopback endpoint `T6` already built at `t6_attacker_endpoint.py`. No credential for the real target is involved in that shape.
+
+**Fix, concrete.** In `rt_rdp_args` (`scripts/remote/rt-lib:164` dry-run form, `:170` real form) and in the seven booth-runner sites named above, replace `/cert:ignore` with `/cert:fingerprint:sha256:84b12d76aae393937a27dca9767efa7685778352f1c1b0a6b919b6079f18bab4`, and point `/v:` at `127.0.0.1:3401` behind the pinned SSH forward. The value belongs in one named variable in `rt-lib` (or in a `scripts/remote/` config file the tools read), not copy-pasted seven times, so a future re-key is a one-line change. Add a selftest assert that no credential-bearing args generator under `scripts/` or the booth tree emits `cert:ignore` (no target contact, string match only, same shape as the existing `StrictHostKeyChecking` assert my `T2` pass recorded). Code change, dispatch with `Shadow` in the chain, small.
+
+**Transfer to the C tools, verified by mechanism and named as unmeasured.** `scripts/rdp-input.c:217` and `scripts/rdp-pointer.c:108` feed the args file through `freerdp_client_settings_parse_command_line_arguments`, the same parser `xfreerdp` uses, so `/cert:fingerprint:` reaches `settings` in the C tools the same way it does in `xfreerdp`. `T6` measured the pin through `xfreerdp` only. One run of `scripts/remote/rt-click` through the tunnel with the pin is owed before the change is called proven on the packaged path.
+
+---
+
+### New finding, the pin's strength is bounded by the target's own key file, which the demo's own workload can reach. Severity: medium.
+
+**Vector:** authz.
+**Where:** `~/.config/gnome-remote-desktop/tls-key.pem`, mode 600, owner `howard` (`## Implementation:918-919`); the booth session runs as the same `howard`, who has passwordless sudo (`DEMO-LOG.md:2335`), with the desktop unlocked (`## Implementation:1149`), running SCMDraft 2 under Wine.
+**Attack:** an attendee hands the booth operator a map file, it is opened in SCMDraft 2, code execution lands as `howard`. That attacker reads the RDP TLS private key and can then stand up a substituted 3389 endpoint presenting the *pinned* certificate, because a pin authenticates a public key and the attacker now holds the matching private key. The pin stops being an independent signal, and the same user can also sniff the credential arriving on the target's own loopback, since sniffing loopback needs CAP_NET_RAW and `howard` has passwordless sudo. Whether the Flathub Wine sandbox can read that key file without escaping is still unknown: `flatpak info --show-permissions org.winehq.Wine` has never been run in any dispatch (TASK-0042 finding 5, and my own `T2` non-run list item 9). The path does not depend on that answer, because same-user code execution reaches a mode 600 user-owned file directly.
+**Impact:** the certificate pin, and the SSH tunnel, are both defeated from the target side rather than the network side. The attacker ends with the RDP credential and a path to root, which was already open via sudo.
+**Fix:** out of window for 2026-11-28 and not a booth blocker. Run `flatpak info --show-permissions org.winehq.Wine` in a later dispatch, which also closes TASK-0042 finding 5. The real fix is TASK-0042 finding 6, the dedicated non-sudo `booth` account, which separates the demo workload's user from the account that owns the grd key pair and from passwordless sudo. For the event itself, the operational control is: do not open attendee-supplied files on the target. That is a booth-procedure rule, not a code change, and it belongs in the booth-day brief.
+
+---
+
+### Ruling on the 3389 listener, and the one 2026-11-28 configuration I recommend. Severity: medium.
+
+**Vector:** authz.
+**Where:** the target `public`-zone rich rule restricting 3389 to `192.168.1.102` (`DEMO-LOG.md:131-135`, confirmed unchanged by `T6` at `## Implementation:1147`), and `TASK-0042` `## Status:36-42` where `Robotnik` records that the tunnel changes what the firewall decision is about.
+
+**Ruling.** Keep the listener enabled: it is the only proven input channel the loop has (item 7, `## Next Actions:73`). Keep the rich rule byte-identical through the event. Do not widen 3389 for the venue. With the tunnel adopted, no 3389 packet crosses the LAN at all (`## Implementation:1118-1123`, `DEMO-LOG.md:2568`), so the `P3` blocker dissolves without any firewall change, and widening the rule would expose the credential-bearing, server-unauthenticated listener to venue hosts whose posture we have never measured. This is the branch TASK-0042 finding 4 records as the dangerous one, and it is now avoidable rather than merely discouraged, which is the concrete consequence of `T6` I want on the record.
+
+**Recommended booth-day configuration for 2026-11-28, as one configuration, not a menu.**
+
+1. RDP carried inside the SSH connection that is already host-key-pinned: `ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile=scripts/remote/known_hosts -o ExitOnForwardFailure=yes -N -L 127.0.0.1:3401:127.0.0.1:3389 howard@192.168.1.99`, started once per run, killed at teardown, `ss -tln` proving both ends. `/v:` becomes `127.0.0.1:3401` in every args file.
+2. `/cert:fingerprint:sha256:84b1…bab4` in place of `/cert:ignore` in both trees, as above. Substitution, not deletion.
+3. 3389 listener enabled, rich rule unchanged, nothing widened.
+4. `chmod 600 ~/AI/secrets/scm_draft_pass.md` before packing (hygiene item 1).
+5. `lock-enabled` left `false` for the event duration, accepted, inverse recorded at teardown.
+6. One booth-morning smoke run that proves tunnel plus pin on the venue network before the doors open, because the tunneled path has never been run on any network other than this bridge. `Robotnik`'s recorded fallback (`TASK-0042 ## Status:39-41`, run from `192.168.1.102`, rule not widened) is the right fallback and I endorse it: if the smoke run fails, run from `192.168.1.102` with the existing rule and accept that `/cert:ignore` over the venue LAN stays live for the day.
+
+**Residual risk I accept for 2026-11-28, stated as accepted.**
+
+- Physical presence at the booth is root on the target. Unlocked session, `howard`, passwordless sudo, no credential and no network needed. Accepted because the alternative is worse for the event: with `idle-delay` at `uint32 0` nothing re-locks on its own, so re-locking means locking by hand in front of an audience and typing `howard`'s password at the booth table, which exposes the credential the whole posture is built around and breaks the demo every time. A non-sudo `booth` account would turn this into an unlocked sandbox, and that is the fix, but it is not a two-day change.
+- The tunnel has never been exercised on a network that is not this controller's own bridge. Accepted, with the booth-morning smoke run as the bound, and with the `192.168.1.102` fallback recorded.
+- The pin is a recorded fingerprint, not CA-anchored identity. There is no CA on the LAN. Its strength rests on `tls-key.pem` staying unreadable, which the finding above bounds. Publishing the full fingerprint in the repo (`## Implementation:911`, `DEMO-LOG.md:2556`) is not secret material and does not weaken the pin, which depends on the private key being unknown, not the hash.
+- The cleartext username disclosure moves rather than closes. The `Cookie: mstshash=howard` preamble (`## Implementation:1040`) disappears from the LAN under the tunnel, and is replaced by the SSH transport's own cleartext username request before authentication. A segment observer still learns that `howard` is the account in use, and `howard` has passwordless sudo. I did not measure this on the wire; `tcpdump`, `tshark` and `socat` are absent on this controller (`## Implementation:1152`). Accepted as residue for the event, recorded so nobody reads the tunnel as buying identity confidentiality. It buys credential and session confidentiality.
+
+---
+
+### Hygiene items at `## Status:22-25`, re-ruled against `T6`
+
+**Item 1, `~/AI/secrets/scm_draft_pass.md` at mode 644. Severity: medium, open, operator's command.** Re-verified in this dispatch: `stat -c '%a %U:%G'` answers `644 howard:howard`, unchanged since my `T2` pass. `ls -la ~/AI/secrets/` answers `drwx------` for the directory and mode 600 for all twelve other secret files, so this is one outlier file, not a systemic store problem, which tightens my own earlier bound. Still not AGENTS.md section 4 compliant, and its value rose with `T6`: under the tunnel, the pinned host keys plus this password are the entire security of the RDP channel, so the mode fix is now pre-booth work rather than hygiene, and it belongs in the booth-day checklist alongside item 5 above. Fix: `chmod 600 ~/AI/secrets/scm_draft_pass.md`. Not dispatchable to any agent.
+
+**Item 2, pre-existing world-readable grd credentials. Closed, no change from `T2`.** Closed by `K6` at `3e43d2a` for the team's backup copy; the daemon's own store stays as the daemon owns it. `T6` adds one fact and it is favourable: the current key pair is mode 600 for `tls-key.pem` and 644 for the public certificate (`## Implementation:918-919`), which is the correct shape. No action.
+
+**Item 3, `lock-enabled` `true` to `false`. Severity: medium, and my ruling is accept, not re-lock.** `T6` re-read it on the target today: `false` (`## Implementation:860-862`, `:1149`). My reasoning is above, under residual risk. The decision is the operator's and needs a recorded accept in `## Status` before 2026-11-28, with the inverse `gsettings set org.gnome.desktop.screensaver lock-enabled true` scheduled for teardown.
+
+---
+
+### Checks that ran in this dispatch, with the command that produced each claim
+
+`grep -n 'cert:ignore\|cert:fingerprint\|StrictHostKeyChecking\|args-from' scripts/remote/rt-lib` returning `:38` (`yes`), `:164`, `:170`. `stat -c '%a %U:%G %n' ~/AI/secrets/scm_draft_pass.md ~/AI/secrets` answering `644` and `700`. `ls -la ~/AI/secrets/`, thirteen entries, twelve at 600 and one at 644, directory `drwx------`. `grep -rn 'CertIgnore\|cert:ignore\|verify_connection\|settings->' scripts/` returning the four packaged sites. `grep -n 'parse_command_line\|freerdp_client_context_new\|parse_args_file(' scripts/rdp-input.c scripts/rdp-pointer.c` returning `rdp-input.c:63,205,217,238` and `rdp-pointer.c:52,95,108,134`. `read scripts/rdp-input.c:55-99`, confirming the team's own args-file parser skips blank lines (`:77`), so `T6`'s blank-line trap applies to `xfreerdp /args-from:` and not to the C tools. `grep -rn "cert:ignore" /home/howard/AI/booth-2026/repo /home/howard/AI/booth-2026/t0042` returning the seven booth-runner sites listed above. `git log --oneline -3` showing `d3c4874`, `1d79b1c`, `2ac2ad7`, and `git status --porcelain` returning 0 lines. No target contact.
+
+### Checks that did not run, named
+
+1. No target contact of any kind. `lock-enabled`, `idle-delay`, the rich rule, the grd credential store, and the certificate state today are read from `T6`'s record, not from the target.
+2. No network test. No 3389 probe, no relay, no substitution test, no packet capture, no ARP or MAC spoofing.
+3. No substituted-listener test, deliberately, for the reason stated under finding 2.
+4. The pin was not exercised through `scripts/remote/rt-click`, `rt-key`, `rt-type` or `rdp-pointer`. Transfer is argued from the shared FreeRDP parser and is named unmeasured.
+5. No packaged tunnel code exists, so the tunnel posture is a measured prototype at `/home/howard/AI/booth-2026/t0042/t6_ssh_tunnel_test.sh` and nothing landed in `scripts/remote/`.
+6. `flatpak info --show-permissions org.winehq.Wine` did not run. TASK-0042 finding 5 and my medium finding above both depend on it.
+7. No CVE or advisory lookup against `freerdp-libs-3.32.2-1.el10_2`, nor against `gnome-remote-desktop-49.3-4.el10_2`.
+8. `tests/selftest.sh` not re-run in this dispatch. The 110-check baseline is `LIVE QUEUE 8`'s record at `TASK-0042 ## Next Actions:806-807`, not a run of mine.
+9. No journal scan on either machine for a positional RDP password left by an earlier pass.
+10. `scripts/licence-check` not run. `Charmy` owns the gate. Noted as a security-relevant signal for the chain: `T6`'s new tooling carries MIT SPDX headers and lives outside any git repository (`## Implementation:1160-1163`), so the licence gate never sees those files, and the FreeRDP-linked C tools' licence record sits in `scripts/remote/NOTICE`. Point at `## License (Charmy)` for the verdict.
+
+### Verdict
+
+Finding 2 stays open at high, and `T6` is the reason it can now be closed cheaply rather than argued about: the mechanism the daemon provides (mandatory NLA) protects the target from a relay, it does not authenticate the far end to the client, and the attack shape that matters is endpoint substitution. Both fixes now have measured prototypes; neither is landed. The tunnel plus pin is my recommended booth-day configuration, and it changes the operator's firewall decision from "widen or not" to "widen nothing". Hygiene item 1 is open and is now pre-booth work. Hygiene item 2 is closed. Hygiene item 3 I rule accept, with the inverse scheduled. One new medium finding, the pin's bound against same-user code execution on the target, is out of window for 2026-11-28 and belongs to the `booth`-account decision. Nothing here is above high. No new blocker.
+
+Written 2026-11-26 00:06 UTC (2026-11-26 09:06 JST).
+
+---
+
 ## License (Charmy)
 
 *Owner: `Charmy`. Fourth in the review chain. Every license is verified at the upstream source repository and the ref used, never from a copy in this repo.*
