@@ -1465,6 +1465,110 @@ No blocker. No should-fix. The packaging satisfies TASK-0041 DoD rows 5, 6, 7, 8
 Written 2026-11-25 10:12 UTC (2026-11-25 19:12 JST).
 ---
 
+### S2 review of the post-chain code, commits `b56be2b` and `70aa1dd` plus booth `8bf04b7`
+
+*Dispatch `S2`, `LIVE QUEUE 8` item 3d. Read-only. No target contact. Scope: `scripts/remote/rt-lib`, the new `scripts/remote/rt-tunnel`, the `rt-type`/`rt-key`/`rt-click` channel calls, `scripts/remote/uinput-inject.c` with the new `SETTLE_MS`, the `tests/selftest.sh` assert changes, booth `8bf04b7` and `code/rdp-cert-pin.txt`. Ruled against `Omega`'s `O1` at `## Security:1550-1642` and the `T6` to `T8` records at `## Implementation:851-1409`.*
+
+---
+
+### The skill page still instructs the accept-any certificate option, and the new gate cannot see it
+
+**Severity:** blocker
+**Where:** `.opencode/skills/remote-desktop/SKILL.md:64-65`. Gate scope: `tests/selftest.sh:436` scans `scripts/` only, and the skill assert at `tests/selftest.sh:476-480` checks the file exists and carries two unrelated strings.
+**Problem:** `T7` replaced the accept-any option in every emitting site and in the C usage comments (`scripts/rdp-input.c:13`, `scripts/rdp-pointer.c:10`), but the page every dispatch agent loads for target work still reads "RDP connection: `/cert:ignore` is accepted for the LAN demo's self-signed certificate", and it names neither the pin, `RT_RDP_CERT_PIN`, the pinned SSH forward, nor `rt-tunnel`. The commit message claims the comment changes stop a clone "copying the old option out of the documentation" (`## Implementation:1244`), and that claim is incomplete for the team's own documentation.
+**Failure scenario:** An agent dispatched on a later TASK loads the `remote-desktop` skill, follows `SKILL.md:64`, and composes an ad-hoc `xfreerdp` or `rdp-input` args file with `/cert:ignore` for an out-of-band probe. That call sits outside `scripts/`, so `tests/selftest.sh:436` never sees it, and `O1`'s highest-remaining risk (`## Security:1556`, `K1` release blocker 3) is back in live use on a channel carrying the credential, three days before the booth.
+**Suggested direction:** Rewrite `SKILL.md:64-65` to the landed posture, pinned fingerprint plus the loopback forward, naming `RT_RDP_CERT_PIN`, `RT_RDP_TUNNEL=0` as the endorsed fallback, and `scripts/remote/rt-tunnel start|status|stop`. Then widen the `cert:ignore` scan at `tests/selftest.sh:436` to cover `.opencode/` as well as `scripts/`, with `planning/` and `DEMO-LOG.md` allow-listed as record history. Two small edits, and they close the documentation half of finding 2.
+
+---
+
+### A borrowed forward that is still starting up is a hard failure, with advice that would tear down a healthy forward
+
+**Severity:** should-fix
+**Where:** `scripts/remote/rt-lib:236-249`, the message at `:245`
+**Problem:** When a pid file names a live forward-shaped pid and the loopback port is not yet listening, the tool dies immediately. A forward this call starts itself is polled for 10 x 0.5 s at `rt-lib:264-272`. A forward another caller started is not polled at all.
+**Failure scenario:** Measured offline in this dispatch, no target contacted. Scratch `RT_STATE_DIR` holding a pid whose `/proc/<pid>/cmdline` carries the exact forward spec, port 3401 not listening, credential files absent. `RT_STATE_DIR=$T ./scripts/remote/rt-click --host 192.0.2.1 --click 1 1` returns rc 1 with `rt: error: the forward for 192.0.2.1 (pid 2313301) is alive but 127.0.0.1:3401 is not listening; run scripts/remote/rt-tunnel stop --host 192.0.2.1`. `rt-tunnel status` on the same state reports `forward half up`, rc 1. The real trigger is ordinary team practice: `AGENTS.md` section 17 tells agents to batch independent calls in one message, so `rt-tunnel start` and an input tool, or two input tools, launched together race the 0.5 s the forward needs to come up (`T7` measured 0.54 s at `## Implementation:1263`). The command the error tells the operator to run is the one that kills a perfectly healthy forward.
+**Suggested direction:** Reuse the existing wait window before declaring a borrowed forward half-open, and make `rt-tunnel status` the named first action rather than `rt-tunnel stop`. A `flock` on the state file so only one caller opens a forward at a time removes the race class outright.
+
+---
+
+### Borrowed forwards are not reference-counted, so an owner can tear one down mid-session
+
+**Severity:** should-fix
+**Where:** `scripts/remote/rt-lib:241` (a borrowed forward sets `RT_TUNNEL_OWNED=0`), `scripts/remote/rt-lib:278-286` (the owner releases on exit)
+**Problem:** Two tools can share one forward with no count and no lock. The tool that opened it reaps it when that tool exits, with no knowledge of the other user.
+**Failure scenario:** `rt-type` starts a per-call forward and is mid-typing. A second input call starts, recognises the forward as ours, borrows it, and opens its own RDP session through port 3401. `rt-type` exits, its `EXIT` trap at `rt-lib:318` kills the ssh, and the second session loses its remaining events. The observable result on the target is a half-delivered action, for example a truncated filename in the SCMDraft 2 Save dialog, which is the exact field `TASK-0042` L3 and L5 evidence is built on. Same race window as the finding above, and the same lock closes both.
+**Suggested direction:** Bracket a run with `rt-tunnel start` and `rt-tunnel stop` as the documented pattern (the booth runner already does this at booth `code/booth_loop.py:1259`), and have a tool that starts its own forward skip the reap when another live process holds the record. `flock` on the state file gives both.
+
+---
+
+### Four booth files still hand `sshpass` to an unpinned host, and the named-residue list covers only two of them
+
+**Severity:** should-fix
+**Where:** booth `code/l1_run1.sh:11-12`, `code/l1_setup.sh:39,43,50`, `code/drive_l3.py:10-11`, `code/l5_a.py:16-17`
+**Problem:** `T7` named the residue for the two `l1_*` scripts (`## Implementation:1297-1299`, and their own headers at booth `code/l1_run1.sh:17-19`, `code/l1_setup.sh:14-17`). `drive_l3.py:10-11` and `code/l5_a.py:16-17` carry the identical posture, `sshpass -f ~/AI/secrets/scm_draft_pass.md ssh -o StrictHostKeyChecking=no howard@192.168.1.99`, and neither their headers nor the `T7` record names it. All four are inside the 790-row published manifest set. `R2` finding 1 is the finding this posture is, and the team gate asserts unpinned posture only under its own `scripts/`, so nothing machine-checks the booth tree (`## Implementation:1291-1293`).
+**Failure scenario:** The operator re-runs `code/l1_setup.sh` during booth prep, the documented reproduction of the L1 setup. Whichever host answers `192.168.1.99` receives the target SSH password, and that account has passwordless sudo on the demo machine. Same for a clone that follows the manifest and runs `drive_l3.py`.
+**Suggested direction:** Reuse the pinned-known-hosts block `booth_loop.py` already carries since `7c4fa16`, four lines per file, or move all four under an `archive/` path with a header stating they are not runnable. Either way, name all four in the record, not two.
+
+---
+
+### `rt_tunnel_pid_is_ours` reports "ours" when it cannot read the cmdline it is checking
+
+**Severity:** nit
+**Where:** `scripts/remote/rt-lib:218-222`, the fallback `return 0` at `:222`. Same shape at booth `code/booth_loop.py:206-219`, where the socket fallback dials whatever holds the port.
+**Problem:** The identity check is skipped, not failed, when `/proc/<pid>/cmdline` is unreadable, and the function then returns success. The commit message describes the channel logic as failing closed (`b56be2b`).
+**Failure scenario:** A stale record left by a `SIGKILL`ed run names pid N; pid N is later a process this user cannot inspect (a `hidepid=2` mount, or a pid owned by another user), and a forward to a *different* host happens to hold 3401. The tool accepts the record and sends the credential into that socket. Bounded: the certificate pin aborts at the RDP layer, so the outcome is a failed session, not disclosure. That is the reason this is a nit and not higher, and it is worth stating in the comment.
+**Suggested direction:** Return failure when the cmdline cannot be read, and comment that the certificate pin, not the pid check, is the identity backstop.
+
+---
+
+### The pin is validated to four different strengths across the booth tree
+
+**Severity:** nit
+**Where:** hex check at booth `code/booth_loop.py:189-190`; length-only checks at `code/drive_l3.py:85`, `code/l5_a.py:113`, `code/mkargs.sh` and `code/mkargs2.sh` and `code/l1_run1.sh` and `code/l1_setup.sh` (each `[ "${#RDP_PIN}" -eq 64 ]`)
+**Problem:** Five readers of one file, four of them checking only the length. `T7` chose Option B for good reason (`## Implementation:1192-1197`), and the readers drifted.
+**Failure scenario:** `code/rdp-cert-pin.txt` is replaced by a 64-character line that is not hex, a stray manifest row or a truncated fingerprint padded by a re-key edit. Four of the five readers accept it, FreeRDP aborts with `certificate not trusted`, and the failure reads like a target re-key rather than a malformed file. The runner is the only site that says which.
+**Suggested direction:** One shared reader with the `booth_loop.py` hex check, or copy that exact check into the other four sites.
+
+---
+
+### `rt-click`'s minimal-pointer branch keeps a dead argument array holding the `-` the `T7` fix removed, and no assert covers that branch
+
+**Severity:** nit
+**Where:** `scripts/remote/rt-click:72` (`cmd=("$BIN" - ...)`), unused because the real minimal path uses `$ARGS_FILE` at `scripts/remote/rt-click:100`. The new plumbing asserts cover only the three default-path probes in the `/dev/stdin` block of `tests/selftest.sh`.
+**Problem:** The dead assignment carries exactly the bug `T7` found against the live target, and the minimal path is unprobed offline. The minimal path also writes the credential to a mode-600 file under `${TMPDIR:-/tmp}` at `scripts/remote/rt-click:94-95`, which a `SIGKILL` leaves behind because no trap runs.
+**Failure scenario:** A later edit routes the minimal branch through `${cmd[*]}` and reproduces `error: cannot open args file: -`, found only by running against the target, which is the gap `Big`'s `T3` non-run list names at `## Test Results:1505`. Separately, a killed `rt-click --pointer minimal` leaves an args file holding the RDP password in a world-listable directory until the next cleanup.
+**Suggested direction:** Drop the dead `cmd` assignment in the minimal branch, add `rt-click --pointer minimal --dry-run` to the plumbing probes, and put the args file under `RT_STATE_DIR` (mode 700) or pass `RT_RDP_STDIN` to `rdp-pointer` as well and drop the file.
+
+---
+
+### What is right in these commits, stated plainly
+
+The pin lives in exactly one named variable at `scripts/remote/rt-lib:50` and in exactly one published file at booth `code/rdp-cert-pin.txt`, and the two are byte-identical (`84b12d76...bab4`, 65 bytes, sha256 `7b67633071ee29d2b519a79d082564bede146f61d0890a44a288b133d70e575d`, matching its `MANIFEST.md:559` row exactly in both size and hash, so the documented artifact set and the published one agree). The undecided-channel refusal at `rt-lib:309` is the right shape, a credential-bearing argument set cannot be built without a decided endpoint, and the assert at `tests/selftest.sh:466-469` proves it offline against RFC 5737 space. The fail-closed branch on an unidentified socket works, measured below. `rt-tunnel start|status|stop` is idempotent in both directions and `start` correctly declines to reap what it detached (`scripts/remote/rt-tunnel:66-68`). `SETTLE_MS` is where the documented fact said it should be, `scripts/remote/uinput-inject.c:54` and `:341`, verified between `UI_DEV_CREATE` at `:205` and the first `emit` at `:342`, with no double settle in the wrapper (`grep -n '1800\|sleep' scripts/remote/rt-uinput` returns only the comment line at `:14`). The booth runner's ordering is correct: every `rdpev` call site sits inside `set_zoom_25`, `run_map` and `run_paint` (booth `code/booth_loop.py:662,665,667,673,676,678,953,970,1051,1080`), all reached only after `start_rdp_tunnel()` at `:1259`, and no preflight path dials before the forward exists.
+
+---
+
+### Checks run in this dispatch, with the command that produced each claim
+
+`bash tests/selftest.sh` at `70aa1dd` answers `SELFTEST: 122 checks passed (floor 100)`, green in this dispatch, not inherited. `grep -rn 'cert:ignore' .` over the team repo returns the skill page at `.opencode/skills/remote-desktop/SKILL.md:64`, the asserts themselves at `tests/selftest.sh:431,436,437,459,460`, and git log message text only, zero hits under `scripts/`. `sed -n '45,70p' .opencode/skills/remote-desktop/SKILL.md` read the stale posture line. `grep -n 'cert:ignore' code/` in the booth tree returns no match, and the same grep over the whole booth tree returns record files only. `sha256sum code/rdp-cert-pin.txt`, `stat -c '%s %a'` and `grep -n rdp-cert-pin MANIFEST.md` produced the artifact and fingerprint match above. `grep -n 'len(rdp_cert_pin) != 64\|not 64 hex\|# RDP_PIN} -eq 64\|StrictHostKeyChecking=no'` across the seven booth files produced the residue and validation lists. `grep -n 'remote-desktop skill' -A6 tests/selftest.sh` produced the assert scope. Two offline channel tests at `/tmp/opencode/t0041-s2c.*` and `/tmp/opencode/t0041-s2.*`, host `192.0.2.1` (RFC 5737, contacted by nobody), credential files deliberately absent: a live forward-shaped pid with no listener produced the `rt-tunnel stop` failure message quoted above, and a listener on 3401 with no record produced `refusing to send a credential into an unknown socket` at rc 1. Scratch dirs removed, both helper processes killed.
+
+### Checks that did not run in this dispatch, named
+
+1. No target contact. The pin against the live daemon, the forward against the live target, and the `T7` live proofs are `T7`'s record, not mine.
+2. The race findings above were produced with a stand-in pid carrying the forward spec, not with two real tools racing a real forward. The branch is proven, the frequency in a real booth cycle is inferred from `AGENTS.md` section 17 batching.
+3. `shellcheck` is absent on this controller, so `rt-tunnel` and the new selftest code remain unlinted.
+4. No packaged tool was exercised against the target in this pass, and no booth file was executed. Syntax level only.
+5. `flatpak info --show-permissions org.winehq.Wine` did not run. `O1`'s medium finding at `## Security:1576` and TASK-0042 finding 5 both stay open on it, and the booth account decision is the real fix there.
+6. No CVE lookup against `freerdp-libs-3.32.2-1.el10_2` or `gnome-remote-desktop-49.3-4.el10_2`.
+7. `scripts/licence-check` ran inside the selftest suite as part of the 122, and I did not run it against the booth tree. `Charmy` owns the booth gate.
+8. `~/AI/secrets/scm_draft_pass.md` was not re-read in this dispatch. `O1` records it at mode 644, and that remains the operator's one command.
+
+### Verdict
+
+One blocker, one documentation gap and a gate that cannot see it: the skill page still teaches the option finding 2 is about. Four should-fixes, the two forward-race findings in the new `rt-lib` channel code, the incomplete unpinned-ssh residue list in the booth tree, and none of them is a redesign. Two nits on fail-open edges and a dead argument array. The security landing itself is sound, the pin is in one place in each tree and the fingerprints match the manifest, and the `SETTLE_MS` fix is the right kind of fix, code carrying the fact the assert gates. Fix the skill page before the booth-morning smoke run, since that page is what the smoke-run agent will read.
+
+Written 2026-11-26 02:43 UTC (2026-11-26 11:43 JST).
+---
+
 ## Security
 
 *Owner: `Omega`. Read-only. Severity order.*
