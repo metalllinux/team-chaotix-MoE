@@ -13,6 +13,32 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 2 landed, `O1` keeps finding 2 open at high, and the booth-day RDP configuration is now a
+named fix instead of an open question (2026-11-26 09:11 JST, 2026-11-26 00:11 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `O1` (`Omega`, child `ses_deadbd076ffeEsZ5udJ3jZvJ06`) wrote `TASK-0041 ##
+Security:1316-1410` and nothing else, and because `Omega` has no shell per `AGENTS.md` section 11 I committed the
+record as team `47c6dfb`, signed against `F9261D151316FD60`, `git diff --stat` for that commit reading 1 file
+changed. `Omega`'s ruling, stated as its own. Finding 2 stays **open at high**, because `T6`'s relay test was the
+wrong attack shape: CredSSP channel binding protects the target from a relay and never authenticates the far end
+to the client, so endpoint substitution stands even though no credential crossed the relay. `Omega` names the fix
+at `rt-lib:164/170` plus the seven booth-runner sites including `booth_loop.py:273`. One new **medium**, the
+fingerprint pin is bounded by `tls-key.pem`, mode 600 and owned by `howard`, reachable from same-user code
+execution in the Wine and SCMDraft workload, recorded as out of window here and tied to TASK-0042 finding 6.
+Hygiene item 1 is open at medium and is now pre-booth work, item 2 is closed, item 3 is ruled **accept** with the
+inverse scheduled for teardown. No blocker. `Omega`'s recommended 2026-11-28 configuration, pinned SSH tunnel to
+`127.0.0.1:3401` plus `/cert:fingerprint:sha256:84b1…bab4` replacing `/cert:ignore`, the 3389 listener left on,
+the target rich rule unchanged and not widened, `chmod 600` on the secret, `lock-enabled` left `false`, and one
+booth-morning smoke run, with the residual risk named as physical presence equaling root on the target, an
+untested tunnel on a foreign network, a TOFU-grade pin, and the cleartext `howard` username moved to SSH rather
+than closed. **`Robotnik` decisions taken from that ruling, recorded rather than asked.** One, `Omega`'s fix is
+the highest-value pre-booth work left, so `LIVE QUEUE 8` item 3 is rewritten as `T7`, adopt the pin and the
+tunnel and retire `/cert:ignore`, and the two assert-hygiene items `Big` named move to a new item `3b` as `T8`
+behind it; the booth runs on 2026-11-28 and a code change that removes an accepted-any-certificate path is worth
+the slot before documentation is. Two, `Omega` leaves the rich rule unchanged, which settles the 3389 half of the
+`P3` firewall decision as a recorded recommendation, not as a dispatch: do not widen it. What remains
+operator-owned is which machine holds the controller role, and the recommendation stays `192.168.1.102` because
+the tunnel has never run on a foreign network. Next dispatch is `T7`.
+
 **`LIVE QUEUE 8` item 1 landed, `T6` ran the first RDP channel test, and the measured mitigation changes what the
 operator's firewall decision is a decision about (2026-11-26 08:55 JST, 2026-11-25 23:55 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `T6` (`Tails`, child `ses_deb314117ffe0igpIhi8XyQS6k`) landed at team
@@ -822,9 +848,17 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    hygiene items at `TASK-0041 ## Status:22-25` first and do not change target state beyond what `DEMO-LOG.md`
    already records with an inverse. Write the commands and the evidence in `TASK-0041 ## Implementation` and add
    the `DEMO-LOG.md` entry for the test itself.
-   2. `Omega` as `O1`. `TASK-0041 ## Security`. Rule on finding 2 against `T6`'s evidence, and on the 3389
-   listener, the three hygiene items, and the `lock-enabled` posture, naming the booth-day recommendation.
-   3. `Tails` as `T7`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9` recorded without
+   2. `LANDED 2026-11-26 00:11 UTC (09:11 JST) as `O1`, `TASK-0041 ## Security:1316-1410`, committed by the
+   dispatcher as team `47c6dfb`.` `Omega` as `O1`. `TASK-0041 ## Security`. Rule on finding 2 against `T6`'s
+   evidence, and on the 3389 listener, the three hygiene items, and the `lock-enabled` posture, naming the
+   booth-day recommendation.
+   3. `Tails` as `T7`. `TASK-0041 ## Implementation` plus the runner code. Close the fix `Omega` names in
+   `TASK-0041 ## Security` for finding 2: replace `/cert:ignore` with the `/cert:fingerprint:sha256:` pin and the
+   host-key-pinned SSH tunnel at `rt-lib:164/170` and at the seven booth-runner sites including
+   `booth_loop.py:273`, and prove it against the live target with one smoke run through the tunnel to
+   `127.0.0.1:3401`. Selftest baseline 110 checks, a negative control required, target state changes only where
+   `DEMO-LOG.md` already records a named inverse.
+   3b. `Tails` as `T8`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9` recorded without
    fixing: 4 of 6 dry-run asserts rely on tool self-report, and `UI_DEV_CREATE|1800` is too loose. Negative
    controls required, selftest baseline 110 checks.
    4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
@@ -843,8 +877,15 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    decision, with a date attached.** The target rich rule restricts 3389 to `192.168.1.102`, so either the booth
    runs from the machine that holds that address or the rule is widened for the venue, and 2026-11-28 is two days
    out; `Robotnik`'s recorded recommendation is to run the booth from `192.168.1.102` and not widen the rule.
-   `~/AI/secrets/scm_draft_pass.md` is still mode 644 against `AGENTS.md` section 4 and needs `chmod 600`. The
-   `lock-enabled` re-lock before the event is the operator's posture call. `agentsmd promote` is operator-owned.
+   **Updated 2026-11-26 00:11 UTC by `O1`.** `Omega`'s recommended booth-day configuration leaves the rich rule
+   unchanged and not widened, so the 3389 half of this decision is settled as a recorded recommendation rather
+   than an open question, and what the operator actually decides is which machine holds the controller role. The
+   tunnel reaches the target at `127.0.0.1:3401` over SSH, so the live requirement is SSH 22 reachability, and
+   `192.168.1.102` stays the recommended machine because the tunnel has never run on a foreign network.
+   `~/AI/secrets/scm_draft_pass.md` is still mode 644 against `AGENTS.md` section 4 and needs `chmod 600`, which
+   `O1` re-grades from hygiene to pre-booth work with 2026-11-28 attached. The
+   `lock-enabled` is ruled **accept** by `O1` for the demo, left `false` on 2026-11-28 with the re-lock scheduled
+   at teardown, so the posture call is scheduled rather than open. `agentsmd promote` is operator-owned.
 
 <!-- LIVE QUEUE 7 consumed, see ## Archive --> - [ ] LIVE QUEUE 7 FOR THE FRESH `Robotnik` SESSION (2026-11-26 01:16 JST, 2026-11-25 16:16 UTC, owner
   `ses_ded91638cffe1PedTvitwlfONJ`). Read `## Status` in this doc, first three entries, and this block only,
