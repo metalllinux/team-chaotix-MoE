@@ -13,6 +13,23 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3e-fix landed, `TF3` closed `Charmy`'s `F1`, and I re-ran every check behind it myself
+(2026-11-26 14:06 JST, 2026-11-26 05:06 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `TF3` (`Tails`,
+child `ses_de9d36a47ffeI1Sd6xf2IrQt2J`) landed at team `8a894dc` with its record at team `61d9f5f` and booth
+`ba80ff3`. I read both remotes, `git verify-commit` is good on `8a894dc`, both clones answer 0 lines in
+`git status --porcelain`, and the checks are mine rather than inherited, `bash tests/selftest.sh` at 137 checks
+against the floor of 100, `scripts/licence-check` exit 0 on the team tree and exit 0 on the booth tree, and
+`grep -rn "dual-licen"` over the team tree excluding planning docs returns 0 matches. The booth manifest rows were
+recomputed by `s1c_manifest.py`, `NOTICE` at 5956 bytes and `README.md` at 18633 bytes, total 198545374 bytes
+across 789 listed entries. The licence statement now matches what `Charmy` verified upstream at the ref actually
+used, Apache-2.0 at tag `3.32.2`, `LICENSE` blob `d645695…`, with both recorded policy exceptions untouched. **What
+`TF3` named as still owed, and I agree with the finding.** No selftest assert covers licence wording, so a later
+edit could reintroduce a false upstream claim and nothing in the gate would catch it. That gap belongs to `B2`,
+which is now owed on two grounds, `S2`'s blocker-level return and an unguarded licence claim. **`Robotnik` decision
+recorded.** The post-chain review chain now has `Shadow`, `Omega` and `Charmy` reported on it and `Big` outstanding,
+and `B2` stays queued behind the booth-facing items because 2026-11-28 needs the documentation confirmed and the
+landings read back before it needs another test probe. Next dispatch is item 4, `D2`.
+
 **`LIVE QUEUE 8` item 3e landed, `C2` passes the machine gate on both trees and FAILs a licence claim the team
 wrote itself, and I verified both the gate and the four cited lines myself (2026-11-26 13:43 JST, 2026-11-26 04:43
 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `C2` (`Charmy`, child
@@ -1001,7 +1018,10 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    against the upstream refs actually used, including the new `scripts/remote/rt-tunnel`, the booth
    `code/rdp-cert-pin.txt`, and the FreeRDP and `libfreerdp3` posture, running `scripts/licence-check` and
    recording the gate outcome.
-   3e-fix. `Tails` as `TF3`, the fix dispatch for `C2` finding `F1`. Four rewordings, team `NOTICE:25-26`,
+   3e-fix. `LANDED 2026-11-26 05:06 UTC (14:06 JST) as `TF3`, team `8a894dc` with record `61d9f5f` and booth
+   `ba80ff3`, all read back from the remotes and signed. Licence gate re-run at exit 0 on both trees by the
+   dispatcher, and `grep -rn "dual-licen"` over the team tree excluding planning docs returns 0 matches.` `Tails`
+   as `TF3`, the fix dispatch for `C2` finding `F1`. Four rewordings, team `NOTICE:25-26`,
    `scripts/remote/NOTICE:31-32`, booth `NOTICE:69-70` and booth `README.md:213`, each of which currently claims
    FreeRDP at tag `3.32.2` is dual-licensed Apache-2.0 or GPL-2.0+ when upstream at that ref is Apache-2.0 only.
    State the licence as verified at the ref, keep the recorded policy exceptions, and cite the upstream `LICENSE`
@@ -1009,8 +1029,10 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    3f. `Big` as `B2`, **now owed**, `S2` returned a blocker and four should-fixes, so `B2` runs after `TF1`. An
    independent re-probe of the new asserts, their negative controls, and the `TF1` fixes at the 122-check baseline.
    4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
-   secrets rule and the packaged `gnome-screenshot-tool` path. Do not touch the booth clone in the same dispatch
-   as any other agent.
+   secrets rule and the packaged `gnome-screenshot-tool` path. Read `TF1`'s skill correction and `TF3`'s licence
+   wording first, the docs must teach the certificate-pin plus loopback-tunnel posture and state FreeRDP as
+   Apache-2.0 at tag `3.32.2`, and must not reintroduce `/cert:ignore` or the dual-licence claim. Do not touch the
+   booth clone in the same dispatch as any other agent.
    5. `Knuckles` as `K3`. `TASK-0041 ## Release`. Read back `b906f00`, `1eea4ec`, `3e43d2a` and `9190b04` from the
    remote, verify signatures, state the `DEMO-LOG.md` coverage of the packaging steps, and report the `TASK-0041`
    DoD state without ticking any box.
