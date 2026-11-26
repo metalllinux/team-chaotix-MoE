@@ -2120,6 +2120,66 @@ Ran at `7781512`. No target contact was made, and none was needed. Every count b
 
 | File | Sections touched | What changed |
 |---|---|---|
+| `README.md` | New `## Remote visual control (scripts/remote/)` section between `## Team platform` and `## Self-hosted runner setup`; one bullet added to `## Secrets management`; `## Repository structure` tree block and its `scripts/` paragraph | New section carries the tool inventory (nine tools plus `rt-lib`), the credential rule for these tools, the packaged `/usr/bin/gnome-screenshot-tool -f <file>` capture path with the `AccessDenied` evidence for the raw `gdbus` alternative, the certificate-pin plus loopback-tunnel posture (`rt-tunnel`, `RT_RDP_CERT_PIN`, `RT_RDP_TUNNEL=0` fallback, claim bookkeeping), and the licence statement naming FreeRDP at tag `3.32.2` as Apache-2.0 only with the upstream `LICENSE` blob `d645695673349e3947e8e5ae42332d0ac3164cd7` cited and no GPL-2.0+ option named. The `scripts/` paragraph now names `remote/`, the two C sources, `licence-check`, `dispatch-gate`, `hooks/pre-push` and `a2a-send`, and the tree block names `.opencode/skills/` |
+| `scripts/remote/rt-lib` | `rt_common_options`, the shared `--help` block every tool prints | Added an `RDP channel (rt-type, rt-key, rt-click, rt-tunnel)` block so a tool's own `--help` states the posture it runs in: the pinned SSH forward to `127.0.0.1:RT_RDP_TUNNEL_PORT` (3401), the host key pinned in `scripts/remote/known_hosts`, `/cert:fingerprint:sha256:` read from `RT_RDP_CERT_PIN`, a wrong pin aborting, `rt-tunnel start` as the run-length forward, a borrower leaving the forward up, and `RT_RDP_TUNNEL=0` as the fallback. The heading scopes it to the four channel tools so a tool that never touches RDP prints it as not-applicable. Two comment lines above the function record that scoping choice |
+
+**D2 dispatch, `TASK-0042` `LIVE QUEUE 8` item 4, written 2026-11-26 05:22 UTC (14:22 JST).** Two files.
+Read `TF1`'s skill correction at `## Implementation:1413-1539`, `TF3`'s licence wording at
+`## Implementation:1541-1620`, and `Charmy`'s `C2` finding `F1` at `## License (Charmy):2014-2041`
+before editing, so the README teaches the posture that landed at `b56be2b` rather than the one the
+`T1` to `T4` chain left behind. No target contact. No booth file touched.
+
+**Checks run, with the command that produced each claim.** `bash tests/selftest.sh` answers `SELFTEST:
+137 checks passed (floor 100)`, the baseline held and no assert added or removed in a docs pass. `bash
+-n scripts/remote/rt-lib` clean. `scripts/remote/rt-click --help` and `scripts/remote/rt-ocr --help`
+print the new block, and `rt-ocr` printing it is the accepted cost of one shared help block, scoped by
+its own heading. `bash scripts/licence-check .` answers `PASS` at exit 0. `grep -rn 'cert:[i]gnore'
+scripts/ .opencode/ team/ tests/ .github/ README.md AGENTS.md` returns no match outside the selftest's
+own bracketed patterns, so the accept-any option was not reintroduced anywhere the gate reads.
+`grep -rn 'dual-licen' README.md scripts/` returns no match. `rpm -q --qf
+'%{NAME}-%{VERSION}-%{RELEASE} licence=%{LICENSE}\n' freerdp-libs` answers
+`freerdp-libs-3.32.2-1.el10_2 licence=Apache-2.0 AND HPND AND LGPL-2.1-or-later AND
+LicenseRef-Fedora-Public-Domain AND OFL-1.1`, read on this controller in this dispatch rather than
+inherited from the NOTICE, and it is the distro term list the README states. `grep -n 'HPND\|LGPL\|GPL-2.0'
+team/licenses/policy.yaml` shows `GPL-2.0-only`, `GPL-2.0-or-later`, `LGPL-2.1-only`,
+`LGPL-2.1-or-later`, `LGPL-3.0-only` on the avoid list and `HPND` absent from it, which is why the README
+names the two recorded exceptions and does not claim `HPND` is one.
+
+**Checked and needed no change.** `scripts/remote/NOTICE`, whose FreeRDP row already states Apache-2.0
+only at tag `3.32.2` with the blob id and the origin of the withdrawn GPL-2.0+ wording (`TF3` at
+`8a894dc`), and the root `NOTICE` for the same claim at `:25-32`. `.opencode/skills/remote-desktop/SKILL.md`
+already carries the pin plus tunnel posture, the `RT_RDP_TUNNEL=0` fallback, the packaged capture path,
+and the accept-any option named as forbidden, with four selftest asserts holding it in place. The header
+blocks of `rt-shot` (the `gnome-screenshot-tool` path with the `AccessDenied` evidence), `rt-tunnel` (why
+the forward exists, mode-600 pid file, no credential), `rt-lib`'s credential rule at `:7-12` and its RDP
+posture block at `:40-49`, `rt-ocr`, `rt-type`, `rt-key`, `rt-click`, `rt-status`, `rt-build` and
+`rt-uinput` each already state their own proven mechanism. `scripts/remote/NOTICE`'s third-party-data
+section and `AGENTS.md` section 4 are accurate as written.
+
+**Could not verify, and what would settle it.** Whether the target's gnome-shell 49 still ships
+`/usr/bin/gnome-screenshot-tool` today. The README states it as the recorded measurement (TASK-0042
+`DEMO-LOG.md` 2026-11-20 01:40-02:10, `## Next Actions:76` decision) and this dispatch ran no target contact.
+`scripts/remote/rt-status --host 192.168.1.99` names the screenshot-tool probe and would settle it in one
+read-only run. Whether the pinned fingerprint `84b1…bab4` still matches the daemon's certificate; `T6`'s
+measurement is the source, and one `rt-tunnel start` plus a `/cert:fingerprint:sha256:` connect would
+settle it. Which files inside `freerdp-libs` carry the `HPND` and `LGPL-2.1-or-later` terms is still
+unidentified, the gap `Charmy` names at `## License (Charmy):2035`, so the README states only what the
+package licence field says and no more.
+
+**Owed after this pass, named not done.** No selftest assert covers the wording of a licence claim or of
+this README section, so both can drift with nothing failing. `TF3` named the same gap for the NOTICEs at
+`## Implementation:1603-1605` and it belongs with `B2`. An assert that `README.md` names
+`RT_RDP_CERT_PIN`, `rt-tunnel`, `gnome-screenshot-tool`, and Apache-2.0 for FreeRDP at `3.32.2`, in the
+shape of the four skill asserts `TF1` added, would close the docs half. Separately, `README.md`'s tree
+block still reads `.github/scripts/ # Helper scripts (worktrees, etc.)` while `AGENTS.md` section 12
+retires worktrees and `scripts/hooks/pre-push` is the effective gate. `manage-worktrees.sh` is still in
+the tree, so fixing that line is a decision about the script rather than a wording change, and it is
+left for the dispatcher.
+
+**Standing posture.** `R4`'s verdict stays FAIL on the booth repo as published at `7c4fa16`, the booth
+repo stays private, and the visibility flip is the operator's ruling on `C2` and `C3`. Nothing in this
+pass touches the booth clone. Booth `README.md:213` and booth `NOTICE:69-72` already state Apache-2.0
+only from `TF3` at booth `ba80ff3`, and this pass did not re-read them.
 
 ---
 

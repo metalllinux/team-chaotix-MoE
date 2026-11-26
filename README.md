@@ -167,6 +167,78 @@ Run the test gate any time, locally or in CI:
 bash tests/selftest.sh
 ```
 
+## Remote visual control (`scripts/remote/`)
+
+`scripts/remote/` drives and observes a remote Rocky Linux GNOME target, covering capture of the
+live screen, reading it as text, and keyboard and pointer injection. It was built in
+`planning/docs/TASK-0041-remote-visual-control.md`, and the `remote-desktop` skill at
+`.opencode/skills/remote-desktop/SKILL.md` is the page an agent loads before target work. The
+verified facts there carry the measurements, so a new dispatch does not re-derive them.
+
+| Tool | What it does |
+|---|---|
+| `rt-status` | Read-only report on what the loop can do on a target, covering reachability, a live graphical session, the screenshot tool, the RDP listener, and `/dev/uinput` |
+| `rt-shot` | One full-screen PNG of the live session, fetched to the controller |
+| `rt-ocr` | Text out of a local PNG through `tesseract`, `--grep` for marker verification |
+| `rt-type` | Unicode text through the RDP input channel, reaching Wine and XWayland clients too |
+| `rt-key` | Raw RDP scancodes with hold and release, `--chord` for modifier combinations |
+| `rt-click` | Pointer motion, click, and drag through the RDP pointer channel |
+| `rt-uinput` | Kernel-level injection below gnome-remote-desktop through `/dev/uinput` on the target |
+| `rt-tunnel` | `start`, `status`, `stop` for the pinned SSH forward that carries RDP |
+| `rt-build` | Compiles the three C tools on the controller into `$RT_BUILD_DIR` (default `~/.cache/team-chaotix/remote-build`), never into a git-tracked path |
+
+`scripts/remote/rt-lib` holds the shared configuration and plumbing, and every value in it is
+overridable by the caller. Every tool takes `--dry-run`, which prints the exact commands with no
+network, no target, and no credential read.
+
+**Credentials.** A credential is read from a file under `~/AI/secrets/` at run time only
+(`RT_SSH_PASS_FILE`, `RT_RDP_PASS_FILE`). It is never placed in argv, so it appears in no `ps`
+output and in no shell history. The RDP argument lines reach the tools down a pipe through
+`/dev/stdin`, `sshpass` receives the SSH password through `-f <file>`, and no tool leaves a
+credential in a state record, a log, or a planning doc. A credential file whose mode is not 600
+produces a warning naming AGENTS.md section 4. The daemon certificate fingerprint in
+`RT_RDP_CERT_PIN` is a public certificate hash and is not secret material.
+
+**Capture path.** The packaged command is `/usr/bin/gnome-screenshot-tool -f <file>`, run with the
+target user's session bus named by `rt_session_env` in `rt-lib` (`XDG_RUNTIME_DIR` and
+`DBUS_SESSION_BUS_ADDRESS` under `RT_TARGET_UID`), and `RT_SCREENSHOT_BIN` is the override. The
+target's gnome-shell 49 ships that binary and accepts it as the recognised `org.gnome.Screenshot`
+client. A raw `gdbus` call to `org.gnome.Shell.Screenshot` returns
+`AccessDenied` from any caller that is not that client, measured on 192.168.1.99 and recorded in the
+TASK-0042 `DEMO-LOG.md` entry for 2026-11-20 01:40-02:10. There is no `gnome-screenshot` package
+install behind this path.
+
+**RDP channel.** The credential-bearing channel authenticates the far end twice. The session runs
+inside an SSH forward to `127.0.0.1:3401` on the controller, over the connection whose host key is
+pinned in `scripts/remote/known_hosts` with `StrictHostKeyChecking=yes`, so no 3389 packet crosses
+the LAN. The client also pins the daemon's certificate fingerprint through
+`/cert:fingerprint:sha256:` with the value read from `RT_RDP_CERT_PIN`. That certificate is
+self-issued with no Subject Alternative Name, so name matching and chain validation are not
+available postures on this LAN, and a wrong pin aborts. `rt-tunnel start` holds one forward for a
+whole run and `rt-tunnel stop` is its named inverse. An input tool that borrows a live forward
+leaves it running for its owner, and the claim bookkeeping in `rt-lib` is what stops one tool
+reaping a forward another is still using. `RT_RDP_TUNNEL=0` is the endorsed fallback, a direct
+`/v:<host>:3389` under the same certificate pin, for a network the tunnel has not been proven on.
+The accept-any certificate option appears nowhere in this repository, and `tests/selftest.sh` fails
+the moment its name appears in a shipped or loaded file.
+
+**Licence posture.** `scripts/rdp-input.c` and `scripts/rdp-pointer.c` link dynamically against
+`libfreerdp3` and `libfreerdp-client3` from the distro package `freerdp-libs-3.32.2-1.el10_2`.
+Upstream FreeRDP at tag `3.32.2`, the version that package is built from, is Apache-2.0 only. That
+was verified 2026-11-26 against the upstream `LICENSE` blob
+`d645695673349e3947e8e5ae42332d0ac3164cd7`, which is the Apache License Version 2.0 in full and the
+only licence text file in that tag's root tree, and no GPL-2.0+ option is published at that ref. The
+distro package additionally carries `HPND`, `LGPL-2.1-or-later`, `LicenseRef-Fedora-Public-Domain`
+and `OFL-1.1` terms, read from the package licence field by `rpm -q --qf '%{LICENSE}'`. The
+`LGPL-2.1-or-later` term and the `GPL-2.0-only WITH Linux-syscall-note` licence of the kernel UAPI
+headers behind `scripts/remote/uinput-inject.c` sit on the house avoid list at
+`team/licenses/policy.yaml` and are recorded as policy exceptions, lawful because the tools link
+dynamically against unmodified distro and kernel headers and because the Apache-2.0 option is the one
+taken. `HPND` is not on the avoid list. Team sources stay MIT under the repository root `LICENSE`,
+and no FreeRDP source is vendored, compiled in, or distributed here. The record is in
+`scripts/remote/NOTICE` and the root `NOTICE`, with `Charmy`'s audit at `## License (Charmy)` in the
+TASK-0041 doc.
+
 ## Self-hosted runner setup
 
 Team Chaotix requires a self-hosted GitHub Actions runner on Rocky Linux 10.
@@ -310,6 +382,9 @@ All actions are hand-written. No Marketplace actions are used (except `actions/c
 
 - **No secrets in the repository, and none on GitHub.** All credentials live in `~/AI/secrets/` on
   the local machine (one file per secret, mode 600, directory mode 700).
+- The target-facing tools in `scripts/remote/` carry the same rule. A credential is read from a file
+  under `~/AI/secrets/` at run time only, never placed in argv, and never left in a state record, a
+  log, or a planning doc. See **Remote visual control** above.
 - Workflows run on the self-hosted runner (this machine) and read what they need from
   `~/AI/secrets/` at run time. Nothing secret is referenced from GitHub Environments, and none
   is pushed.
@@ -399,18 +474,23 @@ team-chaotix-MoE/
   .opencode/
     opencode.json       # Project configuration
     agents/             # Agent definitions (11 files)
+    skills/             # Skill pages loaded on demand, including remote-desktop
   planning/
     TASKS.md            # Master task index
     docs/               # Per-task planning documents
     templates/          # Doc templates
   AGENTS.md             # Shared operating rules (auto-loaded)
   README.md             # This file
-  scripts/              # Team tools: vm-create, vm-destroy, A2A adapter
+  scripts/              # Team tools: VM provisioning, remote visual control, A2A, gates
 ```
 
 **scripts/**: `vm-create` and `vm-destroy` provision Rocky Linux 10 VMs for project isolation
-(golden image at `/var/lib/libvirt/images/rocky-10-golden.qcow2`), and `a2a-server.py` is the
-team's A2A adapter (fronted by agentgateway on port 4100).
+(golden image at `/var/lib/libvirt/images/rocky-10-golden.qcow2`), `a2a-server.py` is the team's
+A2A adapter (fronted by agentgateway on port 4100) with `a2a-send` as its client, `licence-check`
+is the licence gate backed by `team/licenses/`, `dispatch-gate` estimates the project-manager
+context ceiling before a delegation, `hooks/pre-push` runs `tests/selftest.sh` on every push, and
+`remote/` plus the two C sources at `scripts/rdp-input.c` and `scripts/rdp-pointer.c` are the
+remote visual-control tooling described under **Remote visual control**.
 
 ## Model
 

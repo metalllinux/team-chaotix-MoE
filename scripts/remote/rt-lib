@@ -81,6 +81,8 @@ rt_note() { printf 'rt: %s\n' "$*"; }
 rt_have() { command -v "$1" >/dev/null 2>&1; }
 
 # Shared option block, printed by every tool's --help.
+# The RDP channel lines are scoped by their own heading to the four tools that open the channel, so
+# a tool that never touches RDP prints them as not-applicable rather than as a claim about itself.
 rt_common_options() {
   cat <<'EOF'
 
@@ -91,6 +93,15 @@ Shared options
   --rdp-pass-file <p>   path to the RDP credential file (default ~/AI/secrets/scm_draft_rdp_pass.md).
   --dry-run             print the exact commands and exit 0. No network, no target, no credential read.
   -h, --help            this text.
+
+RDP channel (rt-type, rt-key, rt-click, rt-tunnel)
+  The session runs inside the pinned SSH forward to 127.0.0.1:RT_RDP_TUNNEL_PORT (3401), opened over
+  the connection whose host key is pinned in scripts/remote/known_hosts, and the client pins the
+  daemon's certificate fingerprint with /cert:fingerprint:sha256: read from RT_RDP_CERT_PIN. A wrong
+  pin aborts, and the accept-any certificate option is used nowhere in this tree.
+  rt-tunnel start holds one forward for a whole run, rt-tunnel stop is its inverse, and a tool that
+  borrows a live forward leaves it running for its owner. RT_RDP_TUNNEL=0 selects the fallback, a
+  direct /v:<host>:3389 under the same certificate pin.
 EOF
 }
 
