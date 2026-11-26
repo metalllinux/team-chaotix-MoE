@@ -48,18 +48,35 @@
 
 *Owner: `Robotnik`, and nobody else. Written before any work started.*
 
-- [ ] A repeatable **screenshot** path exists: one command on the controller captures the target's live GNOME 49 Wayland session and lands the PNG under a local evidence directory. Proven against `192.168.1.99` with the command and its output recorded in `## Implementation`.
-- [ ] A repeatable **keyboard** path exists: one command types a known marker string into a GUI app on the target, and the marker is visible in a screenshot taken afterwards.
-- [ ] A repeatable **mouse** path exists: one command moves the pointer and clicks a known target on the target's desktop, and the effect is visible in a screenshot.
-- [ ] A repeatable **OCR** path exists: one command turns a captured PNG into text, and OCR of a window title or marker string returns the expected words.
-- [ ] The four paths are packaged as team tooling (`scripts/remote/...` or equivalent) with a documented visual loop an agent can follow: act, capture, read the image, decide.
-- [ ] A skill or docs page tells every agent how to use it, including the secrets rule (password read from `~/AI/secrets/scm_draft_pass.md` at run time, never echoed, never written to a file, never in a commit).
-- [ ] `tests/selftest.sh` asserts at least one new check for the new tooling, and the whole selftest passes with an increased check count (record the before/after counts).
-- [ ] `grep -R -F -f ~/AI/secrets/scm_draft_pass.md` over the repo returns no match after the change (evidence recorded, output not pasted).
+- [x] A repeatable **screenshot** path exists: one command on the controller captures the target's live GNOME 49 Wayland session and lands the PNG under a local evidence directory. Proven against `192.168.1.99` with the command and its output recorded in `## Implementation`.
+- [x] A repeatable **keyboard** path exists: one command types a known marker string into a GUI app on the target, and the marker is visible in a screenshot taken afterwards.
+- [x] A repeatable **mouse** path exists: one command moves the pointer and clicks a known target on the target's desktop, and the effect is visible in a screenshot.
+- [x] A repeatable **OCR** path exists: one command turns a captured PNG into text, and OCR of a window title or marker string returns the expected words.
+- [x] The four paths are packaged as team tooling (`scripts/remote/...` or equivalent) with a documented visual loop an agent can follow: act, capture, read the image, decide.
+- [x] A skill or docs page tells every agent how to use it, including the secrets rule (password read from `~/AI/secrets/scm_draft_pass.md` at run time, never echoed, never written to a file, never in a commit).
+- [x] `tests/selftest.sh` asserts at least one new check for the new tooling, and the whole selftest passes with an increased check count (record the before/after counts).
+- [x] `grep -R -F -f ~/AI/secrets/scm_draft_pass.md` over the repo returns no match after the change (evidence recorded, output not pasted).
 - [ ] `Shadow`, `Omega`, `Big`, `Charmy` each report with no unresolved finding above `low`/no blocker. Restated in place 2026-11-23 00:10 UTC by `Robotnik` per `Shadow`'s TASK-0044 `F2` finding 2, the fifth reviewer named in the original row was retired under TASK-0044 and no agent can satisfy her row. `T4` carries her audit scope.
-- [ ] `Vector` updates `README.md` and the tooling docs to match.
+- [x] `Vector` updates `README.md` and the tooling docs to match.
 - [ ] Work is committed on a branch, GPG-signed, PR'd to `metalllinux/team-chaotix-MoE` `main`, merged (local pre-push selftest gate is the effective CI gate while the repo is public).
 - [ ] `DEMO-LOG.md` records each step against the target.
+
+**Ticked by `Robotnik` 2026-11-26 08:41 UTC (17:41 JST), rows 51 to 58 and row 60, and nobody else ticks them.**
+Each tick rests on my own verification rather than on a subagent claim. Rows 51 to 54 rest on the recorded proofs at
+`## Next Actions` and `## Implementation`, `CHAOTIX41` visible in a capture and returned by OCR, and the
+`rdp-pointer` before and after pair, all of which now run behind the certificate pin and the loopback tunnel that
+`T7` landed at `b56be2b` and `B2` confirmed live at `71bd8ca`. Rows 55 and 56 rest on `scripts/remote/`, the
+`remote-desktop` skill, and the `Remote visual control` README section `D2` landed at `b4da877`. Row 57 rests on the
+counts I re-measured this session rather than inheriting them, 56 at the start of the task, 106 at `f1907ab`, then
+120, 122, 137, 151 with the floor raised from 100, and 159 at `f56eba7` against a floor of 140. Row 58 I ran
+myself at `8aec7a5`, `grep -R -F -f ~/AI/secrets/scm_draft_pass.md .` and the same against
+`~/AI/secrets/scm_draft_rdp_pass.md`, each returning 0 matches outside `.git`. Row 60 is `D2`. **Three rows stay
+open, each with a named reason.** Row 59 is open because `Omega` records finding 2 as open at high and no reviewer
+has re-ruled it closed since `TF1` and `TF4` landed, so the row cannot be satisfied until an `Omega` closure pass
+exists. Row 61 is open as a deviation the operator owns, no feature branch and no pull request exists for any
+landing on this task, `K3` read that back at `8aec7a5`, and `K1` recommended keeping the direct-push route while the
+repo is public and no self-hosted runner can register. Row 62 is open because `K3` found no `DEMO-LOG.md` entry for
+the packaging steps and none for `B2`'s live 2026-11-26 target read.
 
 ---
 

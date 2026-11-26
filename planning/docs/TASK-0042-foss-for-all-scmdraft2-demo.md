@@ -13,6 +13,26 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 5 landed, `K3` read back every landing, and `TASK-0041` now stands at 9 of 12 DoD rows ticked
+by me with three open for named reasons (2026-11-26 17:41 JST, 2026-11-26 08:41 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `K3` (`Knuckles`, child `ses_de90fa8e1ffewhWxNhgOCOkRRS`) landed at team
+`8aec7a5`, read from the remote, signature good, tree clean. It verified all thirteen landings as ancestors of
+`refs/heads/main` with good signatures against `F9261D151316FD60`, named `8e75aac`, `d26ef2b` and `5f9947d` as
+unsigned ancestors left as published, and rewrote nothing. I ticked `TASK-0041` DoD rows 51 to 58 and row 60 myself,
+with the evidence for each tick written under that checklist, and I left rows 59, 61 and 62 open. **Recorded
+disagreement between two `Knuckles` reads, both kept.** `K1` recorded `TASK-0041` at 10 of 22 rows ticked, `K3` read
+it as 0 of 12, and my own read of `planning/docs/TASK-0041-remote-visual-control.md:51-62` before ticking found 12
+boxes with every one unticked, so `K3`'s count is the accurate one and `K1`'s figure described something other than
+that section. Neither record is altered. **What closes each open row.** Row 59 needs an `Omega` pass that rules
+finding 2 closed or names what would close it, since `TF1` fixed its documentation half and `TF4` the tunnel defect
+and no reviewer has re-ruled since. Row 61 is the branch-and-PR deviation, operator-owned while the repo is public
+and no self-hosted runner can register. Row 62 needs `DEMO-LOG.md` entries for the packaging steps and for `B2`'s
+live 2026-11-26 target read, a small `Tails` dispatch. **`TASK-0042` is still not DONE and `K1`'s 5 of 23 remains
+the last verified count for this task.** `K1`'s release blocker 3 is materially changed and not closed, the
+certificate is now pinned, tunnelled, asserted and controlled, while the finding itself awaits `Omega`. Remaining
+`LIVE QUEUE 8` work is item 6 `E2`, then an `O2` ruling on finding 2, the `DEMO-LOG` entries, `TF2` with `3c`, and
+the `rt-tunnel` dry-run line plus the README half of `B2` finding 3. Next dispatch is `E2`.
+
 **`LIVE QUEUE 8` item 3f-fix landed, `TF4` removed a booth-cycle failure mode, the baseline is 159 checks, and the
 review chain plus its fixes are closed (2026-11-26 17:17 JST, 2026-11-26 08:17 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `TF4` (`Tails`, child `ses_de95aee66ffeEWze5cByGlddsy`) landed at team
@@ -1111,7 +1131,9 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    wording first, the docs must teach the certificate-pin plus loopback-tunnel posture and state FreeRDP as
    Apache-2.0 at tag `3.32.2`, and must not reintroduce `/cert:ignore` or the dual-licence claim. Do not touch the
    booth clone in the same dispatch as any other agent.
-   5. `Knuckles` as `K3`. `TASK-0041 ## Release`. Read back `b906f00`, `1eea4ec`, `3e43d2a` and `9190b04` from the
+   5. `LANDED 2026-11-26 08:41 UTC (17:41 JST) as `K3`, team `8aec7a5`, read back from the remote and signed, all
+   thirteen landings verified as ancestors of `main`. `Robotnik` ticked `TASK-0041` DoD rows 51 to 58 and 60, rows
+   59, 61 and 62 stay open with named reasons.` `Knuckles` as `K3`. `TASK-0041 ## Release`. Read back `b906f00`, `1eea4ec`, `3e43d2a` and `9190b04` from the
    remote, verify signatures, state the `DEMO-LOG.md` coverage of the packaging steps, and report the `TASK-0041`
    DoD state without ticking any box.
    6. `Espio` as `E2`. Prune this doc for real. It measured 5796 lines at the start of `E1`'s session and 6057
