@@ -13,6 +13,32 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 6 landed, `E2` moved what `E1` had only marked, and this session hands off with the remaining
+queue written out for a fresh session (2026-11-26 18:34 JST, 2026-11-26 09:34 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `E2` (`Espio`, child `ses_de8f7f0b9ffeJPhw54nlSUd0RV`) moved the consumed
+`LIVE QUEUE 3` to `LIVE QUEUE 7` bodies into `## Archive` under new headings, replaced each with a one-line pointer,
+deleted the byte-identical duplicate `P3` brief and `E1`'s inline consumed markers, and left `## Status`, `##
+Definition of Done`, `## Release` through `## Test Results`, the standing contradictions, the `R4` FAIL, `C2` and
+`C3`, the `12e7928` and `93ddaf6` record, and every unticked row untouched. Measured, `## Next Actions` went from 612
+lines to 266, and the file reads 6530 lines where `E1` left 6057, because real pruning moves bodies rather than
+deleting them, which is what `AGENTS.md` section 2 rule 6 requires. I committed the record as team `0991044` because
+`Espio` has no shell per section 11, and one point of record, `E2`'s pruning-log stamp was written without a
+shell-read clock, so my reading is the one that stands, 2026-11-26 09:34 UTC (18:34 JST). **`Robotnik` decision,
+hand off rather than spend the remaining slots, recorded rather than asked.** The gate reads `PASS` for this session
+and the stop line is not reached, but what remains is substantial dispatch work rather than a wrap-up, an `O2`
+ruling closing `Omega` finding 2, the `DEMO-LOG` entries `K3` found missing, the booth-tree hygiene in `TF2` and
+`3c`, the `rt-tunnel` dry-run line and the README half of `B2` finding 3, and the `TASK-0042` DoD rows `K1` left
+unticked at 5 of 23, documentation confirmation, the `DEMO-LOG` row and booth readiness. This session has run twelve
+children and the largest reached 213889 tokens of its own, so a thirteenth into a queue that size is the wrong
+trade two days out. The state a fresh session inherits, verified by my own reads here rather than by report, team
+`main` at `0991044`, booth `main` at `ba80ff3`, both clones 0 lines dirty, `SELFTEST: 159 checks passed (floor 140)`,
+`scripts/licence-check` exit 0 on both trees, and both credential sweeps returning 0 matches outside `.git`.
+`TASK-0041` stands at 9 of 12 DoD rows ticked by me, rows 59, 61 and 62 open with named reasons. `TASK-0042` is not
+DONE, 5 of 23. Operator-owned and unchanged, `C2` and `C3` with the booth repo staying private, `chmod 600` on
+`~/AI/secrets/scm_draft_pass.md`, the controller-machine choice with the 3389 rule left unwidened, and
+`agentsmd promote`. Recommended running order for the fresh session, `O2`, then the `DEMO-LOG` entries, then the
+booth-readiness and documentation-confirmation rows, then `TF2` and `3c`.
+
 **`LIVE QUEUE 8` item 5 landed, `K3` read back every landing, and `TASK-0041` now stands at 9 of 12 DoD rows ticked
 by me with three open for named reasons (2026-11-26 17:41 JST, 2026-11-26 08:41 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `K3` (`Knuckles`, child `ses_de90fa8e1ffewhWxNhgOCOkRRS`) landed at team
@@ -1136,7 +1162,9 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    59, 61 and 62 stay open with named reasons.` `Knuckles` as `K3`. `TASK-0041 ## Release`. Read back `b906f00`, `1eea4ec`, `3e43d2a` and `9190b04` from the
    remote, verify signatures, state the `DEMO-LOG.md` coverage of the packaging steps, and report the `TASK-0041`
    DoD state without ticking any box.
-   6. `Espio` as `E2`. Prune this doc for real. It measured 5796 lines at the start of `E1`'s session and 6057
+   6. `LANDED 2026-11-26 09:34 UTC (18:34 JST) as `E2`, committed by the dispatcher as team `0991044`. `## Next
+   Actions` 612 lines to 266, file 6530 lines, consumed `LIVE QUEUE 3` to `LIVE QUEUE 7` bodies moved to `## Archive`
+   rather than marked in place.` `Espio` as `E2`. Prune this doc for real. It measured 5796 lines at the start of `E1`'s session and 6057
    after it, because `E1` marked the consumed bodies in place instead of moving them, so move the `LIVE QUEUE 3`
    to `LIVE QUEUE 7` consumed bodies into `## Archive`, keep the standing contradictions, the `R4` FAIL, and the
    `C2` and `C3` rulings, and leave `LIVE QUEUE 8` live. `Espio` has no shell permission, so the dispatcher
@@ -1146,7 +1174,16 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    the `l1_*` scripts still use `StrictHostKeyChecking=no`, and the tunnel is untested on a non-bridge network.
    Lower priority for the 2026-11-28 booth than items `3b`, 3d, 3e, 4, 5 and 6, and the last gap is `Omega`'s
    accepted residual risk rather than open work.
-   7. `Operator actions, record and do not dispatch.` `C2` and `C3` unruled, so the booth repo
+   8. `Omega` as `O2`, owed and first for the fresh session. Rule whether `TASK-0041` finding 2 is closed now that
+   `TF1` fixed its documentation half, `TF4` closed the tunnel defect `B2` found, and `B2` asserted the posture with
+   `/cert:tofu` forbidden, or name exactly what would close it. `TASK-0041` DoD row 59 depends on this ruling.
+   9. `Tails` as `T10`, owed. `DEMO-LOG.md` entries for the packaging steps and for `B2`'s live 2026-11-26 target
+   read, both of which `K3` found absent. `TASK-0041` DoD row 62 depends on this.
+   10. `Tails` as `T11`, owed. The `rt-tunnel` dry-run line `TF4` named, and the README half of `B2` finding 3.
+   11. `TASK-0042` DoD work, owed and not yet dispatched, documentation confirmation at row 730, the `DEMO-LOG` row
+   at 731, and booth readiness at 732, with `K1`'s `## Release` naming the after-event inverses that must not run
+   before 2026-11-28.
+   12. `Operator actions, record and do not dispatch.` `C2` and `C3` unruled, so the booth repo
    `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private. **The `P3` firewall
    decision, with a date attached.** The target rich rule restricts 3389 to `192.168.1.102`, so either the booth
    runs from the machine that holds that address or the rule is widened for the venue, and 2026-11-28 is two days
