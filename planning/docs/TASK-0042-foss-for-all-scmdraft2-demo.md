@@ -13,6 +13,28 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3d landed, `S2` returns one blocker, and I verified the blocker myself before dispatching the
+fix (2026-11-26 11:52 JST, 2026-11-26 02:52 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `S2`
+(`Shadow`, child `ses_dea543129ffeqTZYwN1kp6qql5`) wrote `TASK-0041 ## Review:1468-1570` and nothing else, and
+because `Shadow` has no shell I committed the record as team `03da0a2`, 1 file changed. **Blocker 1, verified by
+my own read before dispatching anything.** `.opencode/skills/remote-desktop/SKILL.md:64-65` still tells every
+agent that `/cert:ignore` is accepted for the LAN demo's self-signed certificate, and `tests/selftest.sh:436`
+scans only `scripts/`, so no gate can see the file. I read those two lines directly. The documentation half of
+`Omega` finding 2 is open even though `b56be2b` closed the code half, and a skill file is what an agent actually
+loads at run time, so this is not a wording problem. Should-fixes `S2` named, a forward race at `rt-lib:236-249`
+measured offline that hard-fails and advises killing a healthy forward, no reference counting for borrowed
+forwards at `rt-lib:241` and `:278-286`, and unpinned `sshpass` residue in four booth files with only two of them
+named. Nits, a fail-open `return 0` at `rt-lib:222`, four different pin validations across the booth tree, and a
+dead `-` argument array at `scripts/remote/rt-click:72`. What `Shadow` certified as sound, the pin sitting in one
+place per tree, the manifest row byte- and hash-exact, `SETTLE_MS` verified between `UI_DEV_CREATE` and the first
+emit, and the selftest re-run green at 122 inside its own dispatch. **`Robotnik` decisions taken from that
+verdict, recorded rather than asked.** One, the forward race is booth-day risk and not cosmetics, because
+`booth_loop.py` opens and closes a forward every cycle and a race that hard-fails a healthy forward would fail a
+live cycle in front of an audience, so fix dispatch `TF1` takes blocker 1 plus the race plus the reference
+counting, three files, ahead of documentation and release. Two, the `sshpass` residue, the four divergent pin
+validations and the `l1_*` `StrictHostKeyChecking=no` posture become one booth-tree dispatch `TF2`, recorded as
+owed rather than dropped. Three, `S2` returned above `low`, so item `3f` `B2` is now owed. Next dispatch is `TF1`.
+
 **`LIVE QUEUE 8` item 3b landed, the loose `UI_DEV_CREATE|1800` assert was hiding a real defect, the baseline is
 now 122 checks, and the post-chain code needs `Shadow` and `Charmy` before documentation (2026-11-26 11:21 JST,
 2026-11-26 02:21 UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `T8` (`Tails`, child
@@ -914,14 +936,27 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    selftest 120 to 122.` `Tails` as `T8`. `TASK-0041 ## Implementation`. Close the two items `Big` named and `K9`
    recorded without fixing: 4 of 6 dry-run asserts rely on tool self-report, and `UI_DEV_CREATE|1800` is too loose.
    Negative controls required, selftest baseline 122 checks.
-   3d. `Shadow` as `S2`. `TASK-0041 ## Review`. Review the post-chain code that the `T1` to `T4` chain never saw,
-   `rt-tunnel`, the `rt-lib` pin path, `uinput-inject.c` with the new `SETTLE_MS`, and the `tests/selftest.sh`
-   assert changes at `b56be2b` and `70aa1dd`.
+   3d. `LANDED 2026-11-26 02:52 UTC (11:52 JST) as `S2`, `TASK-0041 ## Review:1468-1570`, committed by the
+   dispatcher as team `03da0a2`. One blocker, four should-fixes, three nits.` `Shadow` as `S2`. `TASK-0041 ##
+   Review`. Review the post-chain code that the `T1` to `T4` chain never saw, `rt-tunnel`, the `rt-lib` pin path,
+   `uinput-inject.c` with the new `SETTLE_MS`, and the `tests/selftest.sh` assert changes at `b56be2b` and
+   `70aa1dd`.
+   3d-fix. `Tails` as `TF1`, the fix dispatch for `S2`. Three files. Close blocker 1, the skill at
+   `.opencode/skills/remote-desktop/SKILL.md:64-65` still teaches `/cert:ignore` and `tests/selftest.sh:436` scans
+   only `scripts/`, so extend the scan to the skill and docs trees and correct the skill to the pin plus tunnel
+   posture. Close the
+   forward race at `rt-lib:236-249` and the missing reference counting for borrowed forwards at `rt-lib:241` and
+   `:278-286`, because `booth_loop.py` opens and closes a forward every cycle and a race that hard-fails a healthy
+   forward fails a live booth cycle. Selftest baseline 122 or above with a negative control per new assert.
+   3d-fix2. `Tails` as `TF2`, owed and not yet dispatched, the booth tree. The unpinned `sshpass` residue in four
+   booth files with only `code/drive_l3.py:10` and `code/l5_a.py:16` named, the four divergent pin validations
+   `S2` counted, the `l1_*` `StrictHostKeyChecking=no` posture, the six archived probes holding no forward, and the
+   missing machine gate for the pinned posture in the booth tree. Same dispatch may close `3c`.
    3e. `Charmy` as `C2`. `TASK-0041 ## License (Charmy)`. Licence review of the same post-chain set against the
    upstream refs actually used, including the new `scripts/remote/rt-tunnel`, the booth `code/rdp-cert-pin.txt`,
    and the FreeRDP and `libfreerdp3` posture, running `scripts/licence-check` and recording the gate outcome.
-   3f. `Big` as `B2`, owed only if `S2` or `C2` returns anything above `low`, an independent re-probe of the new
-   asserts and their negative controls at the 122-check baseline.
+   3f. `Big` as `B2`, **now owed**, `S2` returned a blocker and four should-fixes, so `B2` runs after `TF1`. An
+   independent re-probe of the new asserts, their negative controls, and the `TF1` fixes at the 122-check baseline.
    4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
    secrets rule and the packaged `gnome-screenshot-tool` path. Do not touch the booth clone in the same dispatch
    as any other agent.
