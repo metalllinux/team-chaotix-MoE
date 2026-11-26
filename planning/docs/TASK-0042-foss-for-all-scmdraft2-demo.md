@@ -13,6 +13,29 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3f landed, `B2` closed the review chain, raised the suite to 151 checks and the floor to 140,
+and found a booth-day defect in `rt-tunnel` (2026-11-26 15:54 JST, 2026-11-26 06:54 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `B2` (`Big`, child `ses_de9a5b9b5ffeChZqCce0626q66`) landed at team `71bd8ca`,
+read from the remote, `git verify-commit` good, tree clean. I re-ran the suite myself, `SELFTEST: 151 checks
+passed (floor 140)`, and `grep -n MIN_CHECKS tests/selftest.sh` answers `MIN_CHECKS=140` at `tests/selftest.sh:36`,
+so the floor moved with the suite instead of the suite drifting above a stale floor. **Baseline for every later
+brief, 151 checks against a floor of 140**, being 106 before `f1907ab`, 110, 120 at `b56be2b`, 122 at `70aa1dd`,
+137 at `625ce8a` and `b4da877`, and 151 at `71bd8ca`. `B2` re-probed rather than trusting, 24 controls run in
+scratch copies at `3ef9bad`, all 24 exiting 1 with named failures, including `uinput-inject.c` and `rt-lib` restored
+to their pre-`T8` and pre-`TF1` states, and it showed `TF1`'s inert `C7` is inert structurally because release
+consults `RT_TUNNEL_OWNED` only for `role=own`, so the completed-borrow path is now asserted and controlled. The
+wording gap `C2`, `TF3` and `D2` each named independently is closed by 10 asserts, a claim-form scan, a scope
+ledger, per-file Apache-2.0-only at tag `3.32.2` with the blob cited, four README posture tokens, and a new
+`/cert:tofu` assert. The live target read changed nothing, before and after `rt-status` diff at rc 0,
+`/usr/bin/gnome-screenshot-tool` present today, the daemon certificate through the pinned tunnel hashing
+`84b1…bab4`, identical to `RT_RDP_CERT_PIN` and to the target's own on-disk certificate, valid to 2029. **Two new
+findings, one of them booth-day risk.** `rt-tunnel start` daemonises `ssh` while holding the caller's stdout,
+measured 6.004 s against 0.004 s, so any pipeline or command-substitution caller blocks, and `rt-tunnel stop`
+leaves a mode 600 `.lock` residue. Fix dispatch `TF4` takes both plus the one skill line naming `/cert:tofu`
+forbidden, and it runs before `K3` because the booth runbook calls the forward and a blocked caller is a failed
+cycle. The booth-tree set stays `TF2` and `3c`, recorded as owed rather than dropped. Next dispatch `TF4`, then
+item 5 `K3`, then item 6 `E2`.
+
 **`LIVE QUEUE 8` item 4 landed, `D2` closed the `TASK-0041` documentation row, and three dispatches have now named
 the same missing assert (2026-11-26 14:33 JST, 2026-11-26 05:33 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `D2` (`Vector`, child `ses_de9be5e57ffea0bCKCy2X0TuWC`) landed at team
@@ -974,9 +997,10 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
   committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
-  selftest baseline is 137 checks, being 106 before the gate fix at `f1907ab`, 110 after it, 120 after the RDP
-  certificate-pin commit `b56be2b`, 122 after the dry-run assert hardening at `70aa1dd`, and 137 after the skill
-  and forward-claim fix at `625ce8a`. Stamp every entry
+  selftest baseline is 151 checks against a floor of 140, being 106 before the gate fix at `f1907ab`, 110 after it,
+  120 after the RDP certificate-pin commit `b56be2b`, 122 after the dry-run assert hardening at `70aa1dd`, 137 after
+  the skill and forward-claim fix at `625ce8a`, and 151 with the floor raised from 100 after `B2` at `71bd8ca`.
+  Stamp every entry
   at the moment it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Each
   child writes its own section in the planning doc it is working on and reports back in at most five short lines.
   **Standing ruling in every brief.** `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent
@@ -1044,11 +1068,19 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    FreeRDP at tag `3.32.2` is dual-licensed Apache-2.0 or GPL-2.0+ when upstream at that ref is Apache-2.0 only.
    State the licence as verified at the ref, keep the recorded policy exceptions, and cite the upstream `LICENSE`
    blob `d645695…`. Selftest baseline 137 or above.
-   3f. `Big` as `B2`, **owed and now running before `K3`**, `S2` returned a blocker and four should-fixes and `Big`
+   3f. `LANDED 2026-11-26 06:54 UTC (15:54 JST) as `B2`, team `71bd8ca`, read back from the remote and signed.
+   Suite 137 to 151, floor 100 to 140, both re-measured by the dispatcher. Review chain closed.` `Big` as `B2`,
+   **ran before `K3`**, `S2` returned a blocker and four should-fixes and `Big`
    closes the review chain on the post-chain code. Re-probe the new asserts and their negative controls at the
    137-check baseline, close the gap that `C2`, `TF3` and `D2` each named independently, that no assert covers
    licence or README wording, and run the one live `rt-status` pass that settles the target-side
    `gnome-screenshot-tool` and fingerprint facts `D2` left open. Write `TASK-0041 ## Test Results`.
+   3f-fix. `Tails` as `TF4`, the fix dispatch for `B2`, running before `K3`. Three files. `rt-tunnel start`
+   daemonises `ssh` while holding the caller's stdout, measured 6.004 s against 0.004 s, so a pipeline or
+   command-substitution caller blocks and a blocked caller is a failed booth cycle, and `rt-tunnel stop` leaves a
+   mode 600 `.lock` residue. Add the one skill line naming `/cert:tofu` as forbidden, since the installed client
+   accepts `tofu` while rejecting `/ignore-cert`. Baseline 151 checks against the floor of 140, a negative control
+   per new assert.
    4. `LANDED 2026-11-26 05:33 UTC (14:33 JST) as `D2`, team `b4da877`, read back from the remote and signed.
    `grep -rn "cert:ignore"` over `README.md`, `scripts` and `.opencode` answers 0 matches, selftest 137.` `Vector`
    as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
