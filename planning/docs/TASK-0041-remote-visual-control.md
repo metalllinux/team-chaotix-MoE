@@ -1324,6 +1324,92 @@ Written 2026-11-26 01:22 UTC (10:22 JST).
 
 ---
 
+### Assert hygiene, `Big` T3 findings 4 and 5 closed: independent dry-run verification and a real `SETTLE_MS` settle (2026-11-26 02:13 UTC, 11:13 JST, `Tails`, dispatch `T8`)
+
+Brief: `TASK-0042` `## Next Actions` `LIVE QUEUE 8` item 3b. Close the two items `Big` named at
+`## Test Results:1647-1648` and `K9` recorded without fixing at `## Implementation:831-836`: 4 of 6
+dry-run asserts relied on tool self-report, and `UI_DEV_CREATE|1800` was too loose. Offline dispatch,
+no target contact, so no `DEMO-LOG.md` entry was owed.
+
+**What the loose assert was hiding, measured before any fix.** `grep -rn '1800' scripts/remote/`
+answered one line only, the wrapper comment `rt-uinput:14`, and every `sleep_ms(` call in
+`uinput-inject.c` was an inter-event delay. The documented fact, "the helper sleeps 1800 ms after
+creation before its first event" (`rt-uinput:13-14`, repeated at `.opencode/skills/remote-desktop/SKILL.md:56`),
+was not in the helper at all. The old assert passed on the `UI_DEV_CREATE` token alone. That is the
+false-completion class: a green assert guarding an absent behaviour.
+
+**Alternatives considered.** For the settle, Option A, make the code carry the documented fact and gate
+the fact, chosen, over Option B, tighten the assert to `grep -q 'UI_DEV_CREATE'` only, which was rejected
+because it would gate a different, weaker fact and leave the code contradicting its own wrapper comment
+and the skill page. For the dry-run asserts, Option A, per-probe independent checks, chosen, over Option
+B, running the block inside `unshare -rn` (rejected: `Big` already proved offline behaviour that way at
+T3, `unshare` availability is not guaranteed where the suite runs, and the suite must gate the tools, not
+the harness), and over Option C, a real-host token scan alone (rejected: it proves the output names no
+host but proves nothing about the credential path).
+
+**What landed.** `scripts/remote/uinput-inject.c` gained `#define SETTLE_MS 1800` at `:52` and
+`sleep_ms(SETTLE_MS)` at `:339`, inside the `!probe` block, strictly between the `UI_DEV_CREATE` ioctl
+and the first `emit(fds[`. `--probe` emits nothing and settles nothing; `--script` runs now cost 1.8 s
+before the first event, which is the proven posture. `tests/selftest.sh`: the four self-report asserts
+(`rt-type`, `rt-key`, `rt-click`, `rt-uinput`, `grep -qi 'dry run'`) and the `rt-ocr` one are replaced by
+two independent checks per probe plus the placeholder asserts. (1) Credential tripwire:
+`RT_SSH_PASS_FILE` and `RT_RDP_PASS_FILE` point at paths that do not exist; only a path that reads no
+credential and dials nothing exits 0. (2) Real-host token scan: no dry-run output may contain
+`192.168.1.99`, making `Big`'s own seven-output hand scan (`## Test Results:1647`) permanent and applying
+it to every probe, not two. Placeholder asserts stay where a host is printed (`<host>` for the four
+ssh-path tools; the three rdp-path tools must print the named `<rdp argument lines on stdin>` placeholder
+instead of live argument lines). `rt-ocr` additionally must print its local `tesseract` line and nothing
+remote. The loose settle assert became three asserts: the named constant, its use in a sleep call, and
+its position between `UI_DEV_CREATE` (line 205) and the first emit (line 343).
+
+| File | Change | Why |
+|---|---|---|
+| `scripts/remote/uinput-inject.c` | `SETTLE_MS 1800` at `:52`, `sleep_ms(SETTLE_MS)` at `:339` | The documented settle was absent; the assert now gates a behaviour that exists |
+| `tests/selftest.sh` | dry-run block rewritten (tripwire, host scan, placeholders); settle assert split 1 to 3; header comment corrected to 93 fixed asserts plus 29 pytest | `Big` T3 findings 4 and 5; header understated the suite since before `f1907ab` |
+| `planning/docs/TASK-0041-remote-visual-control.md` | this section | record |
+
+**Before / after counts.** `bash tests/selftest.sh` at `84f9a97` before the change answered
+`SELFTEST: 120 checks passed (floor 100)`; at this commit it answers `SELFTEST: 122 checks passed (floor
+100)`, 93 fixed asserts plus 29 pytest, delta +2 from the split settle assert. Floor `MIN_CHECKS=100`
+unchanged. The guarded C build compiled the changed helper (`scripts/remote build OK`).
+
+**Negative controls, each proving one new assert has teeth.** Scratch copies of the working tree at
+`/tmp/opencode/t0042-t8-negctl/<name>` (script `run_controls.sh`), each plant expecting exit 1 with the
+named message, all six observed, from `controls.log`:
+
+```
+p1_settle_absent CONTROL OK (rc 1): selftest FAIL: uinput-inject.c no longer names the settle delay SETTLE_MS 1800
+p2_constant_unused CONTROL OK (rc 1): selftest FAIL: uinput-inject.c no longer sleeps SETTLE_MS before its first event
+p3_sleep_misplaced CONTROL OK (rc 1): selftest FAIL: the SETTLE_MS sleep (line 205) is not between UI_DEV_CREATE (line 206) and the first event emit (line 343)
+p4_real_host_token CONTROL OK (rc 1): selftest FAIL: dry run of rt-shot --dry-run names the real demo target host in its output
+p5_dry_dials_out CONTROL OK (rc 1): selftest FAIL: dry run of rt-status --dry-run exits non-zero with both credential files absent, so it reads a credential or contacts the host
+p6_no_placeholder CONTROL OK (rc 1): selftest FAIL: dry run of rt-shot --dry-run used a real host instead of the placeholder
+```
+
+`p1` is the load-bearing one: it reverts the helper to exactly its pre-`T8` state, the state the old
+`grep -Eq 'UI_DEV_CREATE|1800'` passed on, and the suite now fails there. `p3` moves the sleep before
+`UI_DEV_CREATE`; the positional assert catches what neither text assert can. `p5` plants `RT_DRY=0` into
+`rt-status`, a "dry run" that secretly takes the real path, and the credential tripwire fires.
+
+**Residue handled and residue named.** The controller's cached
+`~/.cache/team-chaotix/remote-build/rt-uinput-inject` predated the settle; `scripts/remote/rt-build`
+rebuilt it this dispatch (machine-local, mode 700, nothing in a git path). The durable booth tree at
+`/home/howard/AI/booth-2026/t0042` holds no `rt-uinput-inject` binary and `booth_loop.py` drives the RDP
+input path, so no booth-side rebuild is owed for this change.
+
+**Checks that did not run, every one named.** `shellcheck` absent on this controller. CI (no runner
+registered). No live `rt-uinput` run against the target in this dispatch, so the settle is proven at the
+source and compile level and by the P1 precedent, not re-proven live today. Controls ran against scratch
+copies, not the checkout. `scripts/licence-check` runs inside the suite only; no new upstream code is
+imported, and both changed code files are team-authored under the MIT root licence. No CVE lookup ran.
+
+**Standing posture.** `R4`'s verdict stays FAIL on the booth repo as published at `7c4fa16`; the booth
+repo stays private; the flip is the operator's ruling on `C2` and `C3`. Nothing in this pass changes that.
+
+Written 2026-11-26 02:13 UTC (11:13 JST).
+
+---
+
 ## Review
 
 *Owner: `Shadow`. Read-only — findings only, no edits. Severity order, blockers first.*

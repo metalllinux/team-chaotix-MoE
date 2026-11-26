@@ -46,6 +46,13 @@
 #define MAX_CMDS 256
 #define MAX_LINE 256
 
+/* The target drops events emitted in the same millisecond as UI_DEV_CREATE
+ * (TASK-0042 dispatch P1: the no-settle attempt failed, the settle-delayed run
+ * worked, DEMO-LOG 2026-11-22). The wrapper rt-uinput documents a 1800 ms
+ * settle; this named constant is where the helper actually carries it, between
+ * device creation and the first event. */
+#define SETTLE_MS 1800
+
 /* Keyboard codes used by this dispatch. Values are linux KEY_* event codes. */
 struct keyname { const char *name; int code; };
 static const struct keyname KEYS[] = {
@@ -328,6 +335,10 @@ int main(int argc, char **argv)
     }
 
     if (rc == 0 && !probe) {
+        /* Settle SETTLE_MS after UI_DEV_CREATE before the first event: same-
+         * millisecond events are dropped on the target (TASK-0042 dispatch P1).
+         * The probe path emits nothing, so it settles nothing. */
+        sleep_ms(SETTLE_MS);
         if (fds[1] >= 0) { emit(fds[1], EV_KEY, BTN_TOOL_PEN, 1); syn(fds[1]); }
         for (int i = 0; i < ncmds && rc == 0; i++) {
             char verb[64];

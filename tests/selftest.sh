@@ -18,9 +18,10 @@ PASS() { CHECKS=$((CHECKS+1)); }
 # Minimum meaningful assertion count, the single home of the selftest floor
 # (TASK-0042 R3 harness fix; scripts/hooks/pre-push and the Team Selftest CI
 # job both read this constant rather than carrying their own). The suite is
-# 81 fixed PASS asserts plus the pytest count (29 at the 2026-11-25 baseline,
-# total 110 after the TASK-0043 dispatch-gate fix; the header understated the
-# suite by one check before that fix). pytest is the only component that varies
+# 93 fixed PASS asserts plus the pytest count (29 at the 2026-11-26 baseline,
+# total 122 after the TASK-0042 dispatch T8 assert-hygiene fix; the chain is
+# 106 before the gate fix f1907ab, 110 after it, 120 after the certificate-pin
+# commit b56be2b, 122 after T8). pytest is the only component that varies
 # run to run, so 100 leaves 10 checks of slack for skipped or deselected tests
 # while failing the moment any meaningful block of asserts disappears. The
 # previous floor was 70, 35 below the real count, and it lived only in a CI job
@@ -275,19 +276,40 @@ for f in "${RT_TOOLS[@]}"; do
 done
 note "scripts/remote --help OK"
 
-# Dry runs exit 0, name no real host, and state that no credential was read.
+# Dry runs are verified independently of the tool's own claim (T8, closing Big
+# T3 finding 4: four of six dry-run asserts relied on `grep -qi 'dry run'`, a
+# line every tool prints unconditionally). Two independent checks per probe:
+#   1. Credential tripwire. RT_SSH_PASS_FILE and RT_RDP_PASS_FILE point at
+#      paths that do not exist. A real run, or a "dry run" that secretly dials
+#      out, reaches rt_require_secret_file or sshpass and exits non-zero; only
+#      a path that reads no credential and contacts no host exits 0 with both
+#      files absent.
+#   2. Real-host token scan. No dry-run output may name the demo target
+#      192.168.1.99. Big T3 ran that scan by hand over seven outputs and found
+#      zero hits; this makes the scan a permanent assert over every probe, not
+#      the two that carried it.
+# The <host> placeholder assert stays for every tool that prints an ssh line.
 RT_TMP="$(mktemp -d)"
 trap 'rm -rf "$RT_TMP"' EXIT
+RT_NO_SSH_PASS="$RT_TMP/no-ssh-credential"     # deliberately nonexistent
+RT_NO_RDP_PASS="$RT_TMP/no-rdp-credential"     # deliberately nonexistent
+RT_DEMO_HOST='192\.168\.1\.99'
 for probe in "rt-shot --dry-run" "rt-status --dry-run" "rt-tunnel --dry-run start"; do
-  out="$($RT/$probe 2>&1)" || fail "dry run failed: $probe"
+  out="$(RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/$probe 2>&1)" \
+    || fail "dry run of $probe exits non-zero with both credential files absent, so it reads a credential or contacts the host"
+  if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of $probe names the real demo target host in its output"; fi
   grep -q '<host>' <<< "$out" || fail "dry run of $probe used a real host instead of the placeholder"
   PASS
 done
-# rt-ocr never contacts a target, so its dry run only has to confirm that.
-out="$($RT/rt-ocr --dry-run "$RT_TMP/absent.png" 2>&1)" || fail "dry run failed: rt-ocr"
-grep -qi 'dry run' <<< "$out" || fail "rt-ocr dry run did not confirm it touched nothing"
+# rt-ocr never contacts a target: its dry run must print the local OCR command
+# and nothing remote, under the same credential tripwire as every other tool.
+out="$(RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/rt-ocr --dry-run "$RT_TMP/absent.png" 2>&1)" \
+  || fail "dry run of rt-ocr exits non-zero with both credential files absent"
+if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of rt-ocr names the real demo target host in its output"; fi
+if grep -qE 'sshpass|ssh |howard@' <<< "$out"; then fail "dry run of rt-ocr prints a remote command; rt-ocr never contacts a target"; fi
+grep -q 'tesseract' <<< "$out" || fail "rt-ocr dry run does not print the local command it would run"
 PASS
-note "scripts/remote dry runs OK (target offline)"
+note "scripts/remote dry runs OK (target offline, credential tripwire, real-host token scan)"
 
 # The capture path must wrap the tool proven accepted by gnome-shell 49,
 # not a raw gdbus call (TASK-0042 DEMO-LOG 2026-11-20 01:40-02:10).
@@ -295,9 +317,26 @@ grep -q 'gnome-screenshot-tool' "$RT/rt-lib" || fail "rt-lib no longer defaults 
 PASS
 
 # The uinput wrapper carries the proven settle fact: events emitted in the
-# same millisecond as UI_DEV_CREATE are dropped (TASK-0042 dispatch P1).
-grep -Eq 'UI_DEV_CREATE|1800' "$RT/uinput-inject.c" \
-  || fail "uinput-inject.c lost the UI_DEV_CREATE settle handling"
+# same millisecond as UI_DEV_CREATE are dropped on the target (TASK-0042
+# dispatch P1). T8 closes Big T3 finding 5. The old assert was
+# `grep -Eq 'UI_DEV_CREATE|1800'`: a bare 1800 anywhere in the file satisfied
+# it, and the settle sleep the wrapper documents was in fact absent from the
+# helper. Three asserts now, each falsifiable on its own: the settle delay is
+# a named 1800 ms constant, the constant is used in a sleep call, and that
+# call sits between UI_DEV_CREATE and the first event emit.
+grep -qE '^#define SETTLE_MS 1800$' "$RT/uinput-inject.c" \
+  || fail "uinput-inject.c no longer names the settle delay SETTLE_MS 1800"
+PASS
+grep -q 'sleep_ms(SETTLE_MS)' "$RT/uinput-inject.c" \
+  || fail "uinput-inject.c no longer sleeps SETTLE_MS before its first event"
+PASS
+SETTLE_LINE="$(grep -n 'sleep_ms(SETTLE_MS)' "$RT/uinput-inject.c" | head -1 | cut -d: -f1)"
+CREATE_LINE="$(grep -n 'ioctl(fd, UI_DEV_CREATE)' "$RT/uinput-inject.c" | head -1 | cut -d: -f1)"
+FIRST_EMIT_LINE="$(grep -n 'emit(fds\[' "$RT/uinput-inject.c" | head -1 | cut -d: -f1)"
+if [ -z "$SETTLE_LINE" ] || [ -z "$CREATE_LINE" ] || [ -z "$FIRST_EMIT_LINE" ] \
+   || [ "$CREATE_LINE" -ge "$SETTLE_LINE" ] || [ "$SETTLE_LINE" -ge "$FIRST_EMIT_LINE" ]; then
+  fail "the SETTLE_MS sleep (line ${SETTLE_LINE:-none}) is not between UI_DEV_CREATE (line ${CREATE_LINE:-none}) and the first event emit (line ${FIRST_EMIT_LINE:-none})"
+fi
 PASS
 
 # The real build compiles the three C tools offline into a scratch dir.
@@ -309,17 +348,28 @@ if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/
   done
   PASS
   note "scripts/remote build OK (offline compile, scratch dir)"
-  # Input-tool dry runs resolve their binaries through RT_BUILD_DIR.
+  # Input-tool dry runs resolve their binaries through RT_BUILD_DIR, and are
+  # verified the same independent way as the tools above: credential tripwire,
+  # real-host token scan, and the named placeholder standing in for whatever
+  # would otherwise have left this machine (T8; the old assert was
+  # `grep -qi 'dry run'`).
   for probe in \
     "rt-type --dry-run --text CHAOTIX41" \
     "rt-key --dry-run --chord ctrl+t" \
-    "rt-click --dry-run --click 960 14" \
-    "rt-uinput --dry-run --probe"; do
-    out="$(RT_BUILD_DIR="$RT_TMP" $RT/$probe 2>&1)" || fail "dry run failed: $probe"
-    grep -qi 'dry run' <<< "$out" || fail "dry run of $probe did not confirm it touched nothing"
+    "rt-click --dry-run --click 960 14"; do
+    out="$(RT_BUILD_DIR="$RT_TMP" RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/$probe 2>&1)" \
+      || fail "dry run of $probe exits non-zero with both credential files absent, so it reads a credential or contacts the host"
+    if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of $probe names the real demo target host in its output"; fi
+    grep -q '<rdp argument lines on stdin>' <<< "$out" \
+      || fail "dry run of $probe prints live RDP argument lines instead of the named placeholder"
     PASS
   done
-  note "scripts/remote input-tool dry runs OK"
+  out="$(RT_BUILD_DIR="$RT_TMP" RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/rt-uinput --dry-run --probe 2>&1)" \
+    || fail "dry run of rt-uinput exits non-zero with both credential files absent, so it reads a credential or contacts the host"
+  if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of rt-uinput names the real demo target host in its output"; fi
+  grep -q '<host>' <<< "$out" || fail "dry run of rt-uinput used a real host instead of the placeholder"
+  PASS
+  note "scripts/remote input-tool dry runs OK (tripwire, host scan, placeholders)"
   # The C tools fopen argv[1] directly (scripts/rdp-input.c:202, scripts/rdp-pointer.c:83), so the
   # argument lines that arrive down a pipe have to be named as /dev/stdin. Dispatch T7 found the
   # packaged input tools passing `-`, which the tools cannot open, and found it only against the live
