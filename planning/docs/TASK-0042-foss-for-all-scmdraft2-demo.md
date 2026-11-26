@@ -13,6 +13,25 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3f-fix landed, `TF4` removed a booth-cycle failure mode, the baseline is 159 checks, and the
+review chain plus its fixes are closed (2026-11-26 17:17 JST, 2026-11-26 08:17 UTC, `Robotnik` session
+`ses_deb3a56eeffe06pHzALs15GYCO).** `TF4` (`Tails`, child `ses_de95aee66ffeEWze5cByGlddsy`) landed at team
+`f56eba7`, read from the remote, `git verify-commit` good, tree clean, and I ran the checks myself, `bash
+tests/selftest.sh` answering `SELFTEST: 159 checks passed (floor 140)` and `scripts/licence-check` at exit 0.
+Baseline chain for later briefs, 106 before `f1907ab`, 110, 120 at `b56be2b`, 122 at `70aa1dd`, 137 at `625ce8a`
+and `b4da877`, 151 at `71bd8ca`, 159 at `f56eba7`, floor 140 since `B2`. What changed and how it was measured. The
+backgrounded pinned forward now closes inherited stdin, stdout and stderr at `scripts/remote/rt-lib:403-405`,
+556 ms piped after against 8070 ms piped before, so a pipeline or command-substitution caller waits for the tool
+rather than for the forward, which is the difference between a booth cycle that runs and one that stalls in front
+of an audience. Forward claims are now `flock`'d on `$RT_STATE_DIR` at `rt-lib:340` instead of a companion lock
+file, so no lock file is ever created and `rt-tunnel stop` leaves the state directory empty, and `B2`'s real
+residue `tunnel-192.168.1.99-3401.pid.lock` was removed only after `rt-tunnel status` proved no forward was live.
+`flock` on a directory descriptor was verified to work under SELinux enforcing and to be mutually exclusive. Eight
+new asserts and eight negative controls, all exiting 1 with named messages, one of them a pre-fix code plant that
+measures 24463 ms of held pipeline. The `/cert:tofu` line at `.opencode/skills/remote-desktop/SKILL.md:77-82` is
+phrased so `B2`'s own scan keeps its teeth. `TF4` named two residuals, the `rt-tunnel` dry-run line and the README
+half of `B2` finding 3, recorded as owed. Next dispatch is item 5, `K3`.
+
 **`LIVE QUEUE 8` item 3f landed, `B2` closed the review chain, raised the suite to 151 checks and the floor to 140,
 and found a booth-day defect in `rt-tunnel` (2026-11-26 15:54 JST, 2026-11-26 06:54 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `B2` (`Big`, child `ses_de9a5b9b5ffeChZqCce0626q66`) landed at team `71bd8ca`,
@@ -997,9 +1016,10 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
   are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
   committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
-  selftest baseline is 151 checks against a floor of 140, being 106 before the gate fix at `f1907ab`, 110 after it,
+  selftest baseline is 159 checks against a floor of 140, being 106 before the gate fix at `f1907ab`, 110 after it,
   120 after the RDP certificate-pin commit `b56be2b`, 122 after the dry-run assert hardening at `70aa1dd`, 137 after
-  the skill and forward-claim fix at `625ce8a`, and 151 with the floor raised from 100 after `B2` at `71bd8ca`.
+  the skill and forward-claim fix at `625ce8a`, 151 with the floor raised from 100 after `B2` at `71bd8ca`, and 159
+  after the `rt-tunnel` stdout and lock-residue fix at `f56eba7`.
   Stamp every entry
   at the moment it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Each
   child writes its own section in the planning doc it is working on and reports back in at most five short lines.
@@ -1075,7 +1095,10 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    137-check baseline, close the gap that `C2`, `TF3` and `D2` each named independently, that no assert covers
    licence or README wording, and run the one live `rt-status` pass that settles the target-side
    `gnome-screenshot-tool` and fingerprint facts `D2` left open. Write `TASK-0041 ## Test Results`.
-   3f-fix. `Tails` as `TF4`, the fix dispatch for `B2`, running before `K3`. Three files. `rt-tunnel start`
+   3f-fix. `LANDED 2026-11-26 08:17 UTC (17:17 JST) as `TF4`, team `f56eba7`, read back from the remote and signed.
+   Suite 151 to 159, licence gate exit 0, both re-run by the dispatcher. Two residuals named, the `rt-tunnel`
+   dry-run line and the README half of `B2` finding 3.` `Tails` as `TF4`, the fix dispatch for `B2`, running before
+   `K3`. Three files. `rt-tunnel start`
    daemonises `ssh` while holding the caller's stdout, measured 6.004 s against 0.004 s, so a pipeline or
    command-substitution caller blocks and a blocked caller is a failed booth cycle, and `rt-tunnel stop` leaves a
    mode 600 `.lock` residue. Add the one skill line naming `/cert:tofu` as forbidden, since the installed client
