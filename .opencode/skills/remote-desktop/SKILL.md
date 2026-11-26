@@ -74,9 +74,14 @@ All take `--host <ip>`, `--dry-run`, and the shared credential-path options.
   postures available on this LAN, and a wrong pin aborts with `certificate not
   trusted`. The accept-any certificate option is used nowhere in this tree and is
   not an option to reach for: `tests/selftest.sh` fails the moment its name
-  appears in a shipped or loaded file, this page included. `RT_RDP_TUNNEL=0` is
-  the endorsed fallback, a direct `/v:<host>:3389` under the same certificate
-  pin, for a network the tunnel has not been proven on. Open one forward for a
+  appears in a shipped or loaded file, this page included. The
+  trust-on-first-use form of the same option, `tofu` as a value of `/cert:`, is
+  forbidden for the same reason: the installed client accepts it (`xfreerdp /?` on
+  `freerdp-3.32.2-1.el10_2` lists `deny`, `ignore`, `name:<name>`, `tofu` and
+  `fingerprint` as `/cert:` values), and it accepts whatever certificate arrives
+  first, which is the endpoint substitution `Omega` finding 2 is about.
+  `RT_RDP_TUNNEL=0` is the endorsed fallback, a direct `/v:<host>:3389` under
+  the same certificate pin, for a network the tunnel has not been proven on. Open one forward for a
   whole run with `rt-tunnel start` and tear it down with `rt-tunnel stop`; a tool
   that borrows a forward leaves it running for its owner. The credential reaches
   the tools through stdin argument lines. The listener is enabled on the target

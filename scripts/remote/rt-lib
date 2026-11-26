@@ -262,6 +262,12 @@ rt_tunnel_wait() {
   return 1
 }
 
+# Legacy companion lock file (TASK-0041 `## Test Results`, `B2` finding 2). Claims used to be serialized
+# with an flock on this file, and every teardown path removed the forward record without removing the lock,
+# so a stopped forward left a mode 600 `<record>.lock` behind. Nothing creates it any more: the lock below is
+# taken on $RT_STATE_DIR itself, which is a lock that has no file of its own to leave behind. The name is
+# still cleared by every teardown path so residue written by the older code goes away the next time a
+# forward for that host is cleared.
 rt_tunnel_lock_file() { printf '%s.lock' "$(rt_tunnel_state_file "$1")"; }
 
 # Read-modify-write of one forward's claim list.
@@ -269,14 +275,16 @@ rt_tunnel_lock_file() { printf '%s.lock' "$(rt_tunnel_state_file "$1")"; }
 #      as line 1, only when the record is being created.
 # add appends the claim. drop removes it. Both prune every claim whose pid is dead. Sets RT_TUNNEL_KEEPERS
 # and RT_TUNNEL_USERS to the live own|keep and use claims left, which is what rt_rdp_channel_release
-# decides the reap from. The whole rewrite is done under an exclusive flock on the companion lock file and
-# lands as one mv, so two callers launched in one batched message (AGENTS.md section 17) cannot lose each
-# other's claim. Returns 1 rather than writing an unlocked or partial record.
+# decides the reap from. The whole rewrite is done under an exclusive flock on $RT_STATE_DIR, opened read
+# only on fd 9: the directory is already mode 700, every record for every host and port serializes on it,
+# and unlike the companion lock file it used to open it is not a file that any inverse can forget (`B2`
+# finding 2, the mode 600 residue a stopped forward left behind). Lands as one mv, so two callers launched
+# in one batched message (AGENTS.md section 17) cannot lose each other's claim. Returns 1 rather than
+# writing an unlocked or partial record.
 rt_tunnel_claims_write() {
   local host="$1" action="$2" role="$3" claim_pid="$4" fwd="${5:-}"
-  local state lock tmp r p n rc=0
+  local state tmp r p n rc=0
   state="$(rt_tunnel_state_file "$host")"
-  lock="$(rt_tunnel_lock_file "$host")"
   RT_TUNNEL_KEEPERS=0
   RT_TUNNEL_USERS=0
   case "$action" in add|drop) : ;; *) return 1 ;; esac
@@ -329,7 +337,7 @@ rt_tunnel_claims_write() {
         rm -f "$tmp" 2>/dev/null || true
       fi
     fi
-  } 9>"$lock" || rc=1
+  } 9<"$RT_STATE_DIR" || rc=1
   if [ "$rc" -ne 0 ]; then return 1; fi
   return 0
 }
@@ -382,9 +390,19 @@ rt_rdp_channel() {
   chmod 700 "$RT_STATE_DIR" 2>/dev/null || true
   rt_require_host
   rt_require_secret_file "$RT_SSH_PASS_FILE"
+  # The forward has to outlive this shell, so it must not keep any of the caller's descriptors open. A
+  # backgrounded command inherits stdout, stderr and stdin, and a caller that runs this inside a pipeline or a
+  # command substitution waits for the *pipe* to close, which is the lifetime of the forward rather than the
+  # lifetime of the tool. `B2` measured the shape on this controller, `bash -c 'sleep 6 & echo hi' | cat` at
+  # 6.004 s against 0.004 s without the pipe, and its own live harness hung 240 s at a `| tee` step
+  # (TASK-0041 `## Test Results` finding 1). An agent that runs `rt-tunnel start` from an opencode session is
+  # that kind of caller, and `booth_loop.py` calls the forward once per cycle, so a blocked caller is a failed
+  # cycle. stdin goes to /dev/null for the same reason: a forward that inherits the caller's stdin can read
+  # it. The redirect applies to the child only, so nothing the tool itself prints is affected, and a forward
+  # that never comes up still reports through rt_tunnel_wait and the named failure lines below.
   sshpass -f "$RT_SSH_PASS_FILE" ssh "${RT_SSH_OPTS[@]}" -N -o ExitOnForwardFailure=yes \
     -o ServerAliveInterval=20 -o ServerAliveCountMax=3 \
-    -L "$(rt_tunnel_forward_spec)" "${RT_SSH_USER}@${host}" &
+    -L "$(rt_tunnel_forward_spec)" "${RT_SSH_USER}@${host}" </dev/null >/dev/null 2>&1 &
   RT_TUNNEL_PID=$!
   RT_TUNNEL_OWNED=1
   RT_TUNNEL_CLAIM_ROLE="own"

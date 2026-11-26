@@ -537,6 +537,8 @@ grep -q '/cert:fingerprint:sha256:' "$SK" || fail "remote-desktop skill does not
 PASS
 grep -q 'RT_RDP_TUNNEL=0' "$SK" || fail "remote-desktop skill does not name the RT_RDP_TUNNEL=0 direct-dial fallback"
 PASS
+grep -q 'tofu' "$SK" || fail "remote-desktop skill no longer names the trust-on-first-use form of the certificate option as forbidden (TASK-0041 Test Results B2 finding 3): the installed client accepts it, so the page a dispatched agent loads has to say not to reach for it"
+PASS
 note "remote-desktop skill OK (secrets rule, tooling reference, pin plus tunnel posture)"
 
 # --- forward lifecycle: the borrow wait and the claim count (TASK-0041 `## Review` S2) ---------------
@@ -735,6 +737,199 @@ grep -q 'flock 9' "$RT/rt-lib" || fail "rt-lib no longer serializes forward clai
 grep -q 'RT_TUNNEL_KEEPERS' "$RT/rt-lib" \
   || fail "rt_rdp_channel_release no longer counts live claims before it decides to reap"
 PASS
+
+# --- the detached forward's descriptors, and an inverse that leaves nothing (TASK-0041 `## Test Results`
+# `B2` findings 1 and 2, dispatch `TF4`) ---------------------------------------------------------------
+# Finding 1 is the one that fails a booth cycle. `rt-tunnel start` leaves the forward running for the rest of
+# the run, and the forward used to inherit the caller's stdout, stderr and stdin. A caller that runs it inside
+# a pipeline or a command substitution then waits for the *pipe* to close, which is the lifetime of the
+# forward rather than the lifetime of the tool. `B2` measured the shape on this controller, `bash -c
+# 'sleep 6 & echo hi' | cat` at 6.004 s against 0.004 s, and its own live harness hung 240 s at a `| tee`
+# step. `B2` left it unasserted on the grounds that triggering it needs a real forward, so this block builds
+# one that dials nothing: the host is 192.0.2.1 (RFC 5737) as in the blocks above, and `sshpass` and `ssh`
+# are shadowed by scripts in a scratch bin dir. The stand-in forward is one python process that binds the
+# loopback end of the forward it names in its own argv, holds the descriptors it was handed, and stays alive
+# for a bounded time, which is what a real pinned `ssh -N -L` does from the point of view of its caller.
+# Finding 2 is the residue. `rt-tunnel stop` removed the forward record and left the companion lock file,
+# mode 600 (`B2` measured tunnel-192.168.1.99-3401.pid.lock in the real state dir). The inverse is asserted
+# over a forward whose claim was written by a real tool call, because writing a claim is what created that
+# lock, and the assert is that the state directory is empty afterwards.
+# No port below is 3401, 3417 or 3419, and each one is asserted free before it is used. The RDP credential
+# file stays absent throughout, and the only credential file any run here can reach is a scratch file holding
+# no credential. Every ssh these runs could reach is the stand-in, never the real client.
+RT_FWD3_PORT=3421          # the completed borrow whose inverse must leave nothing behind
+RT_FWD4_PORT=3422          # the detached forward whose descriptors must not outlive the tool
+rt_port_listening() { ss -tln 2>/dev/null | grep -qE "127\.0\.0\.1:$1([[:space:]]|$)"; }
+rt_port_free() { ! rt_port_listening "$1"; }
+rt_port_up_wait() { # $1 port, bounded wait for a stand-in forward to bind it
+  for _ in 1 2 3 4 5 6 7 8 9 10; do rt_port_listening "$1" && return 0; sleep 0.3; done
+  return 1
+}
+rt_port_clear_wait() { # $1 port, bounded wait for a killed stand-in to release it
+  for _ in 1 2 3 4 5 6 7 8 9 10; do rt_port_free "$1" && return 0; sleep 0.3; done
+  return 1
+}
+for rt_free_port in "$RT_FWD3_PORT" "$RT_FWD4_PORT"; do
+  if rt_port_listening "$rt_free_port"; then
+    fail "127.0.0.1:${rt_free_port} is already listening, so the detached-forward asserts below cannot mean anything"
+  fi
+  PASS
+done
+RT_FWD3_SPEC="127.0.0.1:${RT_FWD3_PORT}:127.0.0.1:3389"
+RT_FWD4_SPEC="127.0.0.1:${RT_FWD4_PORT}:127.0.0.1:3389"
+
+RT_FAKE_BIN="$RT_TMP/fake-bin"; mkdir -p "$RT_FAKE_BIN"
+RT_FAKE_FWD_PY="$RT_FAKE_BIN/fake_fwd.py"
+cat > "$RT_FAKE_FWD_PY" <<'EOF'
+import socket, sys, time
+spec = sys.argv[1]
+port = int(spec.split(":")[1])
+s = socket.socket()
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind(("127.0.0.1", port))
+s.listen(8)
+time.sleep(float(sys.argv[2]))
+EOF
+cat > "$RT_FAKE_BIN/sshpass" <<'EOF'
+#!/usr/bin/env bash
+# Hand everything after -f <file> to `ssh` so the real sshpass never runs and no credential file is opened.
+if [ "${1:-}" = -f ]; then shift 2; fi
+exec "$@"
+EOF
+cat > "$RT_FAKE_BIN/ssh" <<'EOF'
+#!/usr/bin/env bash
+# Stand-in for the pinned forward: bind the loopback end named by -L, keep the inherited descriptors, live
+# for a bounded time. The only socket opened is on 127.0.0.1, and exec keeps this to one process so killing
+# the pid the tools recorded frees the port.
+spec=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = -L ]; then spec="$a"; fi
+  prev="$a"
+done
+[ -n "$spec" ] || { printf 'fake ssh: no -L forward to stand in for\n' >&2; exit 2; }
+exec python3 "$FAKE_FWD_PY" "$spec" "${FAKE_FWD_HOLD:-25}"
+EOF
+chmod 700 "$RT_FAKE_BIN" "$RT_FAKE_BIN/sshpass" "$RT_FAKE_BIN/ssh" "$RT_FAKE_FWD_PY"
+RT_FAKE_SSH_PASS="$RT_TMP/fake-ssh-credential"
+printf 'not-a-credential\n' > "$RT_FAKE_SSH_PASS"   # exists so a real run path can be reached, holds nothing
+
+# Every stand-in this block starts is killed on every exit path, a failing assert included, so a run that
+# stops halfway cannot leave a listener on a loopback port the next run asserts is free.
+RT_FWD_KILLS=()
+rt_fwd_reap() {
+  local rt_kill_pid
+  for rt_kill_pid in "${RT_FWD_KILLS[@]}"; do kill "$rt_kill_pid" 2>/dev/null || true; done
+  # Belt and braces. Every stand-in names the forward spec it binds in its own argv, so a run that died
+  # before it could record a pid still cannot leave a listener on a port a later run asserts is free.
+  pkill -f "$RT_FWD3_SPEC" 2>/dev/null || true
+  pkill -f "$RT_FWD4_SPEC" 2>/dev/null || true
+}
+trap 'rm -rf "$RT_TMP"; rt_fwd_reap' EXIT
+
+# Finding 1. The tool must return while the forward it detached is still up. The stand-in lives 25 s, so a
+# caller that waits for the pipe rather than for the tool waits 25 s. Two clocks are taken: the tool stamps
+# the moment it exits, from inside the pipeline, and the pipeline stamps the moment the reader sees EOF. The
+# gap between those two stamps is the hazard, and it is measured whatever the forward does.
+RT_FWD4_DIR="$RT_TMP/fake-detach"; rm -rf "$RT_FWD4_DIR"; mkdir -p "$RT_FWD4_DIR"
+RT_FWD4_RECORD="$RT_FWD4_DIR/tunnel-${RT_FWD_HOST}-${RT_FWD4_PORT}.pid"
+RT_FWD4_META="$RT_TMP/detach-meta"
+RT_DETACH_FILE="$RT_TMP/detach-out"
+set +e
+RT_T0_MS=$(date +%s%3N)
+{
+  RT_STATE_DIR="$RT_FWD4_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD4_PORT" RT_BUILD_DIR="$RT_TMP" \
+    RT_SSH_PASS_FILE="$RT_FAKE_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" \
+    FAKE_FWD_PY="$RT_FAKE_FWD_PY" FAKE_FWD_HOLD=25 PATH="$RT_FAKE_BIN:$PATH" \
+    "$RT/rt-tunnel" --host "$RT_FWD_HOST" start 2>&1
+  RT_FWD4_EXIT=$?
+  RT_FWD4_TOOL_MS=$(date +%s%3N)
+  RT_FWD4_ALIVE=down
+  rt_port_listening "$RT_FWD4_PORT" && RT_FWD4_ALIVE=up
+  printf 'rc=%s\nalive=%s\ntool_ms=%s\n' "$RT_FWD4_EXIT" "$RT_FWD4_ALIVE" "$((RT_FWD4_TOOL_MS - RT_T0_MS))" \
+    > "$RT_FWD4_META"
+} | cat > "$RT_DETACH_FILE"
+RT_FWD4_PIPE_MS=$(date +%s%3N)
+set -e
+RT_DETACH_RC="$(sed -n 's/^rc=//p' "$RT_FWD4_META")"
+RT_FWD4_ALIVE="$(sed -n 's/^alive=//p' "$RT_FWD4_META")"
+RT_TOOL_MS="$(sed -n 's/^tool_ms=//p' "$RT_FWD4_META")"
+if [ -z "$RT_TOOL_MS" ]; then RT_TOOL_MS=0; fi
+RT_HOLD_MS=$((RT_FWD4_PIPE_MS - RT_T0_MS - RT_TOOL_MS))
+RT_DETACH_OUT="$(cat "$RT_DETACH_FILE")"
+RT_FWD4_PID=""
+if [ -f "$RT_FWD4_RECORD" ]; then read -r RT_FWD4_PID < "$RT_FWD4_RECORD"; fi
+if [ -n "$RT_FWD4_PID" ]; then RT_FWD_KILLS+=("$RT_FWD4_PID"); fi
+# Harness premise, not a counted check: with no forward up at the moment the tool exited, the timing assert
+# below would be measuring an absence, so the suite stops here instead of reporting a pass.
+if [ "$RT_DETACH_RC" != 0 ] || [ "$RT_FWD4_ALIVE" != up ] || [ -z "$RT_FWD4_PID" ]; then
+  fail "the detached-forward harness produced no forward: rt-tunnel start exited ${RT_DETACH_RC}, the forward was ${RT_FWD4_ALIVE} when the tool exited, the record names ${RT_FWD4_PID:-nothing}: $(head -3 <<< "$RT_DETACH_OUT" | tr '\n' '; ')"
+fi
+if [ "$RT_HOLD_MS" -ge 4000 ]; then
+  fail "rt-tunnel start held the caller's stdout after the tool exited: the tool finished in ${RT_TOOL_MS}ms while the pipeline stayed open ${RT_HOLD_MS}ms longer against a stand-in forward that lives 25s, so a pipeline or command-substitution caller blocks on the daemonised forward (TASK-0041 Test Results B2 finding 1)"
+fi
+PASS
+if ! grep -q 'forward up' <<< "$RT_DETACH_OUT"; then
+  fail "rt-tunnel start no longer reports the forward to its caller, which is the pid and the inverse the next call needs: $(head -3 <<< "$RT_DETACH_OUT" | tr '\n' '; ')"
+fi
+PASS
+set +e
+RT_OUT="$(RT_STATE_DIR="$RT_FWD4_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD4_PORT" "$RT/rt-tunnel" --host "$RT_FWD_HOST" status 2>&1)"
+RT_RC=$?
+set -e
+if [ "$RT_RC" -ne 0 ] || ! grep -q 'forward up' <<< "$RT_OUT"; then
+  fail "rt-tunnel status does not report the forward a detached start left up (rc ${RT_RC}): ${RT_OUT}"
+fi
+PASS
+kill "$RT_FWD4_PID" 2>/dev/null || true
+if ! rt_port_clear_wait "$RT_FWD4_PORT"; then
+  fail "the harness forward on 127.0.0.1:${RT_FWD4_PORT} survived its teardown (pid ${RT_FWD4_PID})"
+fi
+
+# Finding 2. A real tool call borrows the forward, which is the call that writes a claim and therefore the
+# call that used to create the companion lock. The borrow completes its channel decision and dies at the
+# credential stage with the RDP credential file absent, leaving the forward and its keeper claim up.
+RT_FWD3_DIR="$RT_TMP/fake-inverse"; rm -rf "$RT_FWD3_DIR"; mkdir -p "$RT_FWD3_DIR"
+RT_FWD3_RECORD="$RT_FWD3_DIR/tunnel-${RT_FWD_HOST}-${RT_FWD3_PORT}.pid"
+python3 "$RT_FAKE_FWD_PY" "$RT_FWD3_SPEC" 25 >/dev/null 2>&1 &
+RT_FWD3_KEEPER=$!
+RT_FWD_KILLS+=("$RT_FWD3_KEEPER")
+printf '%s\nkeep %s\n' "$RT_FWD3_KEEPER" "$RT_FWD3_KEEPER" > "$RT_FWD3_RECORD"
+if ! rt_port_up_wait "$RT_FWD3_PORT"; then
+  fail "the harness forward for the inverse test never came up on 127.0.0.1:${RT_FWD3_PORT}"
+fi
+set +e
+RT_OUT="$(RT_STATE_DIR="$RT_FWD3_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD3_PORT" RT_BUILD_DIR="$RT_TMP" \
+  RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" PATH="$RT_FAKE_BIN:$PATH" \
+  FAKE_FWD_PY="$RT_FAKE_FWD_PY" "$RT/rt-click" --host "$RT_FWD_HOST" --click 1 1 2>&1)"
+RT_RC=$?
+set -e
+# Another premise: an incomplete borrow writes no claim, and a borrow that writes no claim cannot leave the
+# residue this assert is about.
+if ! grep -qE 'credential file not found|not built yet' <<< "$RT_OUT"; then
+  fail "the inverse test's borrow never reached the credential stage, so no claim was written and the residue assert below would prove nothing: $(head -3 <<< "$RT_OUT" | tr '\n' '; ')"
+fi
+if [ "$RT_RC" -eq 0 ]; then
+  fail "rt-click completed against a forward it did not own with the RDP credential file absent"
+fi
+set +e
+RT_OUT="$(RT_STATE_DIR="$RT_FWD3_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD3_PORT" "$RT/rt-tunnel" --host "$RT_FWD_HOST" stop 2>&1)"
+RT_RC=$?
+set -e
+if [ "$RT_RC" -ne 0 ] || [ -f "$RT_FWD3_RECORD" ]; then
+  fail "rt-tunnel stop did not remove the forward record (rc ${RT_RC}): ${RT_OUT}"
+fi
+PASS
+RT_LEFT="$(find "$RT_FWD3_DIR" -mindepth 1 -printf '%f ' 2>/dev/null)"
+if [ -n "$RT_LEFT" ]; then
+  fail "rt-tunnel stop left residue in the forward state dir: ${RT_LEFT} (TASK-0041 Test Results B2 finding 2, the mode 600 lock file the inverse used to leave behind)"
+fi
+PASS
+kill "$RT_FWD3_KEEPER" 2>/dev/null || true
+if ! rt_port_clear_wait "$RT_FWD3_PORT"; then
+  fail "the harness forward on 127.0.0.1:${RT_FWD3_PORT} survived its teardown (pid ${RT_FWD3_KEEPER})"
+fi
+note "detached forward leaves the caller free (tool ${RT_TOOL_MS}ms, pipeline stayed open ${RT_HOLD_MS}ms after the tool) and the inverse leaves the state dir empty OK (B2 findings 1 and 2)"
 
 
 # --- licence and documentation wording (TASK-0042 `## License (Charmy)` F1, gap named by C2, TF3, D2) ---

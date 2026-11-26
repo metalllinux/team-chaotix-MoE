@@ -1617,6 +1617,77 @@ waiting to be re-checked. The selftest count stayed at 137 for the same reason t
 stays private, and the visibility flip is the operator's ruling on `C2` and `C3`. Correcting these four lines
 changes no publishability finding and clears nothing.
 
+### TF4 fix dispatch, the detached forward holding the caller's descriptors, the lock residue, and the trust-on-first-use option (2026-11-26 08:02 UTC, 17:02 JST, `Tails`, TASK-0042 `LIVE QUEUE 8` item `3f-fix`)
+
+Three files, `scripts/remote/rt-lib`, `.opencode/skills/remote-desktop/SKILL.md` and `tests/selftest.sh`. No target contact, no credential read, no booth file touched, no new dependency. This closes `B2`'s `## Test Results` finding 1 and finding 2 and the one skill line finding 3 named, and it moves the suite from 151 to 159 checks against the floor `B2` raised to 140.
+
+**Finding 1, measured before and after the change rather than asserted.** The mechanism is descriptor inheritance. A backgrounded command keeps the caller's stdout, stderr and stdin, so a caller that runs it inside a pipeline or a command substitution waits for the *pipe* to close, which is the lifetime of the forward rather than the lifetime of the tool. Measured against the shipped `rt-tunnel` on this controller with a stand-in forward that lives 8 s, host 192.0.2.1 (RFC 5737, contacted by nobody), `sshpass` and `ssh` shadowed by scripts in a scratch bin dir that bind a loopback port and dial nothing, harness at `/tmp/opencode/t0041_tf4/measure.sh`, wall clock in ms:
+
+| rt-lib | caller form | elapsed |
+|---|---|---|
+| pre-TF4 | start, stdout piped through `cat` | 8070 ms |
+| pre-TF4 | start, stdout to a file | 617 ms |
+| TF4 | start, stdout piped through `cat` | 556 ms |
+| TF4 | start, stdout to a file | 581 ms |
+| reference `bash -c 'sleep 6 & echo hi'` | piped through `cat` | 6006 ms |
+| reference, same command | unpiped | 2 ms |
+
+The reference rows reproduce `B2`'s 6.004 s against 0.004 s on this machine, which is why the shape was believed and what the committed assert now guards. The pipeline cost is gone (556 ms against 8070 ms) and the tool's own duration is unchanged (556 ms against 581 ms), so the win did not come from swallowing the tool's work or its output. The committed assert measures the two clocks separately, the tool stamping its own exit from inside the pipeline and the reader stamping EOF, and the run that produced the numbers below reads `tool 589ms, pipeline stayed open 10ms after the tool`.
+
+**Fix 1.** `scripts/remote/rt-lib:403-405`, the backgrounded `sshpass -f <file> ssh ... -L <spec> <user>@<host>` now carries `</dev/null >/dev/null 2>&1` ahead of the `&`. The redirect applies to the child, so every `rt_note` the tool itself prints still reaches the caller, which is asserted rather than assumed. stdin goes to `/dev/null` for the same reason, a detached forward that inherits the caller's stdin can read it.
+
+Alternatives considered for finding 1. Option B, redirect the forward's stdout and stderr into a per-forward log under `$RT_STATE_DIR`, which is the other form `B2` named. Rejected. It buys diagnostics in exchange for a new file that every teardown path must then remove, which is finding 2 in a new shape, and `rt-tunnel stop` does not go through `rt-lib` for its teardown (`scripts/remote/rt-tunnel:104` is `rt-tunnel`'s own `rm`), so it would have needed a fourth file. Diagnostics are not lost where they matter: a forward that never comes up is reported by `rt_tunnel_wait`'s outcome codes and the named failure lines at `scripts/remote/rt-lib:421-429`, which name the pinned host key to look at. Option C, wrap only the `rt-tunnel start` call. Rejected, the inheritance happens at the `ssh` call, and `rt-type`, `rt-key` and `rt-click` background the same forward through the same function.
+
+**Fix 2, the residue.** `scripts/remote/rt-lib:340`, `rt_tunnel_claims_write` now takes its exclusive flock on `$RT_STATE_DIR` itself, opened read only on fd 9, instead of opening a companion `<record>.lock` file. No lock file is created, so no inverse can forget one, and the directory is already mode 700 under the `umask 077` at `rt-lib:15`. Verified on this host rather than assumed, `/tmp/opencode/locktest/probe.sh`: `flock` on a directory fd succeeds under SELinux enforcing in `~/.cache` (user_home_t), a second `flock 9` on the same directory re-acquires after the holder exits, and a concurrent `flock -n 9` reports BLOCKED while the holder sleeps, which is the mutual exclusion the claim rewrite depends on. Locking is now per state directory rather than per record, which serializes claims for different hosts and ports together; claims writes are short and no path holds the lock across a wait, so the coarser grain costs nothing measurable.
+
+`rt_tunnel_lock_file()` and its two `rm -f` sites at `rt-lib:384` and `rt-lib:482` are kept on purpose. Nothing creates the name any more, and every teardown still clears it, so residue written by the older code disappears the next time a forward for that host is reaped or a stale record is cleared.
+
+Alternatives considered for finding 2. Option B, one line in `rt-tunnel`'s stop branch, `rm -f "$STATE" "$(rt_tunnel_lock_file "$RT_HOST")"`. Rejected on two grounds. It removes the symptom at one of the three sites that tear a forward down and leaves the residue-generating mechanism in place, so a tool killed by a signal between a claim write and its reap still leaves the file. And it costs a fourth file against the three-file brief limit. Option C, delete the lock at the end of `rt_tunnel_claims_write`. Rejected, another caller can already hold that inode, and unlocking a lock another process holds is not a fix.
+
+Machine-local residue, recorded because `B2` measured it and it is not repo state. `~/.cache/team-chaotix/remote-run/tunnel-192.168.1.99-3401.pid.lock`, mode 600, 0 bytes, written by `B2`'s live read at 15:19 JST, was removed by hand at 16:59 JST after `scripts/remote/rt-tunnel --host 192.168.1.99 status` answered `no forward for 192.168.1.99: no record` at rc 1, which is the read that proves no forward was live. `ls` of that directory after the removal is empty. `status` reads the record and the local socket table only, it opens no connection.
+
+**Fix 3, the one skill line.** `.opencode/skills/remote-desktop/SKILL.md:77-82` now names the trust-on-first-use form of the certificate option as forbidden for the same reason the accept-any form is, states that the installed client accepts it (`xfreerdp /?` on `freerdp-3.32.2-1.el10_2` lists `deny`, `ignore`, `name:<name>`, `tofu` and `fingerprint` as `/cert:` values), and names the mechanism, that whatever certificate arrives first is accepted, which is the endpoint substitution `Omega` finding 2 is about. The literal argument string is not written in the page, and that is forced rather than chosen: `B2`'s own gate at `tests/selftest.sh:485` fails any shipped or loaded file that carries `cert:` immediately followed by `tofu`, and that gate is what stops the option re-entering through a tool's own argument lines. Writing the literal would have meant allow-listing the skill page, which is `B2`'s control c10 turned into a hole. Verified on the tree that carries the new line, `grep -rn 'cert:[t]ofu' scripts .opencode team tests .github NOTICE README.md AGENTS.md` returns no match (rc 1) and `cert:[i]gnore` likewise.
+
+**New asserts, 8, all counted by the suite.**
+
+| Assert | File and fact |
+|---|---|
+| 1 | `tests/selftest.sh`, 127.0.0.1:3421 is asserted free before the inverse test uses it |
+| 2 | same, 127.0.0.1:3422 free before the detached-forward test uses it |
+| 3 | the pipeline a detached `rt-tunnel start` is run inside closes within 4 s of the tool's own exit, against a stand-in forward that lives 25 s |
+| 4 | `rt-tunnel start` still reports the forward, its pid and its inverse to the caller |
+| 5 | `rt-tunnel status` reports the forward a detached start left up |
+| 6 | `rt-tunnel stop` exits 0 and removes the forward record |
+| 7 | the forward state directory is empty after that stop, no lock, no record, nothing else |
+| 8 | the remote-desktop skill page names `tofu` |
+
+Three premise guards are enforced but not counted, the detached forward has to be up at the moment the tool exited, the borrow in the inverse test has to have reached the credential stage, and a killed stand-in has to release its port. Each stops the suite rather than letting the assert below it pass against an absence.
+
+**Negative controls, 8, one plant per scratch tree under `/tmp/opencode/t0041_tf4/runs`, no plant ever applied to the repository.** Runner at `/tmp/opencode/t0041_tf4/controls.sh`, log at `/tmp/opencode/t0041_tf4/runs/control_run.log`. All 8 exit 1 with the named message.
+
+| Plant | Expect | Result |
+|---|---|---|
+| c1, the `ssh` background reverted to `...@${host}" &`, the exact pre-TF4 form | assert 3 trips | exit 1, `rt-tunnel start held the caller's stdout after the tool exited: the tool finished in 591ms while the pipeline stayed open 24463ms longer against a stand-in forward that lives 25s` |
+| c2, `rt-tunnel`'s start-branch forward-up note removed | assert 4 trips | exit 1, `no longer reports the forward to its caller, which is the pid and the inverse the next call needs` |
+| c3, `rt-tunnel`'s status-branch forward-up note removed | assert 5 trips | exit 1, `does not report the forward a detached start left up (rc 0)` |
+| c4, `rt-tunnel:104`'s `rm -f "$STATE"` replaced by a no-op, the tool still printing `record removed` | assert 6 trips | exit 1, `rt-tunnel stop did not remove the forward record (rc 0)`. The assert reads the file, not the tool's claim, which is the T8 lesson applied here |
+| c5, `rt-lib:340` reverted to `} 9>"$(rt_tunnel_lock_file "$host")"`, the companion lock restored | assert 7 trips | exit 1, `left residue in the forward state dir: tunnel-192.0.2.1-3421.pid.lock` |
+| c6, the word `tofu` taken out of the skill page | assert 8 trips | exit 1, `no longer names the trust-on-first-use form of the certificate option as forbidden` |
+| c3421, a listener holds 127.0.0.1:3421 before the suite starts | assert 1 trips | exit 1, `already listening, so the detached-forward asserts below cannot mean anything` |
+| c3422, same on 127.0.0.1:3422 | assert 2 trips | exit 1, same named precondition failure |
+
+c1 is the control `B2` said could not exist. It does not need a real forward or a target, it needs a stand-in that behaves like a detached forward about descriptors, and the plant is the pre-fix code itself rather than a paraphrase of it.
+
+**Checks run, with the command behind each.** `bash tests/selftest.sh` answers `SELFTEST: 159 checks passed (floor 140)` at exit 0, 12.7 s, 130 fixed asserts plus 29 pytest. The same suite with `HOME` redirected to a scratch dir with the two secret files symlinked and `AGENTGATEWAY_BIN=/nonexistent` answers `SELFTEST: 154 checks passed (floor 140)`, so the machine-conditional asserts (`B2` measured 5, 4 dispatch-gate real reads plus 1 gateway boot) stay inside the floor's slack and none of the 8 asserts added here is conditional. `bash -n tests/selftest.sh` and `bash -n scripts/remote/rt-lib` clean. `scripts/licence-check .` answers `PASS` at exit 0. `grep -rn 'cert:[t]ofu'` and `grep -rn 'cert:[i]gnore'` over `scripts .opencode team tests .github NOTICE README.md AGENTS.md` return no match. The new block leaves no listener behind, `ss -tln` after a full suite run shows nothing on 3417, 3419, 3421 or 3422, and the block now carries its own cleanup trap, which was itself found by a control: an earlier version of the block leaked a listener when a mid-block assert failed, which is what made c3 and c4 read as precondition failures on the first control pass, and both tripped their intended assert after the trap was added.
+
+**Checks that did not run, named.** No contact with 192.168.1.99 and no RDP or SSH dial anywhere in this dispatch, so the fix is proven against a stand-in forward and not against the live tunnel, and the live confirmation belongs to the booth-morning smoke run. `shellcheck` is absent on this host, permanently 0 asserts. No CI runner exists, the local selftest plus `scripts/hooks/pre-push` are the effective gate. The booth tree was not touched and is still ungated for this posture, which is `TF2` and `T9`. The tunnel is still unproven on a non-bridge network, `Omega`'s accepted residual risk. No target-side state was read or changed.
+
+**Competing priorities, what was traded away.** A failed forward no longer prints the client's own diagnostic text (a host-key rejection or an authentication failure now surfaces only as `rt-lib:421-429`'s named failure, which points at `scripts/remote/known_hosts` and `rt-tunnel status`). That was bought deliberately to avoid creating a new per-forward log file, which would have re-opened finding 2 and needed a fourth file. Locking moved from per record to per state directory, coarser and simpler. `MIN_CHECKS` stays at 140, raising the floor is `Big`'s call, and 159 against 140 leaves 19 checks of slack with the degraded run measured at 154.
+
+**Owed after this pass, named not done.** `rt-tunnel`'s dry-run line at `scripts/remote/rt-tunnel:53` still prints `would run: sshpass ... &` without the descriptor closes, so it approximates the real command in one more way than it did (it already omits `-o ServerAliveInterval=20 -o ServerAliveCountMax=3`); one line, left out on the file budget. `README.md` still says nothing about the trust-on-first-use option, the gate covers it and the page does not, which is `B2` finding 3's `Vector` half and belongs with the next documentation dispatch. The booth tree items `TF2` and `T9` are unchanged. `Omega` hygiene item 1, `~/AI/secrets/scm_draft_pass.md` at mode 644, is untouched and stays an operator `chmod`, and `rt-lib` still warns about it on every real run rather than fixing it.
+
+**Standing posture.** `R4`'s verdict stays FAIL on the booth repo as published at `7c4fa16`, the booth repo stays private, and the visibility flip is the operator's ruling on `C2` and `C3`. This dispatch touched no booth file.
+
 ---
 
 ## Review
