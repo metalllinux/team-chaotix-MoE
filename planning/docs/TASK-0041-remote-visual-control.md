@@ -2344,11 +2344,50 @@ only from `TF3` at booth `ba80ff3`, and this pass did not re-read them.
 
 *Owner: `Knuckles`.*
 
-**DONE checklist verified:** yes / no
+**DONE checklist verified:** no. `git show origin/main:planning/docs/TASK-0041-remote-visual-control.md` read at `## Definition of Done` shows 0 of 12 boxes ticked, and this dispatch ticks none of them, ticking is `Robotnik`'s per that section's own owner line. This is a read-back, not a merge, not a tag, not a deploy.
 
-- **Branch:**
-- **Commits:** GPG-signed
-- **PR:**
+**Landings read back from the remote, 2026-11-26 08:27 UTC (17:27 JST), `Knuckles` dispatch `K3`, TASK-0042 `LIVE QUEUE 8` item 5.**
+
+Fetch and tree state, `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git fetch origin --prune` then `git rev-parse --short origin/main` answers `4a16695`, local `main` and `HEAD` both `4a16695`, `git status --porcelain` answers 0 lines. Everything below is read from the remote ref, not from local state.
+
+| Landing | Ancestor of `refs/heads/main` | `git log -1 --format='%G? %GK'` | What it is |
+|---|---|---|---|
+| `b906f00` | YES | `G F9261D151316FD60` | packaging, the `scripts/remote` tooling for items 9 to 11 |
+| `1eea4ec` | YES | `G F9261D151316FD60` | the packaging record in this doc |
+| `3e43d2a` | YES | `G F9261D151316FD60` | pinned SSH host keys plus the credential gate hardening (TASK-0042 `K6`) |
+| `9190b04` | YES | `G F9261D151316FD60` | `K9`, the `T1` unsigned-claim correction plus the guarded build fix |
+| `1d79b1c` | YES | `G F9261D151316FD60` | `T6`, first RDP channel test, plus its DEMO-LOG entry |
+| `b56be2b` | YES | `G F9261D151316FD60` | `T7`, the certificate pin plus the pinned SSH forward, plus its DEMO-LOG entry |
+| `70aa1dd` | YES | `G F9261D151316FD60` | `T8`, independent dry-run asserts and the real settle delay |
+| `625ce8a` | YES | `G F9261D151316FD60` | `TF1`, `S2` blocker 1 and the two `rt-lib` forward findings |
+| `8a894dc` | YES | `G F9261D151316FD60` | `TF3`, the FreeRDP licence wording in the team NOTICE pair |
+| `61d9f5f` | YES | `G F9261D151316FD60` | `TF3`, the record of it in this doc |
+| `b4da877` | YES | `G F9261D151316FD60` | `D2`, README and the `scripts/remote` tooling docs |
+| `71bd8ca` | YES | `G F9261D151316FD60` | `B2`, the re-probe, the wording gate, the live target read |
+| `f56eba7` | YES | `G F9261D151316FD60` | `TF4`, the detached forward descriptor closes and the lock residue |
+
+Command behind each cell. `git merge-base --is-ancestor <sha> origin/main` exits 0 for all 13. `%G?` is `G` and `%GK` is `F9261D151316FD60` for all 13, and `git verify-commit` was run independently on `b906f00`, `9190b04` and `f56eba7`, each answering `gpg: Good signature from "Team Chaotix <howard.a.vanderwal@protonmail.com>" [ultimate]` on EDDSA key `D553FBE4B47020B2033E9594F9261D151316FD60`. Nothing in the 13 is unsigned.
+
+**Unsigned landings that remain ancestors of `main`, named and not rewritten.** `git log --format='%G?' origin/main` over the 362 commits on `origin/main` counts 174 `G`, 181 `N`, 7 `E`. The `N` set relevant to this task is the three-commit chain `8e75aac`, `d26ef2b`, `5f9947d`, TASK-0042 `D3` on 2026-11-22, which `Shadow`'s `T1` finding named correctly at `:1701-1704` and `9190b04` corrected in the record. `git log --since=2026-11-20 --format='%h %G?' origin/main` returns those three and no other non-`G` commit, so no TASK-0041 landing is unsigned. The `E` set, signatures git cannot check, is `1c8638d`, `2c3b171`, `dfbd140`, `22bb25b`, `9cab6d2`, `c1ff89f`, `44a017e`. All 188 stay where they are, no rewrite, no re-sign, no filter-branch, per AGENTS.md section 2 rule 6 and the standing rule against history rewriting.
+
+**DEMO-LOG coverage of the packaging and channel-test steps.** The packaging steps have no DEMO-LOG entry. `git show --name-only b906f00` and `git show --name-only 1eea4ec` each list 0 `DEMO-LOG.md` paths, and the packaging pass contacted no target, so the record of items 9 to 11 lives only in `## Implementation` at `:723-804`. The channel-test steps are covered by exactly two entries, `1d79b1c` adding `DEMO-LOG.md:2552-2573` for `T6` and `b56be2b` adding `DEMO-LOG.md:2574-2586` for `T7`, each with commands, exact inverses and target-state accounting. **One gap named.** `B2`'s live read did contact `192.168.1.99` between 06:19 and 06:27 UTC on 2026-11-26, `rt-status` twice, `rt-tunnel start`, `status` and `stop`, and the certificate reads at `:2246-2255`, and no DEMO-LOG entry was written for it. The file is 2586 lines and ends at the `T7` entry, `git log --oneline -- DEMO-LOG.md` ends at `b56be2b`, and `70aa1dd`, `625ce8a`, `71bd8ca` and `f56eba7` each list 0 `DEMO-LOG.md` paths. `DEMO-LOG.md` is not owned by `Knuckles`, so this is named as owed to `Tails` and not written here.
+
+**Gate state measured in this dispatch rather than inherited.** `bash tests/selftest.sh` at `4a16695` answers `SELFTEST: 159 checks passed (floor 140)` at exit 0. `scripts/licence-check` answers exit 0. `grep -n MIN_CHECKS tests/selftest.sh` answers `MIN_CHECKS=140` at `tests/selftest.sh:36`. `git config --get core.hooksPath` answers `scripts/hooks`, so the pre-push selftest is the effective CI gate.
+
+**DoD state read from the doc, 0 ticked, none ticked here.** Rows 1 to 4, screenshot, keyboard, mouse and OCR, are proven in `## Implementation` and `## Next Actions` and remain unticked. Row 5, packaged tooling, landed at `b906f00` with the `scripts/remote` set and remains unticked. Row 6, skill plus docs including the secrets rule, landed as the skill page and `b4da877`, unticked, and its README half is still incomplete, see deviations. Row 7, selftest asserts with recorded counts, is satisfied in fact, 56 to 61 to 83 at `b906f00` and 159 against the floor of 140 today, unticked. Row 8, the secret grep, is recorded by `Omega` at `## Security`, unticked. Row 9, the review chain with no blocker, ran as `T1` to `T4` and then on the post-chain code as `S2`, `O1`, `C2` and `B2` with the fixes `TF1`, `TF3` and `TF4`, `S2`'s blocker is closed at `625ce8a`, `Omega` finding 2 is closed in code at `b56be2b` and its hygiene half is operator-owned, unticked. Row 10, `Vector` docs, landed as `D2` at `b4da877`, unticked. Row 11, branch plus PR, is not satisfied in form, see deviations. Row 12, DEMO-LOG per step against the target, is partly satisfied and has the `B2` gap named above, unticked.
+
+**Deviations, named.**
+1. Branch and PR form. AGENTS.md requires feature branches under `feature/TASK-XXXX-slug` and a PR for every change. None of the 13 landings went through either. `git branch -r` answers `origin/main`, `origin/HEAD` and `origin/task-0043-dispatch-gate`, no `feature/TASK-0041-*` exists, and no PR number exists for any TASK-0041 landing. The gate that actually ran is the local selftest through `scripts/hooks/pre-push`. DoD row 11 cannot be ticked as written without either a retrospective record or a rewrite, and a rewrite is refused.
+2. Docs residual. `grep -n tofu README.md` returns no match today, so `B2` finding 3's README half and `TF4`'s named residual at `scripts/remote/rt-tunnel:53` dry-run line are both still open. The machine gate covers the trust-on-first-use option, the root page does not teach it.
+3. Hygiene. `stat -c '%a %n' ~/AI/secrets/scm_draft_pass.md` answers `644` today, against AGENTS.md section 4, and the `chmod 600` is operator-owned.
+4. Booth posture, unchanged and restated. `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, the repo at `8bf04b7` is not publishable, and the visibility flip is the operator's ruling on `C2` and `C3`. This dispatch touched no booth file.
+
+**Checks that did not run in this dispatch, every one named.** CI jobs on any runner, no self-hosted runner can register on a public repository per AGENTS.md sections 6 and 13. No Sparky or Raku run, nothing in this brief. No VM or container layer. No target contact at all here, so no live channel re-test and no confirmation of `TF4`'s fix against the real tunnel, which `TF4` itself assigned to the booth-morning smoke run. `shellcheck`, absent on this host. No PR or merge to audit, because none exists. No deployment was dispatched, so nothing here needs a rollback. `agentsmd promote` stays operator-owned.
+
+- **Branch:** none opened. `main` only, `origin/main` at `4a16695`, tree clean, nothing merged or rebased by this dispatch.
+- **Commits:** this record and the `planning/TASKS.md` row update only, GPG-signed against `F9261D151316FD60`, pushed through `scripts/hooks/pre-push` with 159 checks passing.
+- **PR:** none. Nothing to open, no branch exists to open one from. Recorded as a deviation against DoD row 11 rather than corrected by rewriting published history.
+- **Deploy:** not dispatched. TASK-0041 is a capability task feeding the 2026-11-28 booth run in TASK-0042, and the release read-back is green on signatures, gates and licence while the DoD boxes stay unticked for `Robotnik`.
 
 ---
 
