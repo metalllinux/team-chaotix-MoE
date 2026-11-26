@@ -18,15 +18,22 @@ PASS() { CHECKS=$((CHECKS+1)); }
 # Minimum meaningful assertion count, the single home of the selftest floor
 # (TASK-0042 R3 harness fix; scripts/hooks/pre-push and the Team Selftest CI
 # job both read this constant rather than carrying their own). The suite is
-# 93 fixed PASS asserts plus the pytest count (29 at the 2026-11-26 baseline,
-# total 122 after the TASK-0042 dispatch T8 assert-hygiene fix; the chain is
-# 106 before the gate fix f1907ab, 110 after it, 120 after the certificate-pin
-# commit b56be2b, 122 after T8). pytest is the only component that varies
-# run to run, so 100 leaves 10 checks of slack for skipped or deselected tests
-# while failing the moment any meaningful block of asserts disappears. The
-# previous floor was 70, 35 below the real count, and it lived only in a CI job
-# that has never run.
-MIN_CHECKS=100
+# 122 fixed PASS asserts plus the pytest count (29 at the 2026-11-26 baseline,
+# total 151 after the TASK-0042 dispatch B2; the chain is 106 before the gate fix
+# f1907ab, 110 after it, 120 after the certificate-pin commit b56be2b, 122 after
+# T8 70aa1dd, 137 after TF1 625ce8a, 151 after B2). B2 adds 14 asserts, 4 of them
+# the completed-borrow path TF1 named as proved by construction and not by
+# control, 10 of them the licence and README wording gate that C2, TF3 and D2 each
+# named as missing. B2 raises the floor from 100 to 140. A floor 47 checks below
+# the real count is a collapse detector for a whole block only: it absorbs the
+# quiet loss of any single section (the skill block is 5 asserts, the dry-run block
+# 4, the credential scan 2). 140 leaves 11 checks of slack for the asserts that are
+# genuinely machine-conditional, 3 dispatch-gate real-read asserts when the
+# session store has no assistant rows, 1 gateway selftest when the agentgateway
+# binary is absent, plus pytest deselection. The guarded remote-build block is
+# NOT inside that slack: it hard-fails when gcc or freerdp-client3 is absent
+# (Big T3 finding 1, closed by K9). shellcheck, when present, only adds checks.
+MIN_CHECKS=140
 
 note() { printf 'selftest: %s\n' "$*"; }
 fail() { printf 'selftest FAIL: %s\n' "$*" >&2; exit 1; }
@@ -294,10 +301,22 @@ trap 'rm -rf "$RT_TMP"' EXIT
 RT_NO_SSH_PASS="$RT_TMP/no-ssh-credential"     # deliberately nonexistent
 RT_NO_RDP_PASS="$RT_TMP/no-rdp-credential"     # deliberately nonexistent
 RT_DEMO_HOST='192\.168\.1\.99'
+# B2 adds a second, address-independent version of the same guard. The token scan above only has teeth
+# while the demo target keeps the address 192.168.1.99, and `Big`'s own T3 read named a re-addressed
+# venue target as the first thing to fail on 2026-11-28. The guard below has teeth whatever the address
+# is: a dry run may print the loopback end of its own forward and nothing that looks routable. Folded
+# into each probe rather than counted separately, so a probe stays one ledger line and a stronger check.
+rt_only_loopback_ips() { # $1 probe name, $2 the output to scan
+  local found
+  found="$(grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' <<< "$2" | sort -u \
+           | grep -vE '^(127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|0\.0\.0\.0)$' || true)"
+  [ -z "$found" ] || fail "dry run of $1 names a routable IPv4 address in its output: ${found}"
+}
 for probe in "rt-shot --dry-run" "rt-status --dry-run" "rt-tunnel --dry-run start"; do
   out="$(RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/$probe 2>&1)" \
     || fail "dry run of $probe exits non-zero with both credential files absent, so it reads a credential or contacts the host"
   if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of $probe names the real demo target host in its output"; fi
+  rt_only_loopback_ips "$probe" "$out"
   grep -q '<host>' <<< "$out" || fail "dry run of $probe used a real host instead of the placeholder"
   PASS
 done
@@ -306,6 +325,7 @@ done
 out="$(RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/rt-ocr --dry-run "$RT_TMP/absent.png" 2>&1)" \
   || fail "dry run of rt-ocr exits non-zero with both credential files absent"
 if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of rt-ocr names the real demo target host in its output"; fi
+rt_only_loopback_ips "rt-ocr" "$out"
 if grep -qE 'sshpass|ssh |howard@' <<< "$out"; then fail "dry run of rt-ocr prints a remote command; rt-ocr never contacts a target"; fi
 grep -q 'tesseract' <<< "$out" || fail "rt-ocr dry run does not print the local command it would run"
 PASS
@@ -360,6 +380,7 @@ if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/
     out="$(RT_BUILD_DIR="$RT_TMP" RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/$probe 2>&1)" \
       || fail "dry run of $probe exits non-zero with both credential files absent, so it reads a credential or contacts the host"
     if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of $probe names the real demo target host in its output"; fi
+    rt_only_loopback_ips "$probe" "$out"
     grep -q '<rdp argument lines on stdin>' <<< "$out" \
       || fail "dry run of $probe prints live RDP argument lines instead of the named placeholder"
     PASS
@@ -367,6 +388,7 @@ if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/
   out="$(RT_BUILD_DIR="$RT_TMP" RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" $RT/rt-uinput --dry-run --probe 2>&1)" \
     || fail "dry run of rt-uinput exits non-zero with both credential files absent, so it reads a credential or contacts the host"
   if grep -q "$RT_DEMO_HOST" <<< "$out"; then fail "dry run of rt-uinput names the real demo target host in its output"; fi
+  rt_only_loopback_ips "rt-uinput" "$out"
   grep -q '<host>' <<< "$out" || fail "dry run of rt-uinput used a real host instead of the placeholder"
   PASS
   note "scripts/remote input-tool dry runs OK (tripwire, host scan, placeholders)"
@@ -379,6 +401,7 @@ if command -v gcc >/dev/null 2>&1 && pkg-config --exists freerdp-client3 2>/dev/
     "rt-key --dry-run --chord ctrl+t" \
     "rt-click --dry-run --click 960 14"; do
     out="$(RT_BUILD_DIR="$RT_TMP" $RT/$probe 2>&1)" || fail "dry run failed: $probe"
+    rt_only_loopback_ips "$probe (/dev/stdin form)" "$out"
     grep -q '/dev/stdin' <<< "$out" \
       || fail "$probe does not name an argument path the C tools can open"
     PASS
@@ -442,12 +465,28 @@ note "host key pinning asserts OK (no unpinned SSH posture under scripts/)"
 # instructions. The pattern is written with a bracket so this file never matches its own pattern text (the
 # same trick the no-turn-caps assert near the head of this file uses), which keeps the scanner's own file
 # inside the scanned scope instead of excluding it.
-RT_CERT_SCAN_PATHS=(scripts .opencode team tests .github README.md AGENTS.md)
+# `B2` adds NOTICE to the list. The root NOTICE is a shipped file and it was outside the scanned set:
+# the only licence record the gate read was the one scripts/licence-check opens, and this scan saw the
+# rest. Same shape as the S2 blocker, a gate whose scope is narrower than the files it claims.
+RT_CERT_SCAN_PATHS=(scripts .opencode team tests .github NOTICE README.md AGENTS.md)
 if grep -rn 'cert:[i]gnore' "${RT_CERT_SCAN_PATHS[@]}" >/dev/null 2>&1; then
   fail "the accept-any RDP certificate option appears in a shipped or loaded file (TASK-0042 finding 2, S2 blocker 1): $(grep -rnl 'cert:[i]gnore' "${RT_CERT_SCAN_PATHS[@]}" | tr '\n' ' ')"
 fi
 PASS
 note "no accept-any RDP certificate option in ${RT_CERT_SCAN_PATHS[*]} OK"
+
+# The trust-on-first-use form of the same hole (B2). The scan above matches one spelling of one option.
+# `xfreerdp /?` on the installed client (freerdp-3.32.2-1.el10_2, read in dispatch B2) lists the values
+# of /cert: as deny, ignore, name:<name>, tofu and fingerprint. `tofu` accepts a certificate on first
+# contact and re-opens the endpoint substitution `Omega` finding 2 is about, while carrying none of the
+# words the scan above matches, so an edit that "tightens" the option from ignore to tofu passes the
+# gate unchanged. The 2.x spelling `ignore-cert` was measured against the same client and is rejected at
+# parse ("Unexpected keyword"), so it cannot re-enter through a tool's own argument lines.
+if grep -rn 'cert:[t]ofu' "${RT_CERT_SCAN_PATHS[@]}" >/dev/null 2>&1; then
+  fail "the trust-on-first-use RDP certificate option appears in a shipped or loaded file (TASK-0042 finding 2, B2): $(grep -rnl 'cert:[t]ofu' "${RT_CERT_SCAN_PATHS[@]}" | tr '\n' ' ')"
+fi
+PASS
+note "no trust-on-first-use RDP certificate option in ${RT_CERT_SCAN_PATHS[*]} OK"
 
 grep -qE 'RT_RDP_CERT_PIN="\$\{RT_RDP_CERT_PIN:-[0-9a-f]{64}\}"' "$RT/rt-lib" \
   || fail "rt-lib no longer holds the RDP certificate pin in one named 64-hex variable"
@@ -626,6 +665,63 @@ kill "$RT_OWN" 2>/dev/null || true
 PASS
 note "forward claims OK (owner leaves a shared forward, last holder reaps, a detached forward keeps its keeper)"
 
+# Finding 2 continued, the path `TF1` could not control (TASK-0041 `## Review` C7, named as owed to `B2`).
+# TF1's C7 plant, the borrow path taking RT_TUNNEL_OWNED=1, ran green because every offline borrow above
+# fails before it completes: with no listener on the loopback port the borrow never reaches the release, so
+# a change to ownership inside the borrow is unobservable. This block completes a borrow instead of failing
+# one, by putting a real listener on a port that is never 3401 and never the demo target's, and it is the
+# only place the successful-borrow-then-release path is asserted. Still no target contact: the host is
+# 192.0.2.1 (RFC 5737), both credential files are absent, and the "forward" is a sleep whose argv[0] carries
+# the forward spec while a local python socket holds the port.
+RT_FWD2_PORT=3419
+RT_FWD2_SPEC="127.0.0.1:${RT_FWD2_PORT}:127.0.0.1:3389"
+RT_FWD2_DIR="$RT_TMP/fake-borrow"; rm -rf "$RT_FWD2_DIR"; mkdir -p "$RT_FWD2_DIR"
+RT_FWD2_RECORD="$RT_FWD2_DIR/tunnel-${RT_FWD_HOST}-${RT_FWD2_PORT}.pid"
+if ss -tln 2>/dev/null | grep -qE "127\.0\.0\.1:${RT_FWD2_PORT}([[:space:]]|$)"; then
+  fail "127.0.0.1:${RT_FWD2_PORT} is already listening, so the completed-borrow assert below cannot mean anything"
+fi
+PASS
+python3 -c "import socket,time; s=socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); s.bind(('127.0.0.1', ${RT_FWD2_PORT})); s.listen(8); time.sleep(25)" >/dev/null 2>&1 &
+RT_FWD2_LISTENER=$!
+RT_FWD_SPEC_KEEP="$RT_FWD_SPEC"
+RT_FWD_SPEC="$RT_FWD2_SPEC"                       # the keeper's argv[0] must carry the spec this port maps to
+RT_FWD2_KEEPER="$(rt_fake_forward)"               # the forward a previous call detached, with a keeper claim
+RT_FWD_SPEC="$RT_FWD_SPEC_KEEP"
+printf '%s\nkeep %s\n' "$RT_FWD2_KEEPER" "$RT_FWD2_KEEPER" > "$RT_FWD2_RECORD"
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  ss -tln 2>/dev/null | grep -qE "127\.0\.0\.1:${RT_FWD2_PORT}([[:space:]]|$)" && break
+  sleep 0.2
+done
+if ! ss -tln 2>/dev/null | grep -qE "127\.0\.0\.1:${RT_FWD2_PORT}([[:space:]]|$)"; then
+  fail "the local listener for the completed-borrow assert never came up on 127.0.0.1:${RT_FWD2_PORT}"
+fi
+PASS
+set +e
+RT_OUT="$(RT_STATE_DIR="$RT_FWD2_DIR" RT_RDP_TUNNEL_PORT="$RT_FWD2_PORT" RT_BUILD_DIR="$RT_TMP" \
+  RT_SSH_PASS_FILE="$RT_NO_SSH_PASS" RT_RDP_PASS_FILE="$RT_NO_RDP_PASS" \
+  "$RT/rt-click" --host "$RT_FWD_HOST" --click 1 1 2>&1)"
+RT_RC=$?
+set -e
+# The borrow has to have completed for this to mean anything: it completed when the tool got as far as
+# asking for the RDP credential, which is a stage only a decided endpoint reaches.
+if [ "$RT_RC" -eq 0 ]; then
+  fail "rt-click completed against a forward it did not own with both credential files absent"
+fi
+if ! grep -qE 'credential file not found|not built yet' <<< "$RT_OUT"; then
+  fail "rt-click did not reach the credential stage, so the borrow never completed and this assert proves nothing: $(head -3 <<< "$RT_OUT" | tr '\n' '; ')"
+fi
+PASS
+if ! kill -0 "$RT_FWD2_KEEPER" 2>/dev/null; then
+  fail "a completed borrow reaped the forward it borrowed (TASK-0041 Review C7, the path TF1 proved by construction and not by control)"
+fi
+if ! grep -q "^keep ${RT_FWD2_KEEPER}$" "$RT_FWD2_RECORD"; then
+  fail "the completed borrow left no keeper claim on the forward it borrowed"
+fi
+PASS
+kill "$RT_FWD2_KEEPER" 2>/dev/null || true
+kill "$RT_FWD2_LISTENER" 2>/dev/null || true
+note "completed borrow leaves the forward and its keeper claim OK (C7 gap closed)"
+
 # Plumbing asserts: one shared wait window used by both channel paths, and a reap that consults the claims.
 grep -q 'rt_tunnel_wait()' "$RT/rt-lib" \
   || fail "rt-lib no longer has one shared wait window for a forward that is coming up"
@@ -640,6 +736,106 @@ grep -q 'RT_TUNNEL_KEEPERS' "$RT/rt-lib" \
   || fail "rt_rdp_channel_release no longer counts live claims before it decides to reap"
 PASS
 
+
+# --- licence and documentation wording (TASK-0042 `## License (Charmy)` F1, gap named by C2, TF3, D2) ---
+# Three dispatches reached the same conclusion independently, which is why `B2` closes it rather than
+# recording it again: the suite checked licence *files* through scripts/licence-check and certificate
+# option *strings* through the scan above, and nothing checked the wording of a licence claim. C2 finding
+# F1 is what that gap produced, four sentences across two trees offering a GPL option alongside the Apache
+# option for FreeRDP at tag 3.32.2, when upstream at that ref publishes Apache-2.0 only. TF3 rewrote them.
+# D2 named the same gap for README.md. With no assert here a later edit restates the withdrawn claim and
+# every gate in this file stays green. The claim form is not written out in this comment, for the same
+# reason the cert:[i]gnore assert names "the accept-any option" instead of the option: a scanner that
+# quotes its own pattern text is a scanner that fails its own suite.
+#
+# Two halves. A negative scan for the withdrawn claim in the shape it was actually written, and a positive
+# assert that each claim-bearing file states the reading Charmy verified, names the version, and cites the
+# upstream LICENSE blob that reading rests on. The blob id is pinned here as text: this suite never
+# touches the network (see the header), so re-resolving the id against upstream is a dispatch-time act,
+# recorded by B2 at TASK-0041 `## Test Results` and not something CI can do.
+#
+# Scope mirrors the certificate scan above, the shipped and loaded trees plus the two NOTICE files and the
+# two root pages a reader or an agent sees. planning/ stays out as record history for the same reason the
+# certificate scan leaves it out: the record of the withdrawn claim quotes the withdrawn claim, and a gate
+# must not rewrite history to satisfy itself. Patterns are bracketed so this file cannot match its own
+# text, the same trick the [m]axTurns and cert:[i]gnore asserts use.
+python3 - <<'PY'
+import pathlib
+import re
+import sys
+
+scope = ["scripts", ".opencode", "team", "tests", ".github", "NOTICE", "README.md", "AGENTS.md"]
+# The scope ledger, the assert that keeps the scan as wide as the claims. Narrowing the list above trips
+# here rather than quietly shrinking the gate, which is the S2 blocker-1 failure mode in a new form.
+ledger = ["NOTICE", "scripts/remote/NOTICE", "README.md",
+          ".opencode/skills/remote-desktop/SKILL.md", "AGENTS.md"]
+
+files = []
+for entry in scope:
+    path = pathlib.Path(entry)
+    if path.is_dir():
+        files.extend(p for p in path.rglob("*") if p.is_file())
+    elif path.is_file():
+        files.append(path)
+names = {str(p) for p in files}
+missing = [item for item in ledger if item not in names]
+if missing:
+    print("selftest FAIL: the licence wording scan no longer reads %s, the scan scope narrowed"
+          % ", ".join(missing), file=sys.stderr)
+    sys.exit(1)
+if len(files) < 100:
+    print("selftest FAIL: the licence wording scan reads only %s files over %s"
+          % (len(files), ", ".join(scope)), file=sys.stderr)
+    sys.exit(1)
+
+# F1 in the form it was written: an Apache option offered alongside a GPL option at the ref in use.
+claims = [
+    re.compile(r"[d]ual[- ]licen", re.I),
+    re.compile(r"Apache-2\.0\s+(o[r]|/)\s+GPL-2\.0"),
+]
+bad = []
+for path in sorted(files):
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        continue
+    for number, line in enumerate(text.splitlines(), 1):
+        for pattern in claims:
+            if pattern.search(line):
+                bad.append("%s:%d matches %s" % (path, number, pattern.pattern))
+if bad:
+    print("selftest FAIL: a false upstream licence claim is back in a shipped or loaded file "
+          "(TASK-0042 C2 finding F1): " + "; ".join(bad), file=sys.stderr)
+    sys.exit(1)
+PY
+PASS
+PASS
+note "licence wording scan OK (no Apache-plus-GPL option claim inside the scan scope, scope ledger intact)"
+
+# The claim each file makes, asserted where it is made. Proximity rather than a fixed sentence, so a
+# wrapped line still passes and a claim separated from its own evidence does not.
+for f in NOTICE scripts/remote/NOTICE README.md; do
+  grep -q '3\.32\.2' "$f" \
+    || fail "$f no longer names the FreeRDP version 3.32.2 its licence claim is about"
+  if ! grep -A8 '3\.32\.2' "$f" | grep -q 'Apache-2\.0 only'; then
+    fail "$f no longer states Apache-2.0 only at tag 3.32.2, the upstream reading Charmy verified (C2 finding F1)"
+  fi
+  if ! grep -A8 '3\.32\.2' "$f" | grep -q 'd645695673349e3947e8e5ae42332d0ac3164cd7'; then
+    fail "$f states a FreeRDP licence claim without the upstream LICENSE blob id that claim rests on"
+  fi
+  PASS
+done
+note "licence claim wording OK (NOTICE, scripts/remote/NOTICE, README.md each state Apache-2.0 only at 3.32.2 with the blob id)"
+
+# The README section D2 wrote has to keep teaching the posture that landed at b56be2b, or the next agent
+# reads a page that describes a channel this repository no longer builds. Each token is its own assert so
+# a dropped one names itself.
+for token in 'gnome-screenshot-tool' 'RT_RDP_CERT_PIN' 'rt-tunnel' '/cert:fingerprint:sha256:'; do
+  grep -qF -- "$token" README.md \
+    || fail "README.md no longer names $token, part of the remote visual-control posture (D2 docs gap)"
+  PASS
+done
+note "README posture wording OK (capture path, cert pin, tunnel, identity line)"
 
 # --- no interpolation into run: bodies (Omega finding 12) -------------------
 # AGENTS.md section 6 binds every untrusted input to env:. The planning-doc
