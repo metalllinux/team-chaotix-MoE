@@ -1538,6 +1538,85 @@ private; the flip is the operator's ruling on `C2` and `C3`. Nothing in this pas
 
 Written 2026-11-26 04:09 UTC (13:09 JST).
 
+### TF3, `LIVE QUEUE 8` item 3e fix, the four FreeRDP licence claims
+
+Written 2026-11-26 04:56 UTC (13:56 JST). Closes finding `F1` of `## License (Charmy):1921-1964`, the item
+`TASK-0042:1004-1008`. Four record lines across the two repositories. Team `8a894dc`, booth `ba80ff3`, both
+signed, both pushed to `main`.
+
+**The claim was re-read, not inherited.** Three commands on the upstream repo at the ref actually used, run
+before editing.
+
+```
+curl -s https://api.github.com/repos/FreeRDP/FreeRDP/contents/LICENSE?ref=3.32.2
+  d645695673349e3947e8e5ae42332d0ac3164cd7 LICENSE 11358
+curl -s https://api.github.com/repos/FreeRDP/FreeRDP/git/trees/3.32.2   (paths matching licen|copying)
+  LICENSE d645695673349e3947e8e5ae42332d0ac3164cd7
+curl -s https://raw.githubusercontent.com/FreeRDP/FreeRDP/3.32.2/LICENSE | head -3
+  Apache License Version 2.0, January 2004
+```
+
+The tag root tree carries one licence text file, `LICENSE`, and it is the Apache License Version 2.0. No GPL or
+LGPL licence file exists at that ref. The blob id matches the one `Charmy` cites, so `F1` is confirmed by an
+independent read rather than accepted on citation.
+
+**Changes table.** Sites are cited at the positions `F1` names, which are the pre-edit positions. After this
+pass the four statements read at team `NOTICE:25-32`, team `scripts/remote/NOTICE:31-37`, booth `NOTICE:69-72`
+and booth `README.md:213`.
+
+| Site | Was | Now |
+|---|---|---|
+| team `NOTICE:25-26` | "at tag 3.32.2 is dual-licensed Apache-2.0 or GPL-2.0+ and the team takes the Apache-2.0 option" | Apache-2.0 only at tag 3.32.2, read from the `LICENSE` blob `d645695673349e3947e8e5ae42332d0ac3164cd7`, the only licence text file in the tag root tree, no GPL-2.0+ option published and none claimed, the GPL-2.0 licence attributed to the pre-1.0 rdesktop derived code base, the distro `HPND` and `LGPL-2.1-or-later` terms named alongside Apache-2.0, Apache-2.0 taken |
+| team `scripts/remote/NOTICE:31-32` | "Upstream FreeRDP is dual-licensed Apache-2.0 or GPL-2.0+" | Apache-2.0 only at tag 3.32.2, the version the distro package is built from, verified 2026-11-26 against the same blob, no GPL-2.0+ option published at that ref and none claimed here |
+| booth `NOTICE:69-70` | "at tag `3.32.2` is dual-licensed Apache-2.0 or GPL-2.0+" | Apache-2.0 only, read 2026-11-26 from the upstream `LICENSE` blob `d645695673349e3947e8e5ae42332d0ac3164cd7` at that tag, Apache-2.0 option taken, unchanged in governing the library only |
+| booth `README.md:213` | "FreeRDP is dual-licensed Apache-2.0 or GPL-2.0+, the distro package ... carries" | FreeRDP at tag `3.32.2` is Apache-2.0 only, its `LICENSE` blob is `d645695673349e3947e8e5ae42332d0ac3164cd7`, the same distro package terms and the same Apache-2.0 option, own sources stay MIT |
+
+**Not changed, and why.** The two recorded policy exceptions at `## License (Charmy):1945-1946`, the
+`LGPL-2.1-or-later` term inside `freerdp-libs-3.32.2-1.el10_2` and the `GPL-2.0-only WITH Linux-syscall-note`
+kernel UAPI headers, are intact and were not reworded. The distro licence field line at
+`scripts/remote/NOTICE:25-29` is intact. `scripts/remote/NOTICE:45` "No FreeRDP source is modified, so no GPL derivative
+is created" is intact, because it states the team's link posture and makes no claim about what
+upstream publishes. No SPDX header, no `LICENSE`, no source file, and no other licence declaration was touched.
+`grep -rn "dual-licen"` over the tracked files of both trees, excluding `planning/` and `.git`, now returns
+nothing, so no live dual-licence claim remains anywhere. Booth `MANIFEST.md` still narrates `D1`'s earlier
+restatement inside its dated update sentences; that is record history of what a prior dispatch wrote, not a
+declaration, and pruning record history is `Espio`'s. Booth `PUBLISH-STATUS.md`, `BOOTH-RUNBOOK.md` and
+`DEMO-LOG.md` carry no FreeRDP licence claim and were not touched. No target contact in this pass, so no
+`DEMO-LOG.md` entry, consistent with `19ab5af`.
+
+**Alternatives considered.** Option A, cite only the distro package licence field and say nothing about
+upstream. Rejected, the notice's job is to state what upstream grants at the ref actually used. Option B, state
+Apache-2.0 at the ref and name where the wrong GPL-2.0+ wording came from. Chosen, it matches `F1`'s fix text
+and keeps the origin of the error legible for the next reader, `Charmy`'s `R4` history note at
+`## License (Charmy):1950`. Option C, also reword the "no GPL derivative" line. Rejected, it is outside the
+four named sites and it is true as written.
+
+**Checks run.** `bash tests/selftest.sh` answers `SELFTEST: 137 checks passed (floor 100)`, baseline held, no
+assert added or removed in a record-only pass. `bash scripts/licence-check .` answers `PASS` exit 0 with seven
+findings. `bash scripts/licence-check /home/howard/AI/booth-2026/repo` answers `PASS` exit 0 with six findings.
+`python3 /home/howard/AI/booth-2026/t0042/s1c_manifest.py /home/howard/AI/booth-2026/repo --note "..."` answers
+`manifest rows 790 groups 17 listed bytes 198,545,374 rows updated 2`, `NOTICE` 5868 to 5956 bytes at
+`13c2a12829796c1e8b76501f151db4880a7328bf414c85c016ccc5f65b6f778f`, `README.md` 18572 to 18633 bytes at
+`63aef8916213...`, file count unchanged at 789 listed, no row added or removed. `git log --show-signature -1`
+in each repo answers `Good signature` from `Team Chaotix` on EDDSA key `D553FBE4B47020B2033E9594F9261D151316FD60`.
+
+**Owed after this pass, named not done.** No selftest assert covers the wording of a NOTICE, so a licence
+claim can drift again with nothing failing. An assert that the four records state Apache-2.0 for FreeRDP at
+`3.32.2` and name no GPL-2.0+ option would close that, and it belongs with `B2` or a later dispatch rather
+than in this three-file record fix. `d2_verify.py` was not re-run against a fresh clone of the pushed booth
+tree, which is the cross-check the manifest script itself defers to. Which files inside `freerdp-libs` carry
+the `HPND` and `LGPL-2.1-or-later` terms is still unidentified, same gap `Charmy` named at
+`## License (Charmy):1956`. No CI runner registered, the local selftest plus the local gate are the effective
+gate. No `shellcheck` on this host.
+
+**Competing priorities.** Record accuracy over a minimal diff. Each of the four lines grew, booth `NOTICE` by
+88 bytes and `README.md` by 61, because a corrected claim without the ref it was read at is a second claim
+waiting to be re-checked. The selftest count stayed at 137 for the same reason this pass added no behaviour.
+
+**Standing posture.** `R4`'s verdict stays FAIL on the booth repo as published at `7c4fa16`, the booth repo
+stays private, and the visibility flip is the operator's ruling on `C2` and `C3`. Correcting these four lines
+changes no publishability finding and clears nothing.
+
 ---
 
 ## Review
