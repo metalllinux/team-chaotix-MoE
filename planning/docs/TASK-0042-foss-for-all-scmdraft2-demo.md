@@ -13,6 +13,27 @@
 
 ## Status
 
+**`LIVE QUEUE 8` item 3e landed, `C2` passes the machine gate on both trees and FAILs a licence claim the team
+wrote itself, and I verified both the gate and the four cited lines myself (2026-11-26 13:43 JST, 2026-11-26 04:43
+UTC, `Robotnik` session `ses_deb3a56eeffe06pHzALs15GYCO).** `C2` (`Charmy`, child
+`ses_de9ec5a46ffeGr73R7EZ15qPJj`) wrote `TASK-0041 ## License (Charmy):1921-1964` and left the file for the
+dispatcher, so I committed it as team `704db40`. I re-ran the machine gate rather than inheriting its reading,
+`scripts/licence-check` at exit 0 in the team clone and `scripts/licence-check /home/howard/AI/booth-2026/repo` at
+exit 0. A tooling fact for later dispatchers, my first attempt passed a `--repo` flag that the entry point does not
+accept and answered exit 2, the correct form is a positional path. `Charmy`'s finding, verified by my own read of
+all four cited lines before I dispatched anything. `NOTICE:25-26`, `scripts/remote/NOTICE:31-32`, booth
+`NOTICE:69-70` and booth `README.md:213` each state that FreeRDP at tag `3.32.2` is dual-licensed Apache-2.0 or
+GPL-2.0+. `Charmy` checked the upstream repository at the ref actually used, tag `3.32.2`, the `LICENSE` blob at
+`d645695…`, the per-file headers and the root tree, and reports Apache-2.0 only with no GPL option. **`Robotnik`
+ruling, recorded rather than asked.** The upstream reading is the authority per `AGENTS.md` section 9, and four
+files in the team's own trees misstate an upstream licence. The gate says `PASS` at exit 0, so nothing is blocked
+from distribution and no relicensing is involved, this is a false statement about an upstream licence in
+audience-facing text, and it becomes fix dispatch `TF3` ahead of documentation and release, four rewordings and
+nothing else, with `D2` told the corrected wording already exists before it writes. `Charmy` left `## License Audit
+(Flicky):1966` in place as retained history and did not touch `T4`'s block above it, which is the section 2 rule 7
+behaviour. Standing rulings unchanged, the booth repo at `8bf04b7` is not publishable, `R4`'s FAIL at `7c4fa16`
+stands, `C2` and `C3` and the visibility flip stay operator-owned. Next dispatch is `TF3`.
+
 **`LIVE QUEUE 8` item 3d-fix landed, `TF1` closed `Shadow`'s blocker, and I verified the closure myself rather than
 accepting the report (2026-11-26 13:16 JST, 2026-11-26 04:16 UTC, `Robotnik` session
 `ses_deb3a56eeffe06pHzALs15GYCO).** `TF1` (`Tails`, child `ses_dea3897caffeop1sdejnPTXDR6`) landed at team
@@ -974,9 +995,17 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    booth files with only `code/drive_l3.py:10` and `code/l5_a.py:16` named, the four divergent pin validations
    `S2` counted, the `l1_*` `StrictHostKeyChecking=no` posture, the six archived probes holding no forward, and the
    missing machine gate for the pinned posture in the booth tree. Same dispatch may close `3c`.
-   3e. `Charmy` as `C2`. `TASK-0041 ## License (Charmy)`. Licence review of the same post-chain set against the
-   upstream refs actually used, including the new `scripts/remote/rt-tunnel`, the booth `code/rdp-cert-pin.txt`,
-   and the FreeRDP and `libfreerdp3` posture, running `scripts/licence-check` and recording the gate outcome.
+   3e. `LANDED 2026-11-26 04:43 UTC (13:43 JST) as `C2`, `TASK-0041 ## License (Charmy):1921-1964`, committed by
+   the dispatcher as team `704db40`. Gate `PASS` exit 0 in both trees, re-run by the dispatcher. Verdict `FAIL` on
+   finding `F1`.` `Charmy` as `C2`. `TASK-0041 ## License (Charmy)`. Licence review of the same post-chain set
+   against the upstream refs actually used, including the new `scripts/remote/rt-tunnel`, the booth
+   `code/rdp-cert-pin.txt`, and the FreeRDP and `libfreerdp3` posture, running `scripts/licence-check` and
+   recording the gate outcome.
+   3e-fix. `Tails` as `TF3`, the fix dispatch for `C2` finding `F1`. Four rewordings, team `NOTICE:25-26`,
+   `scripts/remote/NOTICE:31-32`, booth `NOTICE:69-70` and booth `README.md:213`, each of which currently claims
+   FreeRDP at tag `3.32.2` is dual-licensed Apache-2.0 or GPL-2.0+ when upstream at that ref is Apache-2.0 only.
+   State the licence as verified at the ref, keep the recorded policy exceptions, and cite the upstream `LICENSE`
+   blob `d645695…`. Selftest baseline 137 or above.
    3f. `Big` as `B2`, **now owed**, `S2` returned a blocker and four should-fixes, so `B2` runs after `TF1`. An
    independent re-probe of the new asserts, their negative controls, and the `TF1` fixes at the 122-check baseline.
    4. `Vector` as `D2`. `TASK-0041 ## Docs`. `README.md` and the `scripts/remote` tooling docs, including the
