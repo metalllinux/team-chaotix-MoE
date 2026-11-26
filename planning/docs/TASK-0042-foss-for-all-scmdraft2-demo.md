@@ -1161,360 +1161,14 @@ Two alternatives considered and ranked below it. Fully live construction of a wh
    `lock-enabled` is ruled **accept** by `O1` for the demo, left `false` on 2026-11-28 with the re-lock scheduled
    at teardown, so the posture call is scheduled rather than open. `agentsmd promote` is operator-owned.
 
-<!-- LIVE QUEUE 7 consumed, see ## Archive --> - [ ] LIVE QUEUE 7 FOR THE FRESH `Robotnik` SESSION (2026-11-26 01:16 JST, 2026-11-25 16:16 UTC, owner
-  `ses_ded91638cffe1PedTvitwlfONJ`). Read `## Status` in this doc, first three entries, and this block only,
-  nothing else in this doc. Read `## Status` and `## Next Actions` in `planning/docs/TASK-0041-remote-visual-control.md`
-  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 6` is consumed through its item 9, `D1`, `K1` and
-  `P3` landed, `P3` landed on 2026-11-26 JST once its date gate lifted and does not re-run. House rules are the ones
-  at the head of `LIVE QUEUE 3`, with three substitutions, push with
-  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
-  committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
-  selftest baseline is 110 checks, being 106 before the gate fix at `f1907ab` and 110 after it. Stamp every entry at
-  the time it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Standing ruling
-  in every brief, `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent may present that repo
-  as publishable, it stays private, and the visibility flip is the operator's ruling on `C2` and `C3`. One dispatch at
-  a time, `scripts/dispatch-gate --session <your own session id>` before every one, and dispatch only on `PASS`,
-  stop on `WARN` at 245760 measured in-flight prompt, because the gate was rewritten at `f1907ab` and the old 142281
-  child projection is no longer a quantity the instrument produces.
-   1. `Espio` as `E1`, per item 10 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4`, `LIVE QUEUE 5`, `LIVE QUEUE 6` and
-   this block once consumed into `## Archive`, folding the superseded `/tmp/opencode/git-askpass-tc.sh` rows, keeping
-   the standing contradictions listed there, reconciling the mixed-attribution record of `12e7928` and `93ddaf6` as
-   record history without rewriting any commit, and folding the legacy `## License Audit (Flicky)` headings.
-   2. `Knuckles` as `K2` for `TASK-0043`. Its review chain ran as `G1` to `G4` and the fix landed at `f1907ab`, so
-   its open DoD chain row is now satisfiable and its `planning/TASKS.md` row still reads "review chain owed", which
-   is stale. Verify `44a017e`, `f1907ab` and the current `main` from the remote, tick the row in the doc, and record
-   that agentsmd promotion stays operator-owned.
-   3. `TASK-0041` residuals, owed and not yet dispatched, `Omega` finding 2, the `/cert:ignore` self-signed RDP
-   certificate, with no RDP channel test ever run, a `Vector` pass on `README.md` and the `scripts/remote` tooling
-   docs for a `D2`, the `DEMO-LOG.md` row, and a `Knuckles` read-back of the packaging landings `b906f00`, `1eea4ec`,
-   `3e43d2a` and `9190b04` for a `K3`. Also still open and recorded by `Big` in `TASK-0041 ## Test Results`, 4 of 6
-   dry-run asserts rely on tool self-report and `UI_DEV_CREATE|1800` is too loose.
-   4. `TASK-0042` is not DONE, 5 of 23 DoD rows ticked per `K1`, and `## Release` names the blockers. Read `##
-   Release` and `## Definition of Done` before dispatching anything else against this task.
-   5. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth artifacts,
-   and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule on, and the booth
-   repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private until that ruling lands.
-   **`P3` made one decision concrete and urgent, the target firewall rich rule restricts 3389 to `192.168.1.102`
-   only, so either that rule is widened for venue or the booth runs from the machine that holds `192.168.1.102`,
-   and 2026-11-28 is two days out.** `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section 4.
-   `Omega` finding 2 stays open. The `lock-enabled` re-lock before the event is the operator's posture call.
+<!-- LIVE QUEUE 7 consumed and its body moved verbatim to ## Archive by E2 -->
 
-<!-- LIVE QUEUE 6 consumed, see ## Archive --> Read `## Status` in this doc,
-  <!-- LIVE QUEUE 6 body consumed --> `## Status` and `## Next Actions` in
-  `planning/docs/TASK-0041-remote-visual-control.md`, in `planning/docs/TASK-0043-dispatch-gate.md` and in
-  `planning/docs/TASK-0044-flicky-into-charmy.md`. `LIVE QUEUE 5` below is consumed through its item 6's first
-  dispatch, `K7`, `K8` and `R3b` landed, and `T1` landed with no blocker and one nit. Run in this exact order,
-  one dispatch at a time, each in its own fresh child session, `scripts/dispatch-gate --session <your own
-  session id>` before every one, never the bare invocation, and treat `PASS` as necessary and not sufficient.
-  <!-- remainder of LIVE QUEUE 6 body consumed -->
-  <!-- consumed -->
-  the head of `LIVE QUEUE 3`, with three substitutions, push with
-  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the durable runner tree and
-  verification tooling are `/home/howard/AI/booth-2026/t0042`, and the selftest baseline is 106 checks, being
-  105 before `K8` and 106 after it. Stamp every entry at the time it is written, in UTC with the JST equivalent
-  in parentheses, the host clock is `JST +0900`. Standing ruling in every brief, `R4`'s verdict is FAIL on the
-  booth repo as published at `7c4fa16`, no agent may present that repo as publishable, it stays private, and the
-  visibility flip is the operator's ruling on `C2` and `C3`. `R5`, `T5` and `G5` <!-- consumed -->
-   1. `P3` `Tails`, the venue dry run the plan carries as item 17, and it does not dispatch before 2026-11-26
-   because it tests venue network reachability rather than this controller's home network. Brief, paste
-   verbatim. "Read the `## Status` entries of 2026-11-25 in
-   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. <!-- items 1-10 of LIVE QUEUE 6 consumed, see ## Archive -->
-   `192.168.1.99` and the 3389 listener are reachable from the network this controller actually holds on venue,
-   confirm the pinned host keys in `scripts/remote/known_hosts` still match `ssh-keyscan` output, and run one
-   measured six-map cycle in rebuild mode from `/home/howard/AI/booth-2026/t0042/booth_loop.py`, recording the
-   per-map overhead and the cycle total against 2231.57 s. If any step fails, record the fallback in `## Status`
-   rather than improvising at the booth, and state plainly whether the 2026-11-28 booth can run the loop from a
-   laptop that does not hold `192.168.1.102`."
-   2. `Omega` as `T2`, second in the TASK-0041 review chain. Brief, paste verbatim. "Read `## Status` and
-   `## Next Actions` in `planning/docs/TASK-0041-remote-visual-control.md` and the `## Implementation` record
-   for items 9 to 11 in that doc, plus `Shadow`'s `T1` verdict at `:805-857` of that doc. Rule on the three open
-   hygiene items in TASK-0041 `## Status`, the mode 644 secret at `~/AI/secrets/scm_draft_pass.md`, the
-   pre-existing world-readable grd credentials file on the target and its backup copy, and the `lock-enabled`
-   gsettings change. Read `Omega`'s own TASK-0042 `## Security` findings 1, 2, 3 and 8 against
-   `scripts/remote/rt-lib`, and say which are closed by `K6` at `3e43d2a` and which stay open, naming finding 2,
-   the `/cert:ignore` self-signed RDP certificate, as open because no RDP channel test has run. Write your
-   verdict in `## Security` of the TASK-0041 doc and name every check that did not run."
-   3. `Big` as `T3`, third in the chain. Brief, paste verbatim. "Read `## Status` and `## Next Actions` in
-   `planning/docs/TASK-0041-remote-visual-control.md` and the `## Implementation` record for items 9 to 11 in
-   that doc. Verify that the checks the packaging record claims actually executed rather than being asserted,
-   that the pre-push selftest baseline holds at 106, that the new remote-desktop asserts do not require
-   `192.168.1.99` to be online, and what a booth-day run would have to assert to prove itself. Name any matrix
-   or check that silently dropped, name the check-count delta you measured rather than inherited, and name every
-   check that did not run. Write your verdict in `## Test Results` of the TASK-0041 doc."
-   4. `Charmy` as `T4`, fourth and last in the chain, carrying the retired fifth reviewer's audit scope. Brief,
-   paste verbatim. "Read `## Status` and `## Next Actions` in
-   `planning/docs/TASK-0041-remote-visual-control.md`, the `## Implementation` record for items 9 to 11 there,
-   and your own `## License (Charmy)` findings `C1` and `C6` as landed by `K7` in
-   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Audit each upstream against the ref actually used,
-   FreeRDP `3.32.2` behind `scripts/rdp-input.c` and `scripts/rdp-pointer.c` against the `scripts/remote/NOTICE`
-   record, `scripts/remote/uinput-inject.c` and its kernel UAPI header use, StormLib `d60b7e6d`, Natural Earth
-   tag `v5.1.2` commit `f1890d9f`, the UNLICENSE `34c96bba`, `rocky-logos-100.5-3.el10`, and the Ar3sgice
-   starcraft-tools mirror which carries no licence file. Run `scripts/licence-check` on the team repo and against
-   a booth clone refreshed to the remote at `b56d1df`, record both exit codes, and state plainly that `R4`'s
-   FAIL verdict on the repo as published at `7c4fa16` stands and that the public flip is the operator's ruling
-   on `C2` and `C3`. A gate run or a sweep you cannot read is a FAIL. Write your verdict in `## License
-   (Charmy)` of the TASK-0041 doc."
-   5. `Tails` as `K9`, the one nit `T1` opened, one file edit. Brief, paste verbatim. "Read `Shadow`'s `T1`
-   verdict at `:805-857` in `planning/docs/TASK-0041-remote-visual-control.md` and replace the false claim at
-   `:791-793` that `b906f00` is unsigned, `git verify-commit` confirms `b906f00` and `1eea4ec` are both signed
-   against key `F9261D151316FD60`. Run `git verify-commit` yourself for both and record the output. Run
-   `tests/selftest.sh` against the 106 baseline, record before and after counts, and name every check that did
-   not run. Commit signed."
-   6. `G1` to `G4`, the TASK-0043 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, one dispatch each in that
-   order, then the `Tails` gate fix dispatch that has still never run. `G5` is void. Tell every reviewer both
-   defects and the third data point verbatim, the false `PASS` at 54.3 percent with a peak of 86393 followed by
-   a real child request of 262242 tokens, the bare invocation selecting a dead session instead of the caller's,
-   and the `BLOCK` at 98.1 percent with a 74135 worst jump contributed by the dispatcher's own planning-doc
-   reads. Each reviewer reads `## Status` and `## Next Actions` in `planning/docs/TASK-0043-dispatch-gate.md`
-   and writes its own section in that doc. The fix dispatch then lands what the chain agrees on, measure what a
-   child actually inherits, cumulative transcript size or the dispatcher's own last request size read from the
-   session store, rather than extrapolating from a peak window, resolve the caller's own session id rather than
-   guess from agent name, and treat concurrent dispatches from two dispatcher sessions as a signal. Record that
-   the handing-off session read 144968 at 10:15 on 2026-11-25 with a 15553 jump that came from its own planning
-   doc reads, which is the inflation the fix must remove.
-   7. `Vector` as `D1`, per item 8 of `LIVE QUEUE 3`, now reviewing and extending the booth `README.md` already
-   rewritten at `e3e2e5a` and corrected at `e841bc6` rather than writing that prose from scratch, and carrying
-   `R4`'s FAIL verdict, the public flip not cleared, and the durable-path prerequisites at
-   `/home/howard/AI/booth-2026/t0042`.
-   8. `Knuckles` as `K1`, per item 9 of `LIVE QUEUE 3`, keeping the booth repo private because `R4` rules FAIL on
-   it as published at `7c4fa16`, and keeping the after-event target steps named in `## Release`, the COPR and
-   `crb` disable inverses, the RDP credential rotation, the `lock-enabled` re-lock, and the target `/tmp` capture
-   cleanup.
-   9. `Espio` as `E1`, per item 10 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4`, `LIVE QUEUE 5` and this block
-   once consumed into `## Archive`, folding the superseded `/tmp/opencode/git-askpass-tc.sh` rows, and keeping the
-   standing contradictions listed there.
-   10. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth
-   artifacts, and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule on. The
-   booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private until that ruling
-   lands and its visibility flip is the operator's action. The operator's `~/AI/secrets/scm_draft_pass.md` is
-   still mode 644 against AGENTS.md section 4. `Omega` finding 2, the RDP `/cert:ignore` against a self-signed
-   certificate, stays open with no RDP channel test run. `/tmp/opencode/t0042/rdp-args` remains as named residue
-   at mode 600 and `/home/howard/AI/booth-2026` is still directory mode 755.
+<!-- LIVE QUEUE 6 consumed and its body moved verbatim to ## Archive by E2 -->
 
-<!-- LIVE QUEUE 5 consumed, see ## Archive --> Read `## Status` in this doc, first
-  four entries, and this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
-  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
-  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 4` below is consumed through its item 6,
-  `P2` and `P4` to `P5` landed, `F6` `F7` `F8` landed and closed TASK-0044, `K6` landed, `R3` landed, and
-  `R4` landed with a FAIL verdict. Run in this exact order, one dispatch at a time, each in its own fresh
-  child session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
-  invocation, and treat `PASS` as necessary and not sufficient. House rules are the ones written at the head
-  of `LIVE QUEUE 3`, with three substitutions, push with
-  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the durable runner tree
-  and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the selftest baseline is 105 checks,
-  not 86. Stamp entries at the time they are written and name the clock.
-   1. `P3` `Tails`, the venue dry run the plan carries as item 17, scheduled 2026-11-26 and it does not run
-   before that date because it tests the venue network rather than this controller's home network. Brief,
-   paste verbatim. "Read the `## Status` entries of 2026-11-25 in
-   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. <!-- items 1-10 of LIVE QUEUE 6 consumed, see ## Archive -->
-   `192.168.1.99` and the 3389 listener are reachable from the network this controller actually holds on
-   venue, confirm the pinned host keys in `scripts/remote/known_hosts` still match `ssh-keyscan` output, and
-   run one measured six-map cycle in rebuild mode from `/home/howard/AI/booth-2026/t0042/booth_loop.py`,
-   recording the per-map overhead and the cycle total against 2231.57 s. If any step fails, record the
-   fallback in `## Status` rather than improvising at the booth, and state plainly whether the 2026-11-28
-   booth can run the loop from a laptop that does not hold `192.168.1.102`."
-   2. `Tails` as `K7`, the `R4` licence fix, ahead of every documentation step. Brief, paste verbatim. "Read
-   `## License (Charmy)` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, findings `C1` and `C6`
-   only. Land both, at most three file edits per turn. `C1`, the imported MIT and Apache-2.0 components need
-   their copyright headers and a `NOTICE` record at the root that actually carries them, and `C6`, the booth
-   repo needs a `NOTICE` naming each upstream with the ref actually used. Run `scripts/licence-check` on the
-   team repo and against the booth clone refreshed to the remote, record both exit codes, run
-   `tests/selftest.sh` and `python3 tests/config_gate.py` against the 105-check baseline, and name every
-   check that did not run. Do not rule on `C2` or `C3`, those are the operator's."
-   3. `Tails` as `K8`, the `R3` findings, one file edit per turn. Brief, paste verbatim. "Read `## Test
-   Results` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Land four items. 1, `Omega` finding
-   12, bind the PR body to `env:` at `.github/workflows/planning-doc-gate.yml:29` instead of interpolating
-   it into a `run:` body on a public repo, and fix the same class at `deploy.yml:40` `:44` `:86` `:87`. 2,
-   `Omega` finding 13, pin every `actions/checkout` ref with the tag in a trailing comment and remove the
-   pseudo-pin at `static-checks.yml:24`. 3, the harness defect `Big` owns, `.github/workflows/team-selftest.yml:51`
-   truncates a three-digit check count to one digit and would fail a green run, and the `MIN=70` floor sits
-   35 below the real count, so restate the floor to a value that is above the minimum meaningful suite and
-   below 105, and say what you chose and why. 4, make the local pre-push gate assert the check count rather
-   than only greenness. Run `bash -n` on every script you touch, run `tests/selftest.sh` and
-   `python3 tests/config_gate.py`, record before and after counts against 105, and name every check that did
-   not run."
-   4. `Big` as `R3b`, re-read after `K7` and `K8`. Brief, paste verbatim. "Read `## Test Results` and
-   `## License (Charmy)` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Confirm the `K7` and
-   `K8` fixes executed, that both `scripts/licence-check` runs exit 0, that the selftest count and the CI
-   floor agree, and that no workflow now interpolates untrusted input into a `run:` body. Name every check
-   that did not run. Write in `## Test Results`."
-   5. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth
-   artifacts, and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule
-   on. The booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private
-   until that ruling lands, its visibility flip is an operator action, and `R4` did not clear it. Also the
-   operator's `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section 4, and `Omega`
-   finding 2, the RDP `/cert:ignore` against a self-signed certificate, stays open with no RDP channel test
-   run.
-   6. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 10 of
-   `LIVE QUEUE 3`, restated against the 105-check baseline and the four-stage chain. `T5` is void.
-   7. `G1` to `G4`, the TASK-0043 review chain, per item 11 of `LIVE QUEUE 3`, then the `Tails` gate fix
-   dispatch that has still never run. `G5` is void.
-   8. `Vector` as `D1`, per item 12 of `LIVE QUEUE 3`, now reviewing and extending the booth `README.md`
-   already rewritten at `e3e2e5a` and corrected at `e841bc6` rather than writing that prose from scratch, and
-   carrying `R4`'s FAIL verdict, the public flip not cleared, and the durable-path prerequisites.
-   9. `Knuckles` as `K1`, per item 13 of `LIVE QUEUE 3`, keeping the booth repo private because `R4` rules
-   FAIL, and keeping the after-event target steps named in `## Release`, the COPR and `crb` disable inverses,
-   the RDP credential rotation, the `lock-enabled` re-lock, and the target `/tmp` capture cleanup.
-   10. `Espio` as `E1`, per item 14 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4` and the superseded rows
-   below into `## Archive` and keeping the standing contradictions listed there.
+<!-- LIVE QUEUE 5 consumed and its body moved to ## Archive by E2, its item 1 brief deduplicated against the LIVE QUEUE 6 copy -->
 
-<!-- LIVE QUEUE 4 consumed, see ## Archive --> Read `## Status` in this doc and
-  this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
-  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
-  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 3` below is consumed through its item 4,
-  `F2`, `F3`, `F4` and `F5` landed, and a `Tails` fix dispatch `F1b` was inserted for `Shadow`'s finding 1
-  and landed at `e22bb3c`. Run in this exact order, one dispatch at a time, each in its own fresh child
-  session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
-  invocation, and treat `PASS` as necessary and not sufficient. The house rules written at the head of
-  `LIVE QUEUE 3` apply unchanged to every item below and are not repeated, with one substitution, push with
-   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the `/tmp` path named
-   in the older blocks below is age-cleaned and superseded, and the durable runner tree and verification
-   tooling are both at `/home/howard/AI/booth-2026/t0042`.
-   0. PRIORITY PREP, two dispatches ahead of the numbered items, from the booth-day readiness ruling in
-   `## Status`. `P2` is **COMPLETE 2026-11-24 01:40 UTC, done by `Robotnik` under the recorded deviation**,
-   durable copy at `/home/howard/AI/booth-2026/t0042` with `ts-harvest/ref-era6.chk` at
-   `d7afd6a53cd3664a822485cffc21f8502e584e7738e35b9835840782c621057b`, and one cycle has not yet been
-   re-measured from that path, which is the remaining half of the item. `P3` `Tails`, the venue dry run the
-   plan carries as item 17, scheduled 2026-11-26, now a reachability confirmation and one measured cycle
-   from the durable path rather than an open unknown, and if it fails record the fallback in `## Status`
-   rather than improvising at the booth. Original `P2` brief follows for the record. `P2` `Tails`, brief,
-   paste verbatim. "Read the booth-day readiness ruling in `## Status` in
-   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Move the booth working set from
-   `/tmp/opencode/t0042` to `/home/howard/AI/booth-2026/t0042`, the runner, the map and mask code, the gate
-   reports, the booth artifacts and `ts-harvest/ref-era6.chk`, because `/usr/lib/tmpfiles.d/tmp.conf:11`
-   age-cleans `/tmp` at 10 days and the reference CHK is already 8 days old against a 2026-11-28 booth.
-   Copy rather than delete, leave `/tmp/opencode/t0042` in place so no earlier record breaks, keep the new
-   path out of every git-tracked path, and re-measure one full six-map cycle in rebuild mode from the new
-   path with the per-map overhead and the cycle total recorded. No target change beyond what a cycle
-   already makes, and every target change gets a dated `DEMO-LOG.md` entry with its exact inverse." `P3`
-   `Tails`, the venue dry run the plan carries as item 17, scheduled 2026-11-26, one cycle on venue
-   network, and if it fails record the fallback in `## Status` rather than improvising at the booth.
-   1. `Vector` as `F6`, unchanged from item 5 of `LIVE QUEUE 3`, which carries the brief verbatim, the
-   `README.md` and the team documentation to the eleven-agent roster and the four-stage chain, with the
-   roster table confirmed against `.opencode/agents/` exactly, written in `## Docs`.
-   2. `Tails` as `F8`, new, inserted ahead of `F7` so the tree `Knuckles` merges carries the open code
-   follow-ups. Brief, paste verbatim. "Read `## Review`, `## Security` and `## Test Results` in
-   `planning/docs/TASK-0044-flicky-into-charmy.md`. Land three fixes, one file edit per turn. 1,
-   `team/a2a/server.py:109` describes a twelve-role team while the skills array lists eleven agents. 2,
-   `tests/selftest.sh:25` and `:40` hold a dead bash-syntax branch that can hide a real parse failure. 3,
-   `scripts/vm-create-rocky.sh:4` hides a real parse failure behind that branch. Run `bash -n` on both
-   scripts, run `tests/selftest.sh` and `python3 tests/config_gate.py`, record the before and after check
-   counts against 86, and name every check that did not run. Write your entry in `## Implementation` as
-   each step completes. Commit signed and push with
-   `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`."
-   3. `Knuckles` as `F7`, unchanged from item 6 of `LIVE QUEUE 3`, which carries the brief verbatim, plus
-   verify `F8` landed first and verify the merge from the remote rather than from the dispatch report.
-   4. `Tails` as `K6`, unchanged from item 7 of `LIVE QUEUE 3`, which carries the four-item `R2` security
-   fix verbatim, `StrictHostKeyChecking=no` off `scripts/remote/rt-lib` and `booth_loop.py` with the target
-   host key pinned, the `mktemp` plus `trap` credential pattern for `booth_loop.py`, the target-side grd
-   credentials backup to mode 600 inside a mode 700 directory with its exact inverse recorded in a dated
-   `DEMO-LOG.md` entry and paths and modes read only, and `tests/selftest.sh` failing rather than skipping
-   when the secret file is absent while scanning both target credentials, with before and after check
-   counts against 86. Do not run the recorded COPR or `crb` disable inverses, those belong to `K1`.
-   5. `Big` as `R3`, unchanged from item 8 of `LIVE QUEUE 3`, brief verbatim.
-   6. `Charmy` as `R4`, unchanged from item 9 of `LIVE QUEUE 3`, which carries the licence review, the
-   retired reviewer's audit scope, both `scripts/licence-check` runs, the public-or-not ruling on the
-   published editor captures, and the sweep proving the operator's exclusion rule of 2026-11-22 22:10 UTC
-   that the booth repo holds no StarCraft Anthology ISO game file and no SCMDraft 2 executable from
-   `http://www.stormcoast-fortress.net/cntt/software/scmdraft`, naming the command, the commit read, the
-   counts and every matching path. An unreadable sweep is a FAIL.
-   7. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 10 of
-   `LIVE QUEUE 3`. `T5` is void.
-   8. `G1` to `G4`, the TASK-0043 review chain, per item 11 of `LIVE QUEUE 3`, then the `Tails` gate fix
-   dispatch that has still not run. `G5` is void.
-   9. `Vector` as `D1`, unchanged from item 12 of `LIVE QUEUE 3`, which carries every fact the prose must
-   state.
-   10. `Knuckles` as `K1`, unchanged from item 13 of `LIVE QUEUE 3`.
-   11. `Espio` as `E1`, unchanged from item 14 of `LIVE QUEUE 3`, and now also folding the superseded
-   legacy Next Actions rows named in the VOID ROWS ruling below into `## Archive`.
-<!-- LIVE QUEUE 3 consumed, see ## Archive --> Read `## Status` in this doc and
-  this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
-  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
-  and in `planning/docs/TASK-0043-dispatch-gate.md`. Run in this exact order, one dispatch at a time,
-  each in its own fresh child session, `scripts/dispatch-gate --session <your own session id>` before
-  every one, never the bare invocation, and treat `PASS` as necessary and not sufficient, this host has
-  no sqlite3 binary so read the session store with `python3 -c` and the `sqlite3` module. If a reviewer
-  returns a blocker, insert a `Tails` fix dispatch for that task before the next stage. House rules
-  apply to every item and are not repeated, credentials from `~/AI/secrets` at run time only and never
-  echoed, never in argv, a file, a commit, a log or a planning doc, one dated `DEMO-LOG.md` entry per
-  target-touching step with the proving command and the exact inverse written as each step completes,
-  everything under `/tmp/opencode/t0042` or a maps directory on the target, no game data, no SCMDraft or
-  third-party binary, no harvested reference CHK in a git-tracked path, leave the target clean apart from
-  named residue, do not kill processes you did not start, name every check that did not actually run, and
-  a builder never certifies its own artifacts. Stamp every entry in UTC with the JST equivalent in
-  parentheses, the host clock is `JST +0900`. Push with
-  `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, the pre-push selftest is the
-  effective gate, it is green at 86 checks, and the CI floor is `MIN=70` at
-  `.github/workflows/team-selftest.yml:50`. Before you accept any completion run
-  `git status --porcelain` and `git log --oneline` yourself and read the child's last assistant message
-  in the session store, a `finish` of `stop` whose only content part is reasoning holding a literal
-  `<invoke>` block means AGENTS.md section 14 item 1 fired and the work must be re-dispatched with a
-  smaller brief. Before the first dispatch, query `session_v2` for `agent='robotnik'` ordered by
-  `time_updated` and record which session owns this queue, and if a second `Robotnik` session is
-  dispatching it, stop that session with `opencode api POST /api/api/session/<id>/interrupt` rather than
-  a process kill, because every session shares one `opencode serve` process.
-   1. `Shadow` as `F2`, first in the TASK-0044 review chain. Brief, paste verbatim. "Read `## Status` and
-  `## Definition of Done` in `planning/docs/TASK-0044-flicky-into-charmy.md` and the `## Implementation`
-  record for dispatch `F1` in that doc. Review the roster removal against commits `ef06147` and
-  `641922e`. Decide in particular whether the sweep left any live path still naming the retired reviewer,
-  whether Charmy's merged brief and permissions actually cover the gate work the retired reviewer ran,
-  whether the four-stage chain is consistent across `AGENTS.md`, the planning template, `team/graph/`, the
-  workflows and `tests/config_gate.py`, and whether any DoD row anywhere still demands a fifth reviewer
-  that cannot exist. Write your verdict in `## Review`."
-   2. `Omega` as `F3`, second in the chain. Brief, paste verbatim. "Read `## Status` and `## Definition of
-  Done` in `planning/docs/TASK-0044-flicky-into-charmy.md` and the `## Implementation` record. Rule on the
-  security consequences of collapsing two licence reviewers into one, loss of an independent second pass on
-  licence and supply-chain questions, whether the gate remains asserted in CI and in `tests/selftest.sh`
-  after the change, whether `team/licenses/policy.yaml` and `scripts/licence-check` still fail closed, and
-  whether the `A2A` agent card generated from `.opencode/agents/` now publishes the correct roster. Write
-  your findings in `## Security`."
-   3. `Big` as `F4`, third in the chain. Brief, paste verbatim. "Read `## Status` and `## Definition of
-  Done` in `planning/docs/TASK-0044-flicky-into-charmy.md` and the `## Implementation` record. Run
-  `tests/selftest.sh` yourself, report the check count against the recorded 83 to 86 delta, confirm the
-  roster and licence assertions execute rather than skip, confirm `scripts/licence-check` and
-  `python3 tests/config_gate.py` both run, and name every check that did not run. Write your verdict in
-  `## Test Results`."
-   4. `Charmy` as `F5`, fourth and last, the team's single licence owner. Brief, paste verbatim. "Read
-  `## Status` and `## Definition of Done` in `planning/docs/TASK-0044-flicky-into-charmy.md`. Confirm you
-  hold the duties the retired reviewer held, run `scripts/licence-check` on this repo, record the exit code
-  and outcome, and record the declarations table with each upstream ref cited. Name the legacy
-  `## License Audit (Flicky)` heading in `planning/docs/TASK-0042-*`, `TASK-0041-*` and `TASK-0043-*` as
-  retained history you did not edit. Write your ruling in `## License (Charmy)`."
-   5. `Vector` as `F6`. `README.md` and the team documentation to the eleven-agent roster and the
-  four-stage chain, and confirm the roster table matches `.opencode/agents/` exactly. Write in `## Docs`.
-   6. `Knuckles` as `F7`. Branch, signed commit, PR, merge and push for TASK-0044, or record plainly that
-  `F1` already landed the implementation directly on `main` at `ef06147` and `641922e` and that what
-  remains is a review-driven follow-up commit. Verify the merge from the remote rather than from the
-  dispatch report. Write in `## Release`.
-   7. `Tails` as `K6`, the `R2` security fix, unchanged from item 1 of `LIVE QUEUE 2` below, which carries
-  the full brief verbatim, four items, at most three file edits per turn, `StrictHostKeyChecking=no` off
-  `scripts/remote/rt-lib` and `booth_loop.py` with the target host key pinned, the `mktemp` plus `trap`
-  credential pattern for `booth_loop.py`, the target-side grd credentials backup to mode 600 inside a mode
-  700 directory with its exact inverse recorded in a dated `DEMO-LOG.md` entry and paths and modes read
-  only, and `tests/selftest.sh` failing rather than skipping when the secret file is absent while scanning
-  both target credentials, with the before and after check counts against 86 rather than 83.
-   8. `Big` as `R3`, unchanged from item 2 of `LIVE QUEUE 2`, which carries the brief verbatim.
-   9. `Charmy` as `R4`, unchanged from item 3 of `LIVE QUEUE 2`, which now carries both the licence review
-  and the retired fifth reviewer's audit, the `scripts/licence-check` runs against the team repo and the
-  booth repo clone under `/tmp/opencode/t0042`, the plain ruling on whether the published editor captures
-  and booth artifacts let the booth repo go public, and the sweep proving the operator's exclusion rule of
-  2026-11-22 22:10 UTC that the booth repo holds no StarCraft Anthology ISO game file and no SCMDraft 2
-  executable from `http://www.stormcoast-fortress.net/cntt/software/scmdraft`. Item 4 of `LIVE QUEUE 2`,
-  `Flicky` as `R5`, is void and does not run.
-   10. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, one dispatch each in
-  that order, per item 5 of `LIVE QUEUE 2`, which carries the briefs verbatim, with `T4` carrying the
-  retired reviewer's audit scope. `T5` is void and does not run.
-   11. `G1` to `G4`, the TASK-0043 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 6 of
-  `LIVE QUEUE 2`, which carries both gate defects and the third data point verbatim, then the `Tails` gate
-  fix dispatch that has still not run. `G5` is void and does not run.
-   12. `Vector` as `D1`, unchanged from item 7 of `LIVE QUEUE 2`, which carries every fact the prose must
-  state.
-   13. `Knuckles` as `K1`, unchanged from item 8 of `LIVE QUEUE 2`, keeping the booth repo private until
-  `R4` reports, since `R5` no longer exists, and keeping the after-event target steps named in
-  `## Release`.
-   14. `Espio` as `E1`, unchanged from item 9 of `LIVE QUEUE 2`, plus folding the legacy
-  `## License Audit (Flicky)` headings in all three docs into `## Archive` and keeping the standing
-  contradictions listed there.
+<!-- LIVE QUEUE 4 consumed and its body moved verbatim to ## Archive by E2 -->
+<!-- LIVE QUEUE 3 consumed and its body moved verbatim to ## Archive by E2, including the head-of-queue house rules that LIVE QUEUE 8 still references -->
 
 <!-- LIVE QUEUE 2 and the 2026-11-22 13:45 LIVE QUEUE consumed, see ## Archive -->
 - [ ] SUPERSEDED, PARTIALLY CONSUMED (was the 2026-11-22 13:45 LIVE QUEUE below). Read `## Status` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md` and this block only, nothing else in that doc. Run in this exact order, one dispatch at a time, each in its own fresh child session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare invocation. If a reviewer returns a blocker, insert a `Tails` fix dispatch for that task before the next stage. House rules apply to every item and are not repeated, credentials from `~/AI/secrets` at run time only and never echoed, never in argv, a file, a commit, a log or a planning doc, one dated `DEMO-LOG.md` entry per target-touching step with the proving command and the exact inverse written as each step completes, everything under `/tmp/opencode/t0042` or a maps directory on the target, no game data, no SCMDraft or third-party binary, no harvested reference CHK in a git-tracked path, leave the target clean apart from named residue, do not kill processes you did not start, name every check that did not actually run, and a builder never certifies its own artifacts. Push with `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, the pre-push selftest is the effective gate. Stamp planning-doc entries in UTC with the JST equivalent in parentheses, the host clock is `JST +0900`, and the reason is the clock-convention finding recorded in `## Status`.
@@ -6481,6 +6135,19 @@ Checks that did not run, named. `d2_verify.py` against the pushed tree from a fr
 | 2026-11-25 16:59 UTC (2026-11-26 01:59 JST) | Superseded `/tmp/opencode/git-askpass-tc.sh` rows within the queue blocks above (path now `/home/howard/AI/booth-2026/git-askpass-tc.sh`) | scattered |
 | 2026-11-25 16:59 UTC (2026-11-26 01:59 JST) | `## License Audit (Flicky)` legacy heading, folded (AGENTS.md section 2 rule 7) | ~8 lines |
 | 2026-11-25 16:59 UTC (2026-11-26 01:59 JST) | Consumed HANDOFF and QUEUE OWNER blocks | ~6 lines |
+| 2026-11-26 (2026-11-26 JST, after 17:41, clock not re-read, `E2` has no shell per AGENTS.md section 11) | `LIVE QUEUE 7` body moved from `## Next Actions` to this Archive verbatim, `## Next Actions` keeps a pointer line | 37 lines out, 38 in |
+| 2026-11-26 (same stamp) | `LIVE QUEUE 6` body moved verbatim, `E1`'s inline `<!-- consumed -->` markers inside it stripped and the house-rule sentence they broke re-flowed | 91 lines out, 92 in |
+| 2026-11-26 (same stamp) | `LIVE QUEUE 5` body moved, its item 1 `P3` brief deleted as a byte-for-byte duplicate of the `LIVE QUEUE 6` item 1 brief, items 6 to 10 kept as written | 66 lines out, 60 in |
+| 2026-11-26 (same stamp) | `LIVE QUEUE 4` body moved verbatim, including the original `P2` durability brief and the `F8` brief | 69 lines out, 70 in |
+| 2026-11-26 (same stamp) | `LIVE QUEUE 3` body moved verbatim, its head is the standing house-rule text that `LIVE QUEUE 8` still cites | 88 lines out, 92 in |
+| 2026-11-26 (same stamp) | `E2` did not touch `## Status`, `## Definition of Done`, `## Release`, the `## Docs` to `## Test Results` sections, `LIVE QUEUE 8`, the `LIVE QUEUE 2` and 2026-11-22 13:45 blocks that `E1` marked in place, or the older dispatch and handoff bullets in `## Next Actions` | 0 |
+
+`E2` moved the consumed `LIVE QUEUE 3` to `LIVE QUEUE 7` bodies out of `## Next Actions` for real, where `E1` had
+only marked them in place. `## Next Actions` shrank from 612 lines (doc:1029 to doc:1640 at the start of `E2`) to 266
+(doc:1029 to doc:1294). `## Archive` grew by the same bodies plus five headings and five pointer lines. Preserved untouched, the standing
+contradictions list, the `R4` FAIL verdict, the `C2` and `C3` operator rulings, the mixed-attribution record of
+`12e7928` and `93ddaf6`, the VOID ROWS ruling, the legacy `## License Audit (Flicky)` heading note, and every unticked
+row in `## Next Actions`. The commit for this pass is the dispatcher's, `Espio` has no shell permission.
 
 **Standing contradictions (from LIVE QUEUE 2 item 9, preserved per LIVE QUEUE 3 item 14 and LIVE QUEUE 7 item 5).** These are unresolved record conflicts that must survive pruning:
 1. Palette rows 839 and 968 against `L5`. Both records stand.
@@ -6498,7 +6165,365 @@ Checks that did not run, named. `d2_verify.py` against the pushed tree from a fr
 
 ### Superseded queue blocks
 
-LIVE QUEUE 6 (2026-11-25 10:20 UTC), LIVE QUEUE 5 (2026-11-25 05:30 UTC), LIVE QUEUE 4 (2026-11-23 01:05 UTC), LIVE QUEUE 3 (2026-11-22 22:30 UTC), LIVE QUEUE 2 (2026-11-22 14:05 UTC), and the original LIVE QUEUE (2026-11-22 13:45 UTC) are consumed. Their briefs landed and their outcomes are recorded in `## Status`, `## Implementation`, `## Review`, `## Security`, `## License (Charmy)`, `## Test Results`, `## Docs`, and `## Release`. The house rules from the head of LIVE QUEUE 3 are restated in LIVE QUEUE 7 and remain live. Gate readings within the consumed blocks are provenance only.
+LIVE QUEUE 6 (2026-11-25 10:20 UTC), LIVE QUEUE 5 (2026-11-25 05:30 UTC), LIVE QUEUE 4 (2026-11-23 01:05 UTC), LIVE QUEUE 3 (2026-11-22 22:30 UTC), LIVE QUEUE 2 (2026-11-22 14:05 UTC), and the original LIVE QUEUE (2026-11-22 13:45 UTC) are consumed. Their briefs landed and their outcomes are recorded in `## Status`, `## Implementation`, `## Review`, `## Security`, `## License (Charmy)`, `## Test Results`, `## Docs`, and `## Release`. The house rules written at the head of LIVE QUEUE 3 remain live text for `LIVE QUEUE 8` and are held verbatim in this section under the `LIVE QUEUE 3` entry. Gate readings within the consumed blocks are provenance only.
+
+#### LIVE QUEUE 7 (2026-11-25 16:16 UTC, 2026-11-26 01:16 JST), consumed, body moved from `## Next Actions` by `E2`
+
+- [ ] LIVE QUEUE 7 FOR THE FRESH `Robotnik` SESSION (2026-11-26 01:16 JST, 2026-11-25 16:16 UTC, owner
+  `ses_ded91638cffe1PedTvitwlfONJ`). Read `## Status` in this doc, first three entries, and this block only,
+  nothing else in this doc. Read `## Status` and `## Next Actions` in `planning/docs/TASK-0041-remote-visual-control.md`
+  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 6` is consumed through its item 9, `D1`, `K1` and
+  `P3` landed, `P3` landed on 2026-11-26 JST once its date gate lifted and does not re-run. House rules are the ones
+  at the head of `LIVE QUEUE 3`, with three substitutions, push with
+  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main` in whichever repo you are
+  committing, the durable runner tree and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the
+  selftest baseline is 110 checks, being 106 before the gate fix at `f1907ab` and 110 after it. Stamp every entry at
+  the time it is written, UTC with the JST equivalent in parentheses, the host clock is `JST +0900`. Standing ruling
+  in every brief, `R4`'s verdict is FAIL on the booth repo as published at `7c4fa16`, no agent may present that repo
+  as publishable, it stays private, and the visibility flip is the operator's ruling on `C2` and `C3`. One dispatch at
+  a time, `scripts/dispatch-gate --session <your own session id>` before every one, and dispatch only on `PASS`,
+  stop on `WARN` at 245760 measured in-flight prompt, because the gate was rewritten at `f1907ab` and the old 142281
+  child projection is no longer a quantity the instrument produces.
+   1. `Espio` as `E1`, per item 10 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4`, `LIVE QUEUE 5`, `LIVE QUEUE 6` and
+   this block once consumed into `## Archive`, folding the superseded `/tmp/opencode/git-askpass-tc.sh` rows, keeping
+   the standing contradictions listed there, reconciling the mixed-attribution record of `12e7928` and `93ddaf6` as
+   record history without rewriting any commit, and folding the legacy `## License Audit (Flicky)` headings.
+   2. `Knuckles` as `K2` for `TASK-0043`. Its review chain ran as `G1` to `G4` and the fix landed at `f1907ab`, so
+   its open DoD chain row is now satisfiable and its `planning/TASKS.md` row still reads "review chain owed", which
+   is stale. Verify `44a017e`, `f1907ab` and the current `main` from the remote, tick the row in the doc, and record
+   that agentsmd promotion stays operator-owned.
+   3. `TASK-0041` residuals, owed and not yet dispatched, `Omega` finding 2, the `/cert:ignore` self-signed RDP
+   certificate, with no RDP channel test ever run, a `Vector` pass on `README.md` and the `scripts/remote` tooling
+   docs for a `D2`, the `DEMO-LOG.md` row, and a `Knuckles` read-back of the packaging landings `b906f00`, `1eea4ec`,
+   `3e43d2a` and `9190b04` for a `K3`. Also still open and recorded by `Big` in `TASK-0041 ## Test Results`, 4 of 6
+   dry-run asserts rely on tool self-report and `UI_DEV_CREATE|1800` is too loose.
+   4. `TASK-0042` is not DONE, 5 of 23 DoD rows ticked per `K1`, and `## Release` names the blockers. Read `##
+   Release` and `## Definition of Done` before dispatching anything else against this task.
+   5. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth artifacts,
+   and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule on, and the booth
+   repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private until that ruling lands.
+   **`P3` made one decision concrete and urgent, the target firewall rich rule restricts 3389 to `192.168.1.102`
+   only, so either that rule is widened for venue or the booth runs from the machine that holds `192.168.1.102`,
+   and 2026-11-28 is two days out.** `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section 4.
+   `Omega` finding 2 stays open. The `lock-enabled` re-lock before the event is the operator's posture call.
+
+#### LIVE QUEUE 6 (2026-11-25 10:20 UTC, 2026-11-25 19:20 JST), consumed, body moved from `## Next Actions` by `E2`
+
+Read `## Status` in this doc, `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0041-remote-visual-control.md`, in `planning/docs/TASK-0043-dispatch-gate.md` and in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`. `LIVE QUEUE 5` below is consumed through its item 6's first
+  dispatch, `K7`, `K8` and `R3b` landed, and `T1` landed with no blocker and one nit. Run in this exact order,
+  one dispatch at a time, each in its own fresh child session, `scripts/dispatch-gate --session <your own
+  session id>` before every one, never the bare invocation, and treat `PASS` as necessary and not sufficient.
+  House rules are the ones at the head of `LIVE QUEUE 3`, with three substitutions, push with
+  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the durable runner tree and
+  verification tooling are `/home/howard/AI/booth-2026/t0042`, and the selftest baseline is 106 checks, being
+  105 before `K8` and 106 after it. Stamp every entry at the time it is written, in UTC with the JST equivalent
+  in parentheses, the host clock is `JST +0900`. Standing ruling in every brief, `R4`'s verdict is FAIL on the
+  booth repo as published at `7c4fa16`, no agent may present that repo as publishable, it stays private, and the
+  visibility flip is the operator's ruling on `C2` and `C3`. `R5`, `T5` and `G5` are void.
+   1. `P3` `Tails`, the venue dry run the plan carries as item 17, and it does not dispatch before 2026-11-26
+   because it tests venue network reachability rather than this controller's home network. Brief, paste
+   verbatim. "Read the `## Status` entries of 2026-11-25 in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`.
+   `192.168.1.99` and the 3389 listener are reachable from the network this controller actually holds on venue,
+   confirm the pinned host keys in `scripts/remote/known_hosts` still match `ssh-keyscan` output, and run one
+   measured six-map cycle in rebuild mode from `/home/howard/AI/booth-2026/t0042/booth_loop.py`, recording the
+   per-map overhead and the cycle total against 2231.57 s. If any step fails, record the fallback in `## Status`
+   rather than improvising at the booth, and state plainly whether the 2026-11-28 booth can run the loop from a
+   laptop that does not hold `192.168.1.102`."
+   2. `Omega` as `T2`, second in the TASK-0041 review chain. Brief, paste verbatim. "Read `## Status` and
+   `## Next Actions` in `planning/docs/TASK-0041-remote-visual-control.md` and the `## Implementation` record
+   for items 9 to 11 in that doc, plus `Shadow`'s `T1` verdict at `:805-857` of that doc. Rule on the three open
+   hygiene items in TASK-0041 `## Status`, the mode 644 secret at `~/AI/secrets/scm_draft_pass.md`, the
+   pre-existing world-readable grd credentials file on the target and its backup copy, and the `lock-enabled`
+   gsettings change. Read `Omega`'s own TASK-0042 `## Security` findings 1, 2, 3 and 8 against
+   `scripts/remote/rt-lib`, and say which are closed by `K6` at `3e43d2a` and which stay open, naming finding 2,
+   the `/cert:ignore` self-signed RDP certificate, as open because no RDP channel test has run. Write your
+   verdict in `## Security` of the TASK-0041 doc and name every check that did not run."
+   3. `Big` as `T3`, third in the chain. Brief, paste verbatim. "Read `## Status` and `## Next Actions` in
+   `planning/docs/TASK-0041-remote-visual-control.md` and the `## Implementation` record for items 9 to 11 in
+   that doc. Verify that the checks the packaging record claims actually executed rather than being asserted,
+   that the pre-push selftest baseline holds at 106, that the new remote-desktop asserts do not require
+   `192.168.1.99` to be online, and what a booth-day run would have to assert to prove itself. Name any matrix
+   or check that silently dropped, name the check-count delta you measured rather than inherited, and name every
+   check that did not run. Write your verdict in `## Test Results` of the TASK-0041 doc."
+   4. `Charmy` as `T4`, fourth and last in the chain, carrying the retired fifth reviewer's audit scope. Brief,
+   paste verbatim. "Read `## Status` and `## Next Actions` in
+   `planning/docs/TASK-0041-remote-visual-control.md`, the `## Implementation` record for items 9 to 11 there,
+   and your own `## License (Charmy)` findings `C1` and `C6` as landed by `K7` in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Audit each upstream against the ref actually used,
+   FreeRDP `3.32.2` behind `scripts/rdp-input.c` and `scripts/rdp-pointer.c` against the `scripts/remote/NOTICE`
+   record, `scripts/remote/uinput-inject.c` and its kernel UAPI header use, StormLib `d60b7e6d`, Natural Earth
+   tag `v5.1.2` commit `f1890d9f`, the UNLICENSE `34c96bba`, `rocky-logos-100.5-3.el10`, and the Ar3sgice
+   starcraft-tools mirror which carries no licence file. Run `scripts/licence-check` on the team repo and against
+   a booth clone refreshed to the remote at `b56d1df`, record both exit codes, and state plainly that `R4`'s
+   FAIL verdict on the repo as published at `7c4fa16` stands and that the public flip is the operator's ruling
+   on `C2` and `C3`. A gate run or a sweep you cannot read is a FAIL. Write your verdict in `## License
+   (Charmy)` of the TASK-0041 doc."
+   5. `Tails` as `K9`, the one nit `T1` opened, one file edit. Brief, paste verbatim. "Read `Shadow`'s `T1`
+   verdict at `:805-857` in `planning/docs/TASK-0041-remote-visual-control.md` and replace the false claim at
+   `:791-793` that `b906f00` is unsigned, `git verify-commit` confirms `b906f00` and `1eea4ec` are both signed
+   against key `F9261D151316FD60`. Run `git verify-commit` yourself for both and record the output. Run
+   `tests/selftest.sh` against the 106 baseline, record before and after counts, and name every check that did
+   not run. Commit signed."
+   6. `G1` to `G4`, the TASK-0043 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, one dispatch each in that
+   order, then the `Tails` gate fix dispatch that has still never run. `G5` is void. Tell every reviewer both
+   defects and the third data point verbatim, the false `PASS` at 54.3 percent with a peak of 86393 followed by
+   a real child request of 262242 tokens, the bare invocation selecting a dead session instead of the caller's,
+   and the `BLOCK` at 98.1 percent with a 74135 worst jump contributed by the dispatcher's own planning-doc
+   reads. Each reviewer reads `## Status` and `## Next Actions` in `planning/docs/TASK-0043-dispatch-gate.md`
+   and writes its own section in that doc. The fix dispatch then lands what the chain agrees on, measure what a
+   child actually inherits, cumulative transcript size or the dispatcher's own last request size read from the
+   session store, rather than extrapolating from a peak window, resolve the caller's own session id rather than
+   guess from agent name, and treat concurrent dispatches from two dispatcher sessions as a signal. Record that
+   the handing-off session read 144968 at 10:15 on 2026-11-25 with a 15553 jump that came from its own planning
+   doc reads, which is the inflation the fix must remove.
+   7. `Vector` as `D1`, per item 8 of `LIVE QUEUE 3`, now reviewing and extending the booth `README.md` already
+   rewritten at `e3e2e5a` and corrected at `e841bc6` rather than writing that prose from scratch, and carrying
+   `R4`'s FAIL verdict, the public flip not cleared, and the durable-path prerequisites at
+   `/home/howard/AI/booth-2026/t0042`.
+   8. `Knuckles` as `K1`, per item 9 of `LIVE QUEUE 3`, keeping the booth repo private because `R4` rules FAIL on
+   it as published at `7c4fa16`, and keeping the after-event target steps named in `## Release`, the COPR and
+   `crb` disable inverses, the RDP credential rotation, the `lock-enabled` re-lock, and the target `/tmp` capture
+   cleanup.
+   9. `Espio` as `E1`, per item 10 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4`, `LIVE QUEUE 5` and this block
+   once consumed into `## Archive`, folding the superseded `/tmp/opencode/git-askpass-tc.sh` rows, and keeping the
+   standing contradictions listed there.
+   10. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth
+   artifacts, and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule on. The
+   booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private until that ruling
+   lands and its visibility flip is the operator's action. The operator's `~/AI/secrets/scm_draft_pass.md` is
+   still mode 644 against AGENTS.md section 4. `Omega` finding 2, the RDP `/cert:ignore` against a self-signed
+   certificate, stays open with no RDP channel test run. `/tmp/opencode/t0042/rdp-args` remains as named residue
+   at mode 600 and `/home/howard/AI/booth-2026` is still directory mode 755.
+
+#### LIVE QUEUE 5 (2026-11-25 05:30 UTC, 2026-11-25 14:30 JST), consumed, body moved from `## Next Actions` by `E2`
+
+Read `## Status` in this doc, first four entries, and this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
+  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 4` below is consumed through its item 6,
+  `P2` and `P4` to `P5` landed, `F6` `F7` `F8` landed and closed TASK-0044, `K6` landed, `R3` landed, and
+  `R4` landed with a FAIL verdict. Run in this exact order, one dispatch at a time, each in its own fresh
+  child session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
+  invocation, and treat `PASS` as necessary and not sufficient. House rules are the ones written at the head
+  of `LIVE QUEUE 3`, with three substitutions, push with
+  `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the durable runner tree
+  and verification tooling are `/home/howard/AI/booth-2026/t0042`, and the selftest baseline is 105 checks,
+  not 86. Stamp entries at the time they are written and name the clock.
+   1. `P3` `Tails`, the venue dry run the plan carries as item 17, scheduled 2026-11-26 and it does not run
+   before that date because it tests the venue network rather than this controller's home network. Brief
+   identical to the `LIVE QUEUE 6` item 1 brief archived above, down to the same `/home/howard/AI/booth-2026/t0042/booth_loop.py`
+   path and the same 2231.57 s cycle comparison, so it is not repeated here.
+   2. `Tails` as `K7`, the `R4` licence fix, ahead of every documentation step. Brief, paste verbatim. "Read
+   `## License (Charmy)` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`, findings `C1` and `C6`
+   only. Land both, at most three file edits per turn. `C1`, the imported MIT and Apache-2.0 components need
+   their copyright headers and a `NOTICE` record at the root that actually carries them, and `C6`, the booth
+   repo needs a `NOTICE` naming each upstream with the ref actually used. Run `scripts/licence-check` on the
+   team repo and against the booth clone refreshed to the remote, record both exit codes, run
+   `tests/selftest.sh` and `python3 tests/config_gate.py` against the 105-check baseline, and name every
+   check that did not run. Do not rule on `C2` or `C3`, those are the operator's."
+   3. `Tails` as `K8`, the `R3` findings, one file edit per turn. Brief, paste verbatim. "Read `## Test
+   Results` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Land four items. 1, `Omega` finding
+   12, bind the PR body to `env:` at `.github/workflows/planning-doc-gate.yml:29` instead of interpolating
+   it into a `run:` body on a public repo, and fix the same class at `deploy.yml:40` `:44` `:86` `:87`. 2,
+   `Omega` finding 13, pin every `actions/checkout` ref with the tag in a trailing comment and remove the
+   pseudo-pin at `static-checks.yml:24`. 3, the harness defect `Big` owns, `.github/workflows/team-selftest.yml:51`
+   truncates a three-digit check count to one digit and would fail a green run, and the `MIN=70` floor sits
+   35 below the real count, so restate the floor to a value that is above the minimum meaningful suite and
+   below 105, and say what you chose and why. 4, make the local pre-push gate assert the check count rather
+   than only greenness. Run `bash -n` on every script you touch, run `tests/selftest.sh` and
+   `python3 tests/config_gate.py`, record before and after counts against 105, and name every check that did
+   not run."
+   4. `Big` as `R3b`, re-read after `K7` and `K8`. Brief, paste verbatim. "Read `## Test Results` and
+   `## License (Charmy)` in `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Confirm the `K7` and
+   `K8` fixes executed, that both `scripts/licence-check` runs exit 0, that the selftest count and the CI
+   floor agree, and that no workflow now interpolates untrusted input into a `run:` body. Name every check
+   that did not run. Write in `## Test Results`."
+   5. `Operator actions, record and do not dispatch.` `R4` findings `C2`, the Rocky trademark use in booth
+   artifacts, and `C3`, the Blizzard-derived tileset renders the audience sees, are the operator's to rule
+   on. The booth repo `metalllinux/rocky-linux-foss-for-all-2026-demonstration-scmdraft-2` stays private
+   until that ruling lands, its visibility flip is an operator action, and `R4` did not clear it. Also the
+   operator's `~/AI/secrets/scm_draft_pass.md` is still mode 644 against AGENTS.md section 4, and `Omega`
+   finding 2, the RDP `/cert:ignore` against a self-signed certificate, stays open with no RDP channel test
+   run.
+   6. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 10 of
+   `LIVE QUEUE 3`, restated against the 105-check baseline and the four-stage chain. `T5` is void.
+   7. `G1` to `G4`, the TASK-0043 review chain, per item 11 of `LIVE QUEUE 3`, then the `Tails` gate fix
+   dispatch that has still never run. `G5` is void.
+   8. `Vector` as `D1`, per item 12 of `LIVE QUEUE 3`, now reviewing and extending the booth `README.md`
+   already rewritten at `e3e2e5a` and corrected at `e841bc6` rather than writing that prose from scratch, and
+   carrying `R4`'s FAIL verdict, the public flip not cleared, and the durable-path prerequisites.
+   9. `Knuckles` as `K1`, per item 13 of `LIVE QUEUE 3`, keeping the booth repo private because `R4` rules
+   FAIL, and keeping the after-event target steps named in `## Release`, the COPR and `crb` disable inverses,
+   the RDP credential rotation, the `lock-enabled` re-lock, and the target `/tmp` capture cleanup.
+   10. `Espio` as `E1`, per item 14 of `LIVE QUEUE 3`, plus folding `LIVE QUEUE 4` and the superseded rows
+   below into `## Archive` and keeping the standing contradictions listed there.
+
+#### LIVE QUEUE 4 (2026-11-23 01:05 UTC, 2026-11-23 10:05 JST), consumed, body moved from `## Next Actions` by `E2`
+
+Read `## Status` in this doc and this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
+  and in `planning/docs/TASK-0043-dispatch-gate.md`. `LIVE QUEUE 3` below is consumed through its item 4,
+  `F2`, `F3`, `F4` and `F5` landed, and a `Tails` fix dispatch `F1b` was inserted for `Shadow`'s finding 1
+  and landed at `e22bb3c`. Run in this exact order, one dispatch at a time, each in its own fresh child
+  session, `scripts/dispatch-gate --session <your own session id>` before every one, never the bare
+  invocation, and treat `PASS` as necessary and not sufficient. The house rules written at the head of
+  `LIVE QUEUE 3` apply unchanged to every item below and are not repeated, with one substitution, push with
+   `GIT_ASKPASS=/home/howard/AI/booth-2026/git-askpass-tc.sh git push origin main`, the `/tmp` path named
+   in the older blocks below is age-cleaned and superseded, and the durable runner tree and verification
+   tooling are both at `/home/howard/AI/booth-2026/t0042`.
+   0. PRIORITY PREP, two dispatches ahead of the numbered items, from the booth-day readiness ruling in
+   `## Status`. `P2` is **COMPLETE 2026-11-24 01:40 UTC, done by `Robotnik` under the recorded deviation**,
+   durable copy at `/home/howard/AI/booth-2026/t0042` with `ts-harvest/ref-era6.chk` at
+   `d7afd6a53cd3664a822485cffc21f8502e584e7738e35b9835840782c621057b`, and one cycle has not yet been
+   re-measured from that path, which is the remaining half of the item. `P3` `Tails`, the venue dry run the
+   plan carries as item 17, scheduled 2026-11-26, now a reachability confirmation and one measured cycle
+   from the durable path rather than an open unknown, and if it fails record the fallback in `## Status`
+   rather than improvising at the booth. Original `P2` brief follows for the record. `P2` `Tails`, brief,
+   paste verbatim. "Read the booth-day readiness ruling in `## Status` in
+   `planning/docs/TASK-0042-foss-for-all-scmdraft2-demo.md`. Move the booth working set from
+   `/tmp/opencode/t0042` to `/home/howard/AI/booth-2026/t0042`, the runner, the map and mask code, the gate
+   reports, the booth artifacts and `ts-harvest/ref-era6.chk`, because `/usr/lib/tmpfiles.d/tmp.conf:11`
+   age-cleans `/tmp` at 10 days and the reference CHK is already 8 days old against a 2026-11-28 booth.
+   Copy rather than delete, leave `/tmp/opencode/t0042` in place so no earlier record breaks, keep the new
+   path out of every git-tracked path, and re-measure one full six-map cycle in rebuild mode from the new
+   path with the per-map overhead and the cycle total recorded. No target change beyond what a cycle
+   already makes, and every target change gets a dated `DEMO-LOG.md` entry with its exact inverse." `P3`
+   `Tails`, the venue dry run the plan carries as item 17, scheduled 2026-11-26, one cycle on venue
+   network, and if it fails record the fallback in `## Status` rather than improvising at the booth.
+   1. `Vector` as `F6`, unchanged from item 5 of `LIVE QUEUE 3`, which carries the brief verbatim, the
+   `README.md` and the team documentation to the eleven-agent roster and the four-stage chain, with the
+   roster table confirmed against `.opencode/agents/` exactly, written in `## Docs`.
+   2. `Tails` as `F8`, new, inserted ahead of `F7` so the tree `Knuckles` merges carries the open code
+   follow-ups. Brief, paste verbatim. "Read `## Review`, `## Security` and `## Test Results` in
+   `planning/docs/TASK-0044-flicky-into-charmy.md`. Land three fixes, one file edit per turn. 1,
+   `team/a2a/server.py:109` describes a twelve-role team while the skills array lists eleven agents. 2,
+   `tests/selftest.sh:25` and `:40` hold a dead bash-syntax branch that can hide a real parse failure. 3,
+   `scripts/vm-create-rocky.sh:4` hides a real parse failure behind that branch. Run `bash -n` on both
+   scripts, run `tests/selftest.sh` and `python3 tests/config_gate.py`, record the before and after check
+   counts against 86, and name every check that did not run. Write your entry in `## Implementation` as
+   each step completes. Commit signed and push with
+   `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`."
+   3. `Knuckles` as `F7`, unchanged from item 6 of `LIVE QUEUE 3`, which carries the brief verbatim, plus
+   verify `F8` landed first and verify the merge from the remote rather than from the dispatch report.
+   4. `Tails` as `K6`, unchanged from item 7 of `LIVE QUEUE 3`, which carries the four-item `R2` security
+   fix verbatim, `StrictHostKeyChecking=no` off `scripts/remote/rt-lib` and `booth_loop.py` with the target
+   host key pinned, the `mktemp` plus `trap` credential pattern for `booth_loop.py`, the target-side grd
+   credentials backup to mode 600 inside a mode 700 directory with its exact inverse recorded in a dated
+   `DEMO-LOG.md` entry and paths and modes read only, and `tests/selftest.sh` failing rather than skipping
+   when the secret file is absent while scanning both target credentials, with before and after check
+   counts against 86. Do not run the recorded COPR or `crb` disable inverses, those belong to `K1`.
+   5. `Big` as `R3`, unchanged from item 8 of `LIVE QUEUE 3`, brief verbatim.
+   6. `Charmy` as `R4`, unchanged from item 9 of `LIVE QUEUE 3`, which carries the licence review, the
+   retired reviewer's audit scope, both `scripts/licence-check` runs, the public-or-not ruling on the
+   published editor captures, and the sweep proving the operator's exclusion rule of 2026-11-22 22:10 UTC
+   that the booth repo holds no StarCraft Anthology ISO game file and no SCMDraft 2 executable from
+   `http://www.stormcoast-fortress.net/cntt/software/scmdraft`, naming the command, the commit read, the
+   counts and every matching path. An unreadable sweep is a FAIL.
+   7. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 10 of
+   `LIVE QUEUE 3`. `T5` is void.
+   8. `G1` to `G4`, the TASK-0043 review chain, per item 11 of `LIVE QUEUE 3`, then the `Tails` gate fix
+   dispatch that has still not run. `G5` is void.
+   9. `Vector` as `D1`, unchanged from item 12 of `LIVE QUEUE 3`, which carries every fact the prose must
+   state.
+   10. `Knuckles` as `K1`, unchanged from item 13 of `LIVE QUEUE 3`.
+   11. `Espio` as `E1`, unchanged from item 14 of `LIVE QUEUE 3`, and now also folding the superseded
+   legacy Next Actions rows named in the VOID ROWS ruling below into `## Archive`.
+
+#### LIVE QUEUE 3 (2026-11-22 22:30 UTC, 2026-11-23 07:30 JST), consumed, body moved from `## Next Actions` by `E2`
+
+Its head carries the house rules that `LIVE QUEUE 4` to `LIVE QUEUE 8` reference as live text, so this entry is the
+standing home of those rules, held verbatim.
+
+Read `## Status` in this doc and
+  this block only, nothing else in this doc. Read `## Status` and `## Next Actions` in
+  `planning/docs/TASK-0044-flicky-into-charmy.md`, in `planning/docs/TASK-0041-remote-visual-control.md`
+  and in `planning/docs/TASK-0043-dispatch-gate.md`. Run in this exact order, one dispatch at a time,
+  each in its own fresh child session, `scripts/dispatch-gate --session <your own session id>` before
+  every one, never the bare invocation, and treat `PASS` as necessary and not sufficient, this host has
+  no sqlite3 binary so read the session store with `python3 -c` and the `sqlite3` module. If a reviewer
+  returns a blocker, insert a `Tails` fix dispatch for that task before the next stage. House rules
+  apply to every item and are not repeated, credentials from `~/AI/secrets` at run time only and never
+  echoed, never in argv, a file, a commit, a log or a planning doc, one dated `DEMO-LOG.md` entry per
+  target-touching step with the proving command and the exact inverse written as each step completes,
+  everything under `/tmp/opencode/t0042` or a maps directory on the target, no game data, no SCMDraft or
+  third-party binary, no harvested reference CHK in a git-tracked path, leave the target clean apart from
+  named residue, do not kill processes you did not start, name every check that did not actually run, and
+  a builder never certifies its own artifacts. Stamp every entry in UTC with the JST equivalent in
+  parentheses, the host clock is `JST +0900`. Push with
+  `GIT_ASKPASS=/tmp/opencode/git-askpass-tc.sh git push origin main`, the pre-push selftest is the
+  effective gate, it is green at 86 checks, and the CI floor is `MIN=70` at
+  `.github/workflows/team-selftest.yml:50`. Before you accept any completion run
+  `git status --porcelain` and `git log --oneline` yourself and read the child's last assistant message
+  in the session store, a `finish` of `stop` whose only content part is reasoning holding a literal
+  `<invoke>` block means AGENTS.md section 14 item 1 fired and the work must be re-dispatched with a
+  smaller brief. Before the first dispatch, query `session_v2` for `agent='robotnik'` ordered by
+  `time_updated` and record which session owns this queue, and if a second `Robotnik` session is
+  dispatching it, stop that session with `opencode api POST /api/api/session/<id>/interrupt` rather than
+  a process kill, because every session shares one `opencode serve` process.
+   1. `Shadow` as `F2`, first in the TASK-0044 review chain. Brief, paste verbatim. "Read `## Status` and
+   `## Definition of Done` in `planning/docs/TASK-0044-flicky-into-charmy.md` and the `## Implementation`
+   record for dispatch `F1` in that doc. Review the roster removal against commits `ef06147` and
+   `641922e`. Decide in particular whether the sweep left any live path still naming the retired reviewer,
+   whether Charmy's merged brief and permissions actually cover the gate work the retired reviewer ran,
+   whether the four-stage chain is consistent across `AGENTS.md`, the planning template, `team/graph/`, the
+   workflows and `tests/config_gate.py`, and whether any DoD row anywhere still demands a fifth reviewer
+   that cannot exist. Write your verdict in `## Review`."
+   2. `Omega` as `F3`, second in the chain. Brief, paste verbatim. "Read `## Status` and `## Definition of
+   Done` in `planning/docs/TASK-0044-flicky-into-charmy.md` and the `## Implementation` record. Rule on the
+   security consequences of collapsing two licence reviewers into one, loss of an independent second pass on
+   licence and supply-chain questions, whether the gate remains asserted in CI and in `tests/selftest.sh`
+   after the change, whether `team/licenses/policy.yaml` and `scripts/licence-check` still fail closed, and
+   whether the `A2A` agent card generated from `.opencode/agents/` now publishes the correct roster. Write
+   your findings in `## Security`."
+   3. `Big` as `F4`, third in the chain. Brief, paste verbatim. "Read `## Status` and `## Definition of
+   Done` in `planning/docs/TASK-0044-flicky-into-charmy.md` and the `## Implementation` record. Run
+   `tests/selftest.sh` yourself, report the check count against the recorded 83 to 86 delta, confirm the
+   roster and licence assertions execute rather than skip, confirm `scripts/licence-check` and
+   `python3 tests/config_gate.py` both run, and name every check that did not run. Write your verdict in
+   `## Test Results`."
+   4. `Charmy` as `F5`, fourth and last, the team's single licence owner. Brief, paste verbatim. "Read
+   `## Status` and `## Definition of Done` in `planning/docs/TASK-0044-flicky-into-charmy.md`. Confirm you
+   hold the duties the retired reviewer held, run `scripts/licence-check` on this repo, record the exit code
+   and outcome, and record the declarations table with each upstream ref cited. Name the legacy
+   `## License Audit (Flicky)` heading in `planning/docs/TASK-0042-*`, `TASK-0041-*` and `TASK-0043-*` as
+   retained history you did not edit. Write your ruling in `## License (Charmy)`."
+   5. `Vector` as `F6`. `README.md` and the team documentation to the eleven-agent roster and the
+   four-stage chain, and confirm the roster table matches `.opencode/agents/` exactly. Write in `## Docs`.
+   6. `Knuckles` as `F7`. Branch, signed commit, PR, merge and push for TASK-0044, or record plainly that
+   `F1` already landed the implementation directly on `main` at `ef06147` and `641922e` and that what
+   remains is a review-driven follow-up commit. Verify the merge from the remote rather than from the
+   dispatch report. Write in `## Release`.
+   7. `Tails` as `K6`, the `R2` security fix, unchanged from item 1 of `LIVE QUEUE 2` below, which carries
+   the full brief verbatim, four items, at most three file edits per turn, `StrictHostKeyChecking=no` off
+   `scripts/remote/rt-lib` and `booth_loop.py` with the target host key pinned, the `mktemp` plus `trap`
+   credential pattern for `booth_loop.py`, the target-side grd credentials backup to mode 600 inside a mode
+   700 directory with its exact inverse recorded in a dated `DEMO-LOG.md` entry and paths and modes read
+   only, and `tests/selftest.sh` failing rather than skipping when the secret file is absent while scanning
+   both target credentials, with the before and after check counts against 86 rather than 83.
+   8. `Big` as `R3`, unchanged from item 2 of `LIVE QUEUE 2`, which carries the brief verbatim.
+   9. `Charmy` as `R4`, unchanged from item 3 of `LIVE QUEUE 2`, which now carries both the licence review
+   and the retired fifth reviewer's audit, the `scripts/licence-check` runs against the team repo and the
+   booth repo clone under `/tmp/opencode/t0042`, the plain ruling on whether the published editor captures
+   and booth artifacts let the booth repo go public, and the sweep proving the operator's exclusion rule of
+   2026-11-22 22:10 UTC that the booth repo holds no StarCraft Anthology ISO game file and no SCMDraft 2
+   executable from `http://www.stormcoast-fortress.net/cntt/software/scmdraft`. Item 4 of `LIVE QUEUE 2`,
+   `Flicky` as `R5`, is void and does not run.
+   10. `T1` to `T4`, the TASK-0041 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, one dispatch each in
+   that order, per item 5 of `LIVE QUEUE 2`, which carries the briefs verbatim, with `T4` carrying the
+   retired reviewer's audit scope. `T5` is void and does not run.
+   11. `G1` to `G4`, the TASK-0043 review chain, `Shadow`, `Omega`, `Big`, `Charmy`, per item 6 of
+   `LIVE QUEUE 2`, which carries both gate defects and the third data point verbatim, then the `Tails` gate
+   fix dispatch that has still not run. `G5` is void and does not run.
+   12. `Vector` as `D1`, unchanged from item 7 of `LIVE QUEUE 2`, which carries every fact the prose must
+   state.
+   13. `Knuckles` as `K1`, unchanged from item 8 of `LIVE QUEUE 2`, keeping the booth repo private until
+   `R4` reports, since `R5` no longer exists, and keeping the after-event target steps named in
+   `## Release`.
+   14. `Espio` as `E1`, unchanged from item 9 of `LIVE QUEUE 2`, plus folding the legacy
+   `## License Audit (Flicky)` headings in all three docs into `## Archive` and keeping the standing
+   contradictions listed there.
 
 ### Legacy License Audit (Flicky) heading
 
